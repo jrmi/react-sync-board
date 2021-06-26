@@ -1,0 +1,40 @@
+{
+  "parser": "babel-eslint",
+  "extends": [
+    "airbnb-base", 
+    "plugin:react/recommended",
+    "plugin:react-hooks/recommended"
+  ],
+  "root": true,
+  "env": {
+    "browser": true
+  },
+  "parserOptions": {
+    "ecmaFeatures": {
+      "jsx": true
+    }
+  },
+  "rules": {
+    "no-unused-vars": "warn",
+    "class-methods-use-this":"off",
+    "react/prop-types": "off",
+    "import/extensions": [
+      "warn",
+      {
+        "js": "never",
+        "jsx": "never"
+      }
+    ],
+    "import/no-unresolved": "error"
+  },
+  "settings": {
+    "import/resolver": {
+      "node": {
+        "extensions": [
+          ".js",
+          ".jsx"
+        ]
+      }
+    }
+  }
+}
