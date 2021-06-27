@@ -14,7 +14,7 @@ import {
   PanZoomRotateAtom,
   SelectedItemsAtom,
 } from "./atoms";
-import { insideClass } from "../utils";
+import { insideClass, getParent } from "../utils";
 
 import usePrevious from "../hooks/usePrevious";
 
@@ -34,6 +34,8 @@ const Pane = styled.div.attrs(({ translateX, translateY, scale, rotate }) => ({
 `;
 
 const PanZoomRotate = ({ children, moveFirst }) => {
+  const wrappedRef = React.useRef(null);
+  const boardRef = React.useRef(null);
   const [scaleBoundaries, setScaleBoundaries] = React.useState([0.1, 8]);
   const [dim, setDim] = useRecoilState(PanZoomRotateAtom);
   const config = useRecoilValue(BoardConfigAtom);
@@ -49,7 +51,11 @@ const PanZoomRotate = ({ children, moveFirst }) => {
     y: 0,
   });
 
-  const wrappedRef = React.useRef(null);
+  React.useEffect(() => {
+    boardRef.current = getParent(wrappedRef.current, (elt) =>
+      elt.classList.contains("sync-board")
+    );
+  }, []);
 
   // React on scale change
   React.useLayoutEffect(() => {
@@ -72,7 +78,14 @@ const PanZoomRotate = ({ children, moveFirst }) => {
 
   // Center board on game loading
   React.useEffect(() => {
-    const { innerHeight, innerWidth } = window;
+    // const { innerHeight, innerWidth } = window;
+
+    // console.log(boardRef.current.getBoundingClientRect());
+
+    const {
+      width: innerWidth,
+      height: innerHeight,
+    } = boardRef.current.getBoundingClientRect();
 
     const minSize = Math.min(innerHeight, innerWidth);
 
@@ -95,7 +108,11 @@ const PanZoomRotate = ({ children, moveFirst }) => {
   // Keep board inside viewport
   React.useEffect(() => {
     const { width, height } = wrappedRef.current.getBoundingClientRect();
-    const { innerHeight, innerWidth } = window;
+    // const { innerHeight, innerWidth } = window;
+    const {
+      width: innerWidth,
+      height: innerHeight,
+    } = boardRef.current.getBoundingClientRect();
 
     const newDim = {};
 
@@ -123,9 +140,14 @@ const PanZoomRotate = ({ children, moveFirst }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedUpdateCenter = React.useCallback(
     debounce(() => {
-      const { innerHeight, innerWidth } = window;
+      // const { innerHeight, innerWidth } = window;
+      const {
+        width: innerWidth,
+        height: innerHeight,
+      } = boardRef.current.getBoundingClientRect();
+
       setDim((prevDimension) => ({
-        ...prevDim,
+        ...prevDimension,
         centerX:
           (innerWidth / 2 - prevDimension.translateX) / prevDimension.scale,
         centerY:
@@ -143,7 +165,11 @@ const PanZoomRotate = ({ children, moveFirst }) => {
     (factor, zoomCenter) => {
       let center = zoomCenter;
       if (!center) {
-        const { innerHeight, innerWidth } = window;
+        // const { innerHeight, innerWidth } = window;
+        const {
+          width: innerWidth,
+          height: innerHeight,
+        } = boardRef.current.getBoundingClientRect();
         center = {
           x: innerWidth / 2,
           y: innerHeight / 2,
@@ -213,7 +239,7 @@ const PanZoomRotate = ({ children, moveFirst }) => {
   }, [dim, updateBoardStatePanningDelay, updateBoardStateZoomingDelay]);
 
   const onZoom = React.useCallback(
-    ({ clientX, clientY, newScale }) => {
+    ({ clientX, clientY, scale: newScale }) => {
       zoomTo(1 - newScale / 200, { x: clientX, y: clientY });
     },
     [zoomTo]

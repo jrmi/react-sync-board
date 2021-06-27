@@ -6,8 +6,7 @@ import Diacritics from "diacritic";
  * @param {string} className
  */
 export const hasClass = (element, className) =>
-  typeof element.className === "string" &&
-  element.className.split(" ").includes(className);
+  element.classList && element.classList.contains(className);
 
 export const insideClass = (element, className) => {
   if (hasClass(element, className)) {
@@ -17,6 +16,17 @@ export const insideClass = (element, className) => {
     return false;
   }
   return insideClass(element.parentNode, className);
+};
+
+export const getParent = (initialElem, selector) => {
+  for (
+    let elem = initialElem;
+    elem && elem !== document;
+    elem = elem.parentNode
+  ) {
+    if (selector(elem)) return elem;
+  }
+  return null;
 };
 
 export const isPointInsideRect = (point, rect) =>

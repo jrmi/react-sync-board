@@ -9,6 +9,7 @@ import ActionPane from "./ActionPane";
 import CursorPane from "./Cursors/CursorPane";
 import PanZoomRotate from "./PanZoomRotate";
 import { BoardConfigAtom } from "./atoms";
+import board from "../images/board.png";
 
 /*
 
@@ -21,9 +22,9 @@ import { BoardConfigAtom } from "./atoms";
 */
 
 const Placeholder = styled.p`
-  position: fixed;
-  top: 40vh;
-  width: 100vw;
+  position: absolute;
+  top: 40%;
+  width: 100%;
   text-align: center;
   color: hsl(0, 0%, 70%);
 `;
@@ -35,7 +36,7 @@ const StyledBoard = styled.div.attrs(() => ({ className: "board" }))`
       hsla(218, 30%, 40%, 0.7),
       hsla(218, 40%, 40%, 0.05) 100%
     ),
-    url(/board.png);
+    url(${board});
 
   border: 1px solid transparent;
 

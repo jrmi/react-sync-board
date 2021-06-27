@@ -20,10 +20,15 @@ import { insideClass } from "./utils";
 import EditInfoButton from "./EditInfoButton";
 import { useItems } from "./board/Items";
 
-const StyledBoardView = styled.div`
-  width: 100vw;
-  height: 100vh;
+const StyledBoardView = styled.div.attrs(() => ({ className: "sync-board" }))`
+  /*width: 100vw;
+  height: 100vh;*/
   overflow: hidden;
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
 `;
 
 const BoardContainer = styled.div`config
@@ -36,7 +41,7 @@ const BoardContainer = styled.div`config
 `;
 
 const ActionBar = styled.div`
-  position: fixed;
+  position: absolute;
   bottom: 1em;
   right: 0em;
   display: flex;

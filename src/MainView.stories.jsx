@@ -24,6 +24,15 @@ export default {
 
 export const Primary = () => (
   <WithSocketIO>
-    <MainView />
+    <div
+      style={{
+        width: "800px",
+        height: "300px",
+        position: "relative",
+        border: "1px solid black",
+      }}
+    >
+      <MainView />
+    </div>
   </WithSocketIO>
 );
