@@ -1,5 +1,5 @@
-import quarante from './toto';
+import MainView from "./MainView";
 
-export { default as TextInput } from './test';
+export { default as MainView } from "./MainView";
 
-export default {};
+export default { main: MainView };

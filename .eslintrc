@@ -3,7 +3,8 @@
   "extends": [
     "airbnb-base", 
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "prettier"
   ],
   "root": true,
   "env": {
@@ -14,6 +15,9 @@
       "jsx": true
     }
   },
+  "plugins": [
+    "prettier"
+  ],
   "rules": {
     "no-unused-vars": "warn",
     "class-methods-use-this":"off",
@@ -25,7 +29,10 @@
         "jsx": "never"
       }
     ],
-    "import/no-unresolved": "error"
+    "import/no-unresolved": "error",
+    "prettier/prettier": [
+      "error"
+    ]
   },
   "settings": {
     "import/resolver": {

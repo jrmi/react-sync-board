@@ -1,39 +1,39 @@
-const packageJson = require('./package.json');
+const packageJson = require("./package.json");
 const version = packageJson.version;
-const path = require('path');
-const TerserPlugin = require('terser-webpack-plugin');
-const webpack = require('webpack');
-const ESLintPlugin = require('eslint-webpack-plugin');
+const path = require("path");
+const TerserPlugin = require("terser-webpack-plugin");
+const webpack = require("webpack");
+const ESLintPlugin = require("eslint-webpack-plugin");
 
 module.exports = (env, argv) => {
   const conf = {
-    mode: 'development',
+    mode: "development",
     devServer: {
       open: true,
-      openPage: 'index.html',
-      contentBase: path.join(__dirname, 'example'),
+      openPage: "index.html",
+      contentBase: path.join(__dirname, "example"),
       watchContentBase: true,
       port: 3033,
-      host: argv.mode === 'production' ? `localhost` : `localhost`,
+      host: argv.mode === "production" ? `localhost` : `localhost`,
       disableHostCheck: true,
     },
     entry: {
-      'react-syncboard': ['./src/index.js'],
+      "react-syncboard": ["./src/index.js"],
     },
     output: {
-      path: path.join(__dirname, 'lib'),
-      publicPath: '/',
-      filename: argv.mode === 'production' ? `[name].js` : `[name].js`,
-      library: 'react-syncboard',
-      libraryExport: 'default',
-      libraryTarget: 'umd', //for both browser and node.js
-      globalObject: 'this', //for both browser and node.js
+      path: path.join(__dirname, "lib"),
+      publicPath: "/",
+      filename: argv.mode === "production" ? `[name].js` : `[name].js`,
+      library: "react-syncboard",
+      libraryExport: "default",
+      libraryTarget: "umd", //for both browser and node.js
+      globalObject: "this", //for both browser and node.js
       umdNamedDefine: true,
       auxiliaryComment: {
-        root: 'for Root',
-        commonjs: 'for CommonJS environment',
-        commonjs2: 'for CommonJS2 environment',
-        amd: 'for AMD environment',
+        root: "for Root",
+        commonjs: "for CommonJS environment",
+        commonjs2: "for CommonJS2 environment",
+        amd: "for AMD environment",
       },
     },
 
@@ -60,9 +60,21 @@ module.exports = (env, argv) => {
           exclude: /(node_modules|bower_components)/,
           use: [
             {
-              loader: 'babel-loader',
+              loader: "babel-loader",
               options: {
-                presets: ['@babel/preset-env', '@babel/preset-react'],
+                presets: ["@babel/preset-env", "@babel/preset-react"],
+              },
+            },
+          ],
+        },
+        {
+          test: /\.(gif|png|jpe?g|svg)$/i,
+          use: [
+            "file-loader",
+            {
+              loader: "image-webpack-loader",
+              options: {
+                disable: true, // webpack@2.x and newer
               },
             },
           ],
@@ -70,7 +82,7 @@ module.exports = (env, argv) => {
       ],
     },
     resolve: {
-      extensions: ['...', '.js', '.jsx'],
+      extensions: ["...", ".js", ".jsx"],
       alias: {},
     },
     plugins: [
@@ -78,13 +90,13 @@ module.exports = (env, argv) => {
         `[name] v${version} Copyright (c) 2020 Jérémie Pardou`
       ),
       new ESLintPlugin({
-        extensions: ['.js', '.jsx', '.json'],
+        extensions: [".js", ".jsx", ".json"],
       }),
     ],
   };
 
-  if (argv.mode !== 'production') {
-    conf.devtool = 'inline-source-map';
+  if (argv.mode !== "production") {
+    conf.devtool = "inline-source-map";
   }
 
   return conf;
