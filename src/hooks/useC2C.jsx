@@ -32,6 +32,10 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
   const Context = contextMap[channel];
 
   React.useEffect(() => {
+    if (!socket) {
+      return null;
+    }
+
     const disconnect = () => {
       console.log(`Disconnected from ${channel}…`);
       if (!mountedRef.current) return;
@@ -51,6 +55,7 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
       return null;
     }
     if (!socket.connected) {
+      console.log("tost");
       socket.connect();
     }
     join({
@@ -89,6 +94,11 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
 
 const useC2C = (channel = "default") => {
   const Context = contextMap[channel];
+  if (!Context) {
+    console.warn(
+      `C2C channel ${channel} doesn't exits. Unsure you added the provider.`
+    );
+  }
   return useContext(Context);
 };
 

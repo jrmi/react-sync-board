@@ -1,9 +1,13 @@
 import React from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { RecoilRoot } from "recoil";
+import { RecoilRoot, useSetRecoilState } from "recoil";
+import { QueryClientProvider, QueryClient } from "react-query";
 
-import { Board } from "./board";
+import { C2CProvider } from "./hooks/useC2C";
+
+import { BoardConfigAtom, Board } from "./board";
+
 import SelectedItemsPane from "./SelectedItemsPane";
 import { useUsers } from "./users";
 import Touch from "./ui/Touch";
@@ -14,6 +18,7 @@ import AddItemButton from "./AddItemButton";
 import MessageButton from "./message";
 import { insideClass } from "./utils";
 import EditInfoButton from "./EditInfoButton";
+import { useItems } from "./board/Items";
 
 const StyledBoardView = styled.div`
   width: 100vw;
@@ -21,7 +26,7 @@ const StyledBoardView = styled.div`
   overflow: hidden;
 `;
 
-const BoardContainer = styled.div`
+const BoardContainer = styled.div`config
   position: relative;
   width: 100%;
   height: 100%;
@@ -65,20 +70,33 @@ const ActionBar = styled.div`
   }
 `;
 
+const emptyList = [];
+const emptyMap = {};
+
+const defaultBoard = {
+  size: 1000,
+};
+// const NullComponent = () => null;
+
 const MainView = ({
+  boardConfig: initialBoardConfig = defaultBoard,
+  items: initialItems = emptyList,
   edit: editMode = false,
   mediaLibraries,
   mediaHandlers,
-  itemMap,
-  actionMap,
-  ItemFormComponent,
-  BoardFormComponent,
+  itemMap = emptyList,
+  actionMap = emptyMap,
+  ItemFormComponent = null,
+  BoardFormComponent = null,
 }) => {
   const { t } = useTranslation();
   const { currentUser, localUsers: users } = useUsers();
 
   const [moveFirst, setMoveFirst] = React.useState(false);
   const [hideMenu, setHideMenu] = React.useState(false);
+
+  const setBoardConfig = useSetRecoilState(BoardConfigAtom);
+  const { setItemList } = useItems();
 
   React.useEffect(() => {
     // Chrome-related issue.
@@ -96,63 +114,81 @@ const MainView = ({
     };
   }, []);
 
+  React.useEffect(() => {
+    setBoardConfig(initialBoardConfig);
+  }, [initialBoardConfig, setBoardConfig]);
+
+  React.useEffect(() => {
+    setItemList(initialItems);
+  }, [initialItems, setItemList]);
+
   return (
-    <RecoilRoot>
-      <StyledBoardView>
-        <MediaLibraryProvider libraries={mediaLibraries} {...mediaHandlers}>
-          <BoardContainer>
-            <ImageDropNPaste>
-              <Board
-                user={currentUser}
-                users={users}
-                itemMap={itemMap}
-                moveFirst={moveFirst}
-                hideMenu={hideMenu}
-              />
-            </ImageDropNPaste>
-            <SelectedItemsPane
-              hideMenu={hideMenu}
+    <StyledBoardView>
+      <MediaLibraryProvider libraries={mediaLibraries} {...mediaHandlers}>
+        <BoardContainer>
+          <ImageDropNPaste>
+            <Board
+              user={currentUser}
+              users={users}
               itemMap={itemMap}
-              actionMap={actionMap}
-              ItemFormComponent={ItemFormComponent}
+              moveFirst={moveFirst}
+              hideMenu={hideMenu}
             />
-          </BoardContainer>
-          <ActionBar>
-            {!editMode && <MessageButton />}
-            {editMode && (
-              <EditInfoButton BoardFormComponent={BoardFormComponent} />
-            )}
-            <div className="spacer" />
-            <Touch
-              onClick={() => setMoveFirst(false)}
-              alt={t("Select mode")}
-              label={t("Select")}
-              title={t("Switch to select mode")}
-              icon={"mouse-pointer"}
-              active={!moveFirst}
-            />
-            <Touch
-              onClick={() => setMoveFirst(true)}
-              alt={t("Move mode")}
-              label={t("Move")}
-              title={t("Switch to move mode")}
-              icon={"hand"}
-              active={moveFirst}
-            />
-            <Touch
-              onClick={() => setHideMenu((prev) => !prev)}
-              alt={hideMenu ? t("Show menu") : t("Hide menu")}
-              label={hideMenu ? t("Show menu") : t("Hide menu")}
-              title={hideMenu ? t("Show action menu") : t("Hide action menu")}
-              icon={hideMenu ? "eye-with-line" : "eye"}
-            />
-            <div className="spacer" />
-            <AddItemButton itemMap={itemMap} />
-          </ActionBar>
-        </MediaLibraryProvider>
-      </StyledBoardView>
-    </RecoilRoot>
+          </ImageDropNPaste>
+          <SelectedItemsPane
+            hideMenu={hideMenu}
+            itemMap={itemMap}
+            actionMap={actionMap}
+            ItemFormComponent={ItemFormComponent}
+          />
+        </BoardContainer>
+        <ActionBar>
+          {!editMode && <MessageButton />}
+          {editMode && (
+            <EditInfoButton BoardFormComponent={BoardFormComponent} />
+          )}
+          <div className="spacer" />
+          <Touch
+            onClick={() => setMoveFirst(false)}
+            alt={t("Select mode")}
+            label={t("Select")}
+            title={t("Switch to select mode")}
+            icon={"mouse-pointer"}
+            active={!moveFirst}
+          />
+          <Touch
+            onClick={() => setMoveFirst(true)}
+            alt={t("Move mode")}
+            label={t("Move")}
+            title={t("Switch to move mode")}
+            icon={"hand"}
+            active={moveFirst}
+          />
+          <Touch
+            onClick={() => setHideMenu((prev) => !prev)}
+            alt={hideMenu ? t("Show menu") : t("Hide menu")}
+            label={hideMenu ? t("Show menu") : t("Hide menu")}
+            title={hideMenu ? t("Show action menu") : t("Hide action menu")}
+            icon={hideMenu ? "eye-with-line" : "eye"}
+          />
+          <div className="spacer" />
+          <AddItemButton itemMap={itemMap} />
+        </ActionBar>
+      </MediaLibraryProvider>
+    </StyledBoardView>
   );
 };
 
-export default MainView;
+const queryClient = new QueryClient();
+
+const RecoilMainRoot = (props) => (
+  <RecoilRoot>
+    <QueryClientProvider client={queryClient}>
+      <C2CProvider room={"test"} channel="board">
+        <MainView {...props} />
+      </C2CProvider>
+    </QueryClientProvider>
+  </RecoilRoot>
+);
+
+export default RecoilMainRoot;

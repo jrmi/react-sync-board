@@ -1,6 +1,6 @@
 import styled from "styled-components";
 
-export const Label = styled.label`
+const Label = styled.label`
   clear: both;
   padding-bottom: 1.5em;
   &::after {

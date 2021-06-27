@@ -54,7 +54,7 @@ export const Board = ({ user, users, itemMap, moveFirst = true }) => {
   const config = useRecoilValue(BoardConfigAtom);
 
   if (!config.size) {
-    return <Placeholder>{t("Please select or load a game")}</Placeholder>;
+    return <Placeholder>{t("No board selected")}</Placeholder>;
   }
 
   return (
