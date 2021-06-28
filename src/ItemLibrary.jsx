@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { nanoid } from "nanoid";
 import styled from "styled-components";
 import { useRecoilCallback } from "recoil";
-import { debounce } from "lodash.debounce";
+import debounce from "lodash.debounce";
 
 import { useItems } from "./board/Items";
 import useToggle from "./hooks/useToggle";
@@ -173,6 +173,7 @@ const filterItems = (filter, nodes) =>
   }, []);
 
 const ItemLibrary = ({ items }) => {
+  console.log(items);
   const { t } = useTranslation();
   const [filter, setFilter] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState(items);

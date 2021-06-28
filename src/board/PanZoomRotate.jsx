@@ -78,10 +78,6 @@ const PanZoomRotate = ({ children, moveFirst }) => {
 
   // Center board on game loading
   React.useEffect(() => {
-    // const { innerHeight, innerWidth } = window;
-
-    // console.log(boardRef.current.getBoundingClientRect());
-
     const {
       width: innerWidth,
       height: innerHeight,
@@ -108,7 +104,7 @@ const PanZoomRotate = ({ children, moveFirst }) => {
   // Keep board inside viewport
   React.useEffect(() => {
     const { width, height } = wrappedRef.current.getBoundingClientRect();
-    // const { innerHeight, innerWidth } = window;
+
     const {
       width: innerWidth,
       height: innerHeight,
@@ -140,7 +136,6 @@ const PanZoomRotate = ({ children, moveFirst }) => {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedUpdateCenter = React.useCallback(
     debounce(() => {
-      // const { innerHeight, innerWidth } = window;
       const {
         width: innerWidth,
         height: innerHeight,
@@ -165,7 +160,6 @@ const PanZoomRotate = ({ children, moveFirst }) => {
     (factor, zoomCenter) => {
       let center = zoomCenter;
       if (!center) {
-        // const { innerHeight, innerWidth } = window;
         const {
           width: innerWidth,
           height: innerHeight,

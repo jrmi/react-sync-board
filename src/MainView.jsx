@@ -21,14 +21,32 @@ import EditInfoButton from "./EditInfoButton";
 import { useItems } from "./board/Items";
 
 const StyledBoardView = styled.div.attrs(() => ({ className: "sync-board" }))`
-  /*width: 100vw;
-  height: 100vh;*/
   overflow: hidden;
   position: absolute;
   top: 0;
   bottom: 0;
   right: 0;
   left: 0;
+
+  --bg-color: #000000;
+  --bg-secondary-color: #121212;
+  --font-color: #f9fbfa;
+  --font-color2: #b3b3b3;
+  --color-darkGrey: #121212;
+  --color-darkBlueGrey: #151a23;
+  --color-blueGrey: #19202c;
+  --color-lightGrey: #90969d;
+  --color-grey: #454545;
+  --color-midGrey: #2c3749;
+  --color-primary: #db5034;
+  --color-secondary: #00a698ff;
+  --color-error: #d43939;
+  --color-success: #28bd14;
+  --grid-maxWidth: 120rem;
+  --grid-gutter: 2rem;
+  --font-size: 1.6rem;
+  --font-family-sans: "Roboto", sans-serif;
+  --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
 `;
 
 const BoardContainer = styled.div`config
@@ -87,8 +105,8 @@ const MainView = ({
   boardConfig: initialBoardConfig = defaultBoard,
   items: initialItems = emptyList,
   edit: editMode = false,
-  mediaLibraries,
-  mediaHandlers,
+  mediaLibraries = emptyList,
+  mediaHandlers = emptyMap,
   itemMap = emptyList,
   actionMap = emptyMap,
   ItemFormComponent = null,
@@ -146,6 +164,7 @@ const MainView = ({
             actionMap={actionMap}
             ItemFormComponent={ItemFormComponent}
           />
+          <div id="portal-container" />
         </BoardContainer>
         <ActionBar>
           {!editMode && <MessageButton />}

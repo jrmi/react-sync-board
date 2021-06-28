@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import usePortal from "react-useportal";
 
 const Overlay = styled.div`
-  position: fixed;
+  position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
@@ -13,7 +13,7 @@ const Overlay = styled.div`
 `;
 
 const StyledSidePanel = styled.div`
-  position: fixed;
+  position: absolute;
   ${({ position }) => (position === "right" ? "right: 0;" : "left: 0;")}
   top: 0;
   bottom: 0;
@@ -109,6 +109,7 @@ const SidePanel = ({
   const { t } = useTranslation();
   const { ref, Portal, openPortal, closePortal, isOpen } = usePortal({
     closeOnOutsideClick: modal,
+    bindTo: document.getElementById("portal-container"),
   });
 
   const onAnimationEnd = React.useCallback(() => {
