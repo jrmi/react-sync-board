@@ -1,6 +1,8 @@
 import React from "react";
 import { Provider as SocketIOProvider } from "@scripters/use-socket.io";
+import { nanoid } from "nanoid";
 import MainView from "./MainView";
+import { itemMap, ItemForm, actionMap } from "./sample";
 
 const SOCKET_URL = "http://192.168.0.14:4051";
 const SOCKET_PATH = "/socket.io";
@@ -32,7 +34,13 @@ export const Primary = () => (
         border: "1px solid black",
       }}
     >
-      <MainView />
+      <MainView
+        room={nanoid()}
+        session={nanoid()}
+        itemTemplates={itemMap}
+        actions={actionMap}
+        ItemFormComponent={ItemForm}
+      />
     </div>
   </WithSocketIO>
 );

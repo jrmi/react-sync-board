@@ -14,7 +14,8 @@ const useItems = () => {
   const setSelectItems = useSetRecoilState(SelectedItemsAtom);
 
   const batchUpdateItems = useRecoilCallback(
-    ({ snapshot }) => async (itemIds, callbackOrItem, sync = true) => {
+    ({ snapshot }) => async (items, callbackOrItem, sync = true) => {
+      const itemIds = items.map(({ id }) => id);
       let callback = callbackOrItem;
       if (typeof callbackOrItem === "object") {
         callback = () => callbackOrItem;
@@ -339,7 +340,8 @@ const useItems = () => {
   );
 
   const removeItems = React.useCallback(
-    (itemsIdToRemove, sync = true) => {
+    (items, sync = true) => {
+      const itemsIdToRemove = items.map(({ id }) => id);
       // Remove from selected items first
       setSelectItems((prevList) =>
         prevList.filter((id) => !itemsIdToRemove.includes(id))

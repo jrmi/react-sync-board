@@ -3,7 +3,12 @@ import { useRecoilValue } from "recoil";
 import Item from "./Item";
 import useItems from "./useItems";
 
-import { ItemListAtom, ItemMapAtom, SelectedItemsAtom } from "../atoms";
+import {
+  ConfigurationAtom,
+  ItemListAtom,
+  ItemMapAtom,
+  SelectedItemsAtom,
+} from "../atoms";
 
 /** Allow to operate on locked items while u or l key is pressed  */
 const useUnlock = () => {
@@ -31,12 +36,13 @@ const useUnlock = () => {
   return unlock;
 };
 
-const ItemList = ({ itemMap: itemMapConfig }) => {
+const ItemList = () => {
   const { updateItem } = useItems();
   const itemList = useRecoilValue(ItemListAtom);
   const itemMap = useRecoilValue(ItemMapAtom);
   const selectedItems = useRecoilValue(SelectedItemsAtom);
   const unlocked = useUnlock();
+  const { itemTemplates } = useRecoilValue(ConfigurationAtom);
 
   return itemList.map((itemId) => (
     <Item
@@ -45,7 +51,7 @@ const ItemList = ({ itemMap: itemMapConfig }) => {
       setState={updateItem}
       isSelected={selectedItems.includes(itemId)}
       unlocked={unlocked}
-      itemMap={itemMapConfig}
+      itemMap={itemTemplates}
     />
   ));
 };

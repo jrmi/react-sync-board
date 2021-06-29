@@ -8,4 +8,5 @@ export {
   AllItemsSelector,
   BoardStateAtom,
   PanZoomRotateAtom,
+  ConfigurationAtom,
 } from "./atoms";

@@ -1,4 +1,14 @@
+import { nanoid } from "nanoid";
 import { atom, selector } from "recoil";
+
+export const ConfigurationAtom = atom({
+  key: "configuration",
+  default: {
+    itemTemplates: {},
+    actions: {},
+    uid: nanoid(),
+  },
+});
 
 export const AvailableItemListAtom = atom({
   key: "availableItemList",

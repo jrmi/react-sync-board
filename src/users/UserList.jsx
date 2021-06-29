@@ -38,7 +38,7 @@ const UserListItem = styled.li`
   }
 `;
 
-export const Users = () => {
+export const Users = ({ maxDisplayedUsers = 3 }) => {
   const { t } = useTranslation();
   const { currentUser, setCurrentUser, localUsers: users } = useUsers();
   const [openUserlist, setOpenUserList] = React.useState(false);
@@ -57,7 +57,7 @@ export const Users = () => {
           />
         </InlineUserListItem>
       ))}
-      {users.length > 3 && (
+      {users.length > maxDisplayedUsers && (
         <InlineUserListItem key="last">
           <div style={{ display: "inline" }}>
             <Touch

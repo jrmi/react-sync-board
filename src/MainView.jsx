@@ -1,15 +1,16 @@
 import React from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
-import { RecoilRoot, useSetRecoilState } from "recoil";
+import { RecoilRoot, useSetRecoilState, useRecoilState } from "recoil";
 import { QueryClientProvider, QueryClient } from "react-query";
 
+import { nanoid } from "nanoid";
 import { C2CProvider } from "./hooks/useC2C";
 
-import { BoardConfigAtom, Board } from "./board";
+import { BoardConfigAtom, ConfigurationAtom, Board } from "./board";
 
 import SelectedItemsPane from "./SelectedItemsPane";
-import { useUsers } from "./users";
+import { SubscribeUserEvents, useUsers } from "./users";
 import Touch from "./ui/Touch";
 
 import { MediaLibraryProvider } from "./mediaLibrary";
@@ -49,7 +50,9 @@ const StyledBoardView = styled.div.attrs(() => ({ className: "sync-board" }))`
   --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
 `;
 
-const BoardContainer = styled.div`config
+const BoardContainer = styled.div.attrs(() => ({
+  className: "sync-board-container",
+}))`
   position: relative;
   width: 100%;
   height: 100%;
@@ -99,7 +102,6 @@ const emptyMap = {};
 const defaultBoard = {
   size: 1000,
 };
-// const NullComponent = () => null;
 
 const MainView = ({
   boardConfig: initialBoardConfig = defaultBoard,
@@ -107,18 +109,20 @@ const MainView = ({
   edit: editMode = false,
   mediaLibraries = emptyList,
   mediaHandlers = emptyMap,
-  itemMap = emptyList,
-  actionMap = emptyMap,
+  itemTemplates = emptyMap,
+  actions = emptyMap,
   ItemFormComponent = null,
   BoardFormComponent = null,
 }) => {
   const { t } = useTranslation();
+
   const { currentUser, localUsers: users } = useUsers();
 
   const [moveFirst, setMoveFirst] = React.useState(false);
   const [hideMenu, setHideMenu] = React.useState(false);
 
   const setBoardConfig = useSetRecoilState(BoardConfigAtom);
+  const [{ uid }, setSettings] = useRecoilState(ConfigurationAtom);
   const { setItemList } = useItems();
 
   React.useEffect(() => {
@@ -142,6 +146,13 @@ const MainView = ({
   }, [initialBoardConfig, setBoardConfig]);
 
   React.useEffect(() => {
+    setSettings({
+      itemTemplates,
+      actions,
+    });
+  }, [actions, itemTemplates, setSettings]);
+
+  React.useEffect(() => {
     setItemList(initialItems);
   }, [initialItems, setItemList]);
 
@@ -153,18 +164,14 @@ const MainView = ({
             <Board
               user={currentUser}
               users={users}
-              itemMap={itemMap}
               moveFirst={moveFirst}
               hideMenu={hideMenu}
             />
           </ImageDropNPaste>
           <SelectedItemsPane
             hideMenu={hideMenu}
-            itemMap={itemMap}
-            actionMap={actionMap}
             ItemFormComponent={ItemFormComponent}
           />
-          <div id="portal-container" />
         </BoardContainer>
         <ActionBar>
           {!editMode && <MessageButton />}
@@ -196,23 +203,31 @@ const MainView = ({
             icon={hideMenu ? "eye-with-line" : "eye"}
           />
           <div className="spacer" />
-          <AddItemButton itemMap={itemMap} />
+          <AddItemButton />
         </ActionBar>
       </MediaLibraryProvider>
+      <div id={`portal-container-${uid}`} />
     </StyledBoardView>
   );
 };
 
 const queryClient = new QueryClient();
 
-const RecoilMainRoot = (props) => (
-  <RecoilRoot>
-    <QueryClientProvider client={queryClient}>
-      <C2CProvider room={"test"} channel="board">
-        <MainView {...props} />
-      </C2CProvider>
-    </QueryClientProvider>
-  </RecoilRoot>
-);
+const RecoilMainRoot = (props) => {
+  const [room] = React.useState(props.room || nanoid());
+  const [session] = React.useState(props.session || nanoid());
+  return (
+    <RecoilRoot>
+      <QueryClientProvider client={queryClient}>
+        <C2CProvider room={room} channel="room">
+          <SubscribeUserEvents />
+          <C2CProvider room={session} channel="board">
+            <MainView {...props} />
+          </C2CProvider>
+        </C2CProvider>
+      </QueryClientProvider>
+    </RecoilRoot>
+  );
+};
 
 export default RecoilMainRoot;

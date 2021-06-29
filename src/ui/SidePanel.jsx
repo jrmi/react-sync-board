@@ -2,6 +2,8 @@ import React from "react";
 import styled from "styled-components";
 import { useTranslation } from "react-i18next";
 import usePortal from "react-useportal";
+import { useRecoilValue } from "recoil";
+import { ConfigurationAtom } from "../board";
 
 const Overlay = styled.div`
   position: absolute;
@@ -107,9 +109,11 @@ const SidePanel = ({
   width,
 }) => {
   const { t } = useTranslation();
+  const { uid } = useRecoilValue(ConfigurationAtom);
+
   const { ref, Portal, openPortal, closePortal, isOpen } = usePortal({
     closeOnOutsideClick: modal,
-    bindTo: document.getElementById("portal-container"),
+    bindTo: document.getElementById(`portal-container-${uid}`),
   });
 
   const onAnimationEnd = React.useCallback(() => {

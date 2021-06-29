@@ -7,7 +7,7 @@ import { useTranslation } from "react-i18next";
 
 import { insideClass, hasClass } from "./utils";
 import SidePanel from "./ui/SidePanel";
-import { useItemActions } from "./board/Items/useItemActions";
+import useAvailableActions from "./board/Items/useAvailableActions";
 import {
   SelectedItemsAtom,
   PanZoomRotateAtom,
@@ -15,6 +15,7 @@ import {
   ItemMapAtom,
 } from "./board";
 import ItemFormFactory from "./board/Items/ItemFormFactory";
+import useItemActions from "./board/Items/useItemActions";
 
 // import { confirmAlert } from "react-confirm-alert";
 
@@ -196,13 +197,11 @@ const BoundingBox = ({
   return <BoundingBoxZone {...boundingBoxLast} />;
 };
 
-const SelectedItemsPane = ({
-  hideMenu = false,
-  actionMap,
-  itemMap,
-  ItemFormComponent,
-}) => {
-  const { availableActions } = useItemActions(itemMap);
+const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
+  const actionMap = useItemActions();
+  console.log(actionMap);
+
+  const { availableActions } = useAvailableActions();
   const [showEdit, setShowEdit] = React.useState(false);
 
   const { t } = useTranslation();
@@ -223,6 +222,7 @@ const SelectedItemsPane = ({
           e.key === shortcut &&
           showEdit === !!whileEdit
         ) {
+          // here
           action();
         }
       });
@@ -251,8 +251,10 @@ const SelectedItemsPane = ({
 
       if (e.ctrlKey && filteredActions.length > 1) {
         // Use second action
+        // here
         actionMap[filteredActions[1]].action();
       } else if (filteredActions.length > 0) {
+        // here
         actionMap[filteredActions[0]].action();
       }
     },
@@ -295,6 +297,7 @@ const SelectedItemsPane = ({
   if (selectedItems.length > 1) {
     title = t("Edit all items");
   }
+  console.log(availableActions);
 
   return (
     <>
@@ -340,6 +343,7 @@ const SelectedItemsPane = ({
                 <button
                   className="button clear icon-only"
                   key={action}
+                  // here
                   onClick={() => handler()}
                   title={label + (shortcut ? ` (${shortcut})` : "")}
                 >

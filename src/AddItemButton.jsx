@@ -4,7 +4,7 @@ import { useRecoilValue } from "recoil";
 import { useTranslation } from "react-i18next";
 import ItemLibrary from "./ItemLibrary";
 
-import { AvailableItemListAtom } from "./board";
+import { AvailableItemListAtom, ConfigurationAtom } from "./board";
 
 import Touch from "./ui/Touch";
 import SidePanel from "./ui/SidePanel";
@@ -24,23 +24,24 @@ const migrateAvailableItemList = (old) => {
   }));
 };
 
-const adaptItem = (item, itemMap) => ({
+const adaptItem = (item, itemTemplates) => ({
   type: item.type,
   template: item,
-  component: itemMap[item.type].component,
-  name: item.name || item.label || item.text || itemMap[item.type].name,
+  component: itemTemplates[item.type].component,
+  name: item.name || item.label || item.text || itemTemplates[item.type].name,
   uid: nanoid(),
 });
 
-const adaptAvailableItems = (nodes, itemMap) =>
+const adaptAvailableItems = (nodes, itemTemplates) =>
   nodes.map((node) => {
     if (node.type) {
-      return adaptItem(node, itemMap);
+      return adaptItem(node, itemTemplates);
     }
-    return { ...node, items: adaptAvailableItems(node.items, itemMap) };
+    return { ...node, items: adaptAvailableItems(node.items, itemTemplates) };
   });
 
-const AddItemButton = ({ itemMap }) => {
+const AddItemButton = () => {
+  const { itemTemplates } = useRecoilValue(ConfigurationAtom);
   const { t } = useTranslation();
 
   const availableItemList = useRecoilValue(AvailableItemListAtom);
@@ -49,12 +50,12 @@ const AddItemButton = ({ itemMap }) => {
 
   const defaultItemLibrary = React.useMemo(
     () =>
-      Object.keys(itemMap).map((key) => ({
+      Object.keys(itemTemplates).map((key) => ({
         type: key,
-        ...itemMap[key],
+        ...itemTemplates[key],
         uid: nanoid(),
       })),
-    [itemMap]
+    [itemTemplates]
   );
 
   const availableItemLibrary = React.useMemo(() => {
@@ -62,8 +63,8 @@ const AddItemButton = ({ itemMap }) => {
     if (itemList.length && itemList[0].groupId) {
       itemList = migrateAvailableItemList(itemList);
     }
-    return adaptAvailableItems(itemList, itemMap);
-  }, [availableItemList, itemMap]);
+    return adaptAvailableItems(itemList, itemTemplates);
+  }, [availableItemList, itemTemplates]);
 
   return (
     <>
