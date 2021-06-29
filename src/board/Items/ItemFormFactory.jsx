@@ -21,6 +21,7 @@ const ItemFormFactory = ({ ItemFormComponent }) => {
 
   const onSubmitHandler = React.useCallback(
     (formValues) => {
+      console.log("gooo", formValues);
       batchUpdateItems(selectedItems, (item) => ({
         ...item,
         ...formValues,

@@ -5,7 +5,7 @@ import styled from "styled-components";
 
 const Color = styled.div`
   background-color: ${({ color }) => color};
-  border: 1px solid #00000022;
+  border: 1px solid #ffffff22;
   width: 20px;
   height: 20px;
   margin: 5px;

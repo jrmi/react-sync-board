@@ -98,6 +98,7 @@ const ActionBar = styled.div`
 
 const emptyList = [];
 const emptyMap = {};
+const NullComponent = () => null;
 
 const defaultBoard = {
   size: 1000,
@@ -111,8 +112,8 @@ const MainView = ({
   mediaHandlers = emptyMap,
   itemTemplates = emptyMap,
   actions = emptyMap,
-  ItemFormComponent = null,
-  BoardFormComponent = null,
+  ItemFormComponent = NullComponent,
+  BoardFormComponent = NullComponent,
 }) => {
   const { t } = useTranslation();
 

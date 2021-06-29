@@ -9,16 +9,18 @@ const useItemActions = () => {
   const { actions } = useRecoilValue(ConfigurationAtom);
 
   const actionWrapper = useRecoilCallback(
-    ({ snapshot }) => async (action, itemIds, config = {}) => {
-      const currentItemMap = await snapshot.getPromise(ItemMapAtom);
-      let items;
-      if (itemIds) {
-        items = itemIds.map((id) => currentItemMap[id]);
-      } else {
-        const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
-        items = selectedItems.map((id) => currentItemMap[id]);
-      }
-      await action(items, config, baseActions);
+    ({ snapshot }) => async (action, givenItemIds, config = {}) => {
+      const itemIds =
+        givenItemIds || (await snapshot.getPromise(SelectedItemsAtom));
+
+      let currentItemMap;
+      const getItem = async (id) => {
+        if (!currentItemMap) {
+          currentItemMap = await snapshot.getPromise(ItemMapAtom);
+        }
+        return currentItemMap[id];
+      };
+      await action(itemIds, config, { ...baseActions, getItem });
     },
     []
   );

@@ -199,7 +199,6 @@ const BoundingBox = ({
 
 const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
   const actionMap = useItemActions();
-  console.log(actionMap);
 
   const { availableActions } = useAvailableActions();
   const [showEdit, setShowEdit] = React.useState(false);
@@ -297,7 +296,6 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
   if (selectedItems.length > 1) {
     title = t("Edit all items");
   }
-  console.log(availableActions);
 
   return (
     <>
