@@ -167,7 +167,7 @@ const MainView = ({
   }, [initialItems, setItemList]);
 
   return (
-    <StyledBoardView>
+    <StyledBoardView id={uid}>
       <MediaLibraryProvider libraries={mediaLibraries} {...mediaHandlers}>
         <BoardContainer>
           <ImageDropNPaste>
