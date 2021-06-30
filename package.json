@@ -1,8 +1,8 @@
 {
-  "name": "react-syncboard",
+  "name": "react-sync-board",
   "version": "1.0.0",
   "description": "",
-  "main": "lib/react-syncboard.js",
+  "main": "lib/react-sync-board.js",
   "scripts": {
     "start": "npm run storybook",
     "build": "webpack --config webpack.config.js",

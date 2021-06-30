@@ -18,13 +18,13 @@ module.exports = (env, argv) => {
       disableHostCheck: true,
     },
     entry: {
-      "react-syncboard": ["./src/index.js"],
+      "react-sync-board": ["./src/index.js"],
     },
     output: {
       path: path.join(__dirname, "lib"),
       publicPath: "/",
       filename: argv.mode === "production" ? `[name].js` : `[name].js`,
-      library: "react-syncboard",
+      library: "react-sync-board",
       libraryExport: "default",
       libraryTarget: "umd", //for both browser and node.js
       globalObject: "this", //for both browser and node.js
