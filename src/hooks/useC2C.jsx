@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 
 import Waiter from "../ui/Waiter";
 
-const contextMap = {};
+const Context = React.createContext();
 
 export const C2CProvider = ({ room, channel = "default", children }) => {
   const { t } = useTranslation();
@@ -15,6 +15,7 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
   const [c2c, setC2c] = React.useState(null);
   const roomRef = React.useRef(null);
   const mountedRef = React.useRef(false);
+  const existingC2C = useContext(Context);
 
   React.useEffect(() => {
     mountedRef.current = true;
@@ -22,14 +23,6 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
       mountedRef.current = false;
     };
   }, []);
-
-  if (!contextMap[channel]) {
-    contextMap[channel] = React.createContext({
-      joined: false,
-      isMaster: false,
-    });
-  }
-  const Context = contextMap[channel];
 
   React.useEffect(() => {
     if (!socket) {
@@ -55,7 +48,6 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
       return null;
     }
     if (!socket.connected) {
-      console.log("tost");
       socket.connect();
     }
     join({
@@ -86,20 +78,14 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
   }
 
   return (
-    <Context.Provider value={{ c2c, joined, isMaster, room }}>
+    <Context.Provider
+      value={{ ...existingC2C, [channel]: { c2c, joined, isMaster, room } }}
+    >
       {children}
     </Context.Provider>
   );
 };
 
-const useC2C = (channel = "default") => {
-  const Context = contextMap[channel];
-  if (!Context) {
-    console.warn(
-      `C2C channel ${channel} doesn't exits. Unsure you added the provider.`
-    );
-  }
-  return useContext(Context);
-};
+const useC2C = (channel = "default") => useContext(Context)[channel];
 
 export default useC2C;

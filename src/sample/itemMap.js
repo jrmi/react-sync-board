@@ -1,5 +1,6 @@
 // import i18n from "../i18n";
 
+import { nanoid } from "nanoid";
 import Rect from "./Rect";
 import Cube from "./Cube";
 import Round from "./Round";
@@ -16,7 +17,7 @@ const i18n = {
   t: (i) => i,
 };
 
-export default {
+const itemTemplates = {
   rect: {
     component: Rect,
     defaultActions: ["lock", "remove"],
@@ -98,3 +99,11 @@ export default {
     template: {},
   },
 };
+
+export const itemLibrary = Object.keys(itemTemplates).map((key) => ({
+  type: key,
+  ...itemTemplates[key],
+  uid: nanoid(),
+}));
+
+export default itemTemplates;

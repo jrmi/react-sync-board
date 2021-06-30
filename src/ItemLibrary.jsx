@@ -173,7 +173,6 @@ const filterItems = (filter, nodes) =>
   }, []);
 
 const ItemLibrary = ({ items }) => {
-  console.log(items);
   const { t } = useTranslation();
   const [filter, setFilter] = React.useState("");
   const [filteredItems, setFilteredItems] = React.useState(items);

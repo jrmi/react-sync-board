@@ -111,6 +111,7 @@ const MainView = ({
   mediaLibraries = emptyList,
   mediaHandlers = emptyMap,
   itemTemplates = emptyMap,
+  itemLibraries = emptyList,
   actions = emptyMap,
   ItemFormComponent = NullComponent,
   BoardFormComponent = NullComponent,
@@ -147,11 +148,19 @@ const MainView = ({
   }, [initialBoardConfig, setBoardConfig]);
 
   React.useEffect(() => {
-    setSettings({
+    setSettings((prev) => ({
+      ...prev,
       itemTemplates,
       actions,
-    });
+    }));
   }, [actions, itemTemplates, setSettings]);
+
+  React.useEffect(() => {
+    setSettings((prev) => ({
+      ...prev,
+      uid: nanoid(),
+    }));
+  }, [setSettings]);
 
   React.useEffect(() => {
     setItemList(initialItems);
@@ -204,7 +213,7 @@ const MainView = ({
             icon={hideMenu ? "eye-with-line" : "eye"}
           />
           <div className="spacer" />
-          <AddItemButton />
+          <AddItemButton itemLibraries={itemLibraries} />
         </ActionBar>
       </MediaLibraryProvider>
       <div id={`portal-container-${uid}`} />
@@ -217,6 +226,7 @@ const queryClient = new QueryClient();
 const RecoilMainRoot = (props) => {
   const [room] = React.useState(props.room || nanoid());
   const [session] = React.useState(props.session || nanoid());
+
   return (
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>

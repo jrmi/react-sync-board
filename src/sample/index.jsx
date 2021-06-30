@@ -1,4 +1,4 @@
-export { default as itemMap } from "./itemMap";
+export { default as itemMap, itemLibrary } from "./itemMap";
 
 export { default as actionMap } from "./actionMap";
 
