@@ -4,8 +4,8 @@ import { nanoid } from "nanoid";
 import MainView from "./MainView";
 import { itemMap, ItemForm, actionMap, itemLibrary } from "./sample";
 
-const SOCKET_URL = "http://192.168.0.14:4051";
-const SOCKET_PATH = "/socket.io";
+const { SOCKET_URL } = process.env;
+const SOCKET_PATH = process.env.SOCKET_PATH || "/socket.io";
 
 const SOCKET_OPTIONS = {
   forceNew: true,
@@ -36,7 +36,7 @@ export const OneView = () => (
   <WithSocketIO>
     <div
       style={{
-        width: "800px",
+        width: "100%",
         height: "500px",
         position: "relative",
         border: "1px solid black",

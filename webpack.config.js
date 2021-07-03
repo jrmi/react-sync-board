@@ -20,6 +20,7 @@ module.exports = (env, argv) => {
     entry: {
       "react-sync-board": ["./src/index.js"],
     },
+    externals: ["react", "react-dom"],
     output: {
       path: path.join(__dirname, "lib"),
       publicPath: "/",
