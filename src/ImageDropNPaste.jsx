@@ -2,7 +2,7 @@ import React from "react";
 import { useDropzone } from "react-dropzone";
 import { nanoid } from "nanoid";
 import { useRecoilCallback } from "recoil";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 
 import { PanZoomRotateAtom } from "./board";
 import { useItems } from "./board/Items";

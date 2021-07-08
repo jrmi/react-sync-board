@@ -1,6 +1,6 @@
 import React from "react";
 import { SketchPicker } from "react-color";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 import styled from "styled-components";
 
 import Modal from "../ui/Modal";

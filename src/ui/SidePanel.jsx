@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 import usePortal from "react-useportal";
 import { useRecoilValue } from "recoil";
 import { ConfigurationAtom } from "../board";

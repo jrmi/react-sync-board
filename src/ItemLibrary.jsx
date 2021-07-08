@@ -1,5 +1,5 @@
 import React, { memo } from "react";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 import { nanoid } from "nanoid";
 import styled from "styled-components";
 import { useRecoilCallback } from "recoil";

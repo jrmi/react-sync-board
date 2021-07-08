@@ -3,7 +3,7 @@ import styled from "styled-components";
 import { toast } from "react-toastify";
 import { useRecoilValue, useRecoilCallback } from "recoil";
 import debounce from "lodash.debounce";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 
 import { insideClass, hasClass } from "./utils";
 import SidePanel from "./ui/SidePanel";

@@ -1,7 +1,7 @@
 import React, { useContext } from "react";
 import { useSocket } from "@scripters/use-socket.io";
 import { join } from "client2client.io";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 
 import Waiter from "../ui/Waiter";
 

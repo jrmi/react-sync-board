@@ -36,6 +36,14 @@
   },
   "settings": {
     "import/resolver": {
+      "alias": {
+        "map": [
+          [
+            "@",
+            "./src"
+          ]
+        ]
+      },
       "node": {
         "extensions": [
           ".js",

@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import styled from "styled-components";
 import { confirmAlert } from "react-confirm-alert";
