@@ -4,38 +4,31 @@ const path = require("path");
 const TerserPlugin = require("terser-webpack-plugin");
 const webpack = require("webpack");
 const ESLintPlugin = require("eslint-webpack-plugin");
+const BundleAnalyzerPlugin = require("webpack-bundle-analyzer")
+  .BundleAnalyzerPlugin;
 
 module.exports = (env, argv) => {
   const conf = {
     mode: "development",
-    devServer: {
-      open: true,
-      openPage: "index.html",
-      contentBase: path.join(__dirname, "example"),
-      watchContentBase: true,
-      port: 3033,
-      host: argv.mode === "production" ? `localhost` : `localhost`,
-      disableHostCheck: true,
-    },
     entry: {
       "react-sync-board": ["./src/index.js"],
     },
-    externals: ["react", "react-dom"],
+    externals: ["react", "react-dom", "lodash", "lodash-es"],
     output: {
       path: path.join(__dirname, "lib"),
-      publicPath: "/",
-      filename: argv.mode === "production" ? `[name].js` : `[name].js`,
-      library: "react-sync-board",
-      libraryExport: "default",
-      libraryTarget: "umd", //for both browser and node.js
-      globalObject: "this", //for both browser and node.js
-      umdNamedDefine: true,
-      auxiliaryComment: {
+      publicPath: "lib/",
+      filename: "index.js",
+      // library: "react-sync-board",
+      // libraryExport: "default",
+      // libraryTarget: "umd", //for both browser and node.js
+      // globalObject: "this", //for both browser and node.js
+      // umdNamedDefine: true,
+      /* auxiliaryComment: {
         root: "for Root",
         commonjs: "for CommonJS environment",
         commonjs2: "for CommonJS2 environment",
         amd: "for AMD environment",
-      },
+      },*/
     },
 
     optimization: {
@@ -88,6 +81,7 @@ module.exports = (env, argv) => {
     },
     resolve: {
       extensions: ["...", ".js", ".jsx"],
+      preferBuiltins: false,
       alias: {},
     },
     plugins: [
@@ -97,12 +91,9 @@ module.exports = (env, argv) => {
       new ESLintPlugin({
         extensions: [".js", ".jsx", ".json"],
       }),
+      //new BundleAnalyzerPlugin(),
     ],
   };
-
-  if (argv.mode !== "production") {
-    conf.devtool = "inline-source-map";
-  }
 
   return conf;
 };

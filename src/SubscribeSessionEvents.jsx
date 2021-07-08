@@ -13,13 +13,9 @@ export const SubscribeSessionEvents = ({ getSession, setSession }) => {
   React.useEffect(() => {
     const unsub = [];
     if (isMaster) {
-      c2c
-        .register("getSession", async () => {
-          return await getSession();
-        })
-        .then((unregister) => {
-          unsub.push(unregister);
-        });
+      c2c.register("getSession", getSession).then((unregister) => {
+        unsub.push(unregister);
+      });
     }
     return () => {
       unsub.forEach((u) => u());

@@ -44,23 +44,6 @@ export const isItemInsideElement = (itemElement, otherElem) => {
   });
 };
 
-/**
- * Shuffles array in place.
- * @param {Array} a items An array containing the items.
- */
-export const shuffle = (a) => {
-  // eslint-disable-next-line no-plusplus
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    // eslint-disable-next-line no-param-reassign
-    [a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-};
-
-export const randInt = (min, max) =>
-  Math.floor(Math.random() * (max - min + 1)) + min;
-
 const cleanWord = (word) => Diacritics.clean(word).toLowerCase();
 
 export const search = (term, string) => {

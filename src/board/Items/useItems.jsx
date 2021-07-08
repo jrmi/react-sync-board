@@ -2,7 +2,7 @@ import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import useC2C from "../../hooks/useC2C";
-import { ItemListAtom, SelectedItemsAtom, ItemMapAtom } from "..";
+import { ItemListAtom, SelectedItemsAtom, ItemMapAtom } from "../atoms";
 import useItemInteraction from "./useItemInteraction";
 
 const useItems = () => {
@@ -257,8 +257,14 @@ const useItems = () => {
         }
         return result;
       });
+      // Also reverse selected items
+      setSelectItems((prev) => {
+        const reversed = [...prev];
+        reversed.reverse();
+        return reversed;
+      });
     },
-    [setItemList, c2c]
+    [setItemList, c2c, setSelectItems]
   );
 
   const swapItems = useRecoilCallback(

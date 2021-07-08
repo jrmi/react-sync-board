@@ -1,5 +1,5 @@
 import React from "react";
-import { useTranslation } from "react-i18next";
+import useTranslation from "@/hooks/useTranslation";
 import ItemLibrary from "./ItemLibrary";
 
 import Touch from "./ui/Touch";
@@ -14,7 +14,6 @@ const AddItemButton = ({ itemLibraries }) => {
   React.useEffect(() => {
     setTab(itemLibraries[0]?.key || "standard");
   }, [itemLibraries]);
-  console.log(tab);
 
   return (
     <>

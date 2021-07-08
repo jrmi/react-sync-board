@@ -5,7 +5,7 @@ import intersection from "lodash.intersection";
 import { SelectedItemsAtom, ItemMapAtom } from "..";
 import { ConfigurationAtom } from "../atoms";
 
-export const getDefaultActionsFromItem = (item, itemMap) => {
+const getDefaultActionsFromItem = (item, itemMap) => {
   if (item.type in itemMap) {
     const actions = itemMap[item.type].defaultActions;
     if (typeof actions === "function") {
@@ -17,7 +17,7 @@ export const getDefaultActionsFromItem = (item, itemMap) => {
   return [];
 };
 
-export const getAvailableActionsFromItem = (item, itemMap) => {
+const getAvailableActionsFromItem = (item, itemMap) => {
   if (item.type in itemMap) {
     const actions = itemMap[item.type].availableActions;
     if (typeof actions === "function") {
@@ -29,7 +29,7 @@ export const getAvailableActionsFromItem = (item, itemMap) => {
   return [];
 };
 
-export const getActionsFromItem = (item, itemMap) => {
+const getActionsFromItem = (item, itemMap) => {
   const { actions = getDefaultActionsFromItem(item, itemMap) } = item;
   // Filter availableActions to keep same order
   return getAvailableActionsFromItem(item, itemMap).filter((action) =>
