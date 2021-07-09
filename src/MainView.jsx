@@ -226,7 +226,6 @@ const queryClient = new QueryClient();
 const RecoilMainRoot = (props) => {
   const [room] = React.useState(props.room || nanoid());
   const [session] = React.useState(props.session || nanoid());
-
   return (
     <RecoilRoot>
       <QueryClientProvider client={queryClient}>

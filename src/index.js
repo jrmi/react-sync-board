@@ -1,7 +1,5 @@
-import React from "react";
-
 import MainView from "./MainView";
-// import "./index.css";
+import "./index.css";
 
 export { default as MainView } from "./MainView";
 
@@ -15,5 +13,3 @@ export { default as useItemInteraction } from "./board/Items/useItemInteraction"
 export { ImageField } from "./mediaLibrary";
 
 export { useUsers, UserList } from "./users";
-
-window.React1 = React;

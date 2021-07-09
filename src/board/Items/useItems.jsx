@@ -338,7 +338,6 @@ const useItems = () => {
         return [...prevItemList, newItem.id];
       });
       if (sync) {
-        console.log("sync ");
         c2c.publish("insertItemBefore", [newItem, beforeId]);
       }
     },

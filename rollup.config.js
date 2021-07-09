@@ -5,18 +5,22 @@ import image from "@rollup/plugin-image";
 import commonjs from "@rollup/plugin-commonjs";
 import alias from "@rollup/plugin-alias";
 import path from "path";
-
+import css from "rollup-plugin-css-only";
 import pkg from "./package.json";
 
 const projectRootDir = path.resolve(__dirname);
 
 const input = ["src/index.js"];
-
 export default [
-  /* {
+  /*{
     // UMD
     input,
     plugins: [
+      alias({
+        entries: [
+          { find: "@", replacement: path.resolve(projectRootDir, "src") },
+        ],
+      }),
       commonjs(),
       nodeResolve({
         extensions: [".js", ".jsx"],
@@ -37,10 +41,16 @@ export default [
       exports: "named",
       sourcemap: true,
     },
-  }, */
+  },*/
   // ESM and CJS
   {
     input,
+    external: [
+      "react",
+      "react-dom",
+      "@scripters/use-socket.io",
+      "styled-components",
+    ],
     plugins: [
       alias({
         entries: [
@@ -54,6 +64,7 @@ export default [
         preferBuiltins: false,
         browser: true,
       }),
+      css({ output: "bundle.css" }),
       image(),
     ],
     output: [
@@ -66,7 +77,7 @@ export default [
           crypto: "crypto",
         },
       },
-      /*{
+      /* {
         dir: "dist/cjs",
         format: "cjs",
         exports: "named",

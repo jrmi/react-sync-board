@@ -50,6 +50,7 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
     if (!socket.connected) {
       socket.connect();
     }
+    console.log(`Try to connect to room ${room} on channel ${channel}`);
     join({
       socket,
       room,
