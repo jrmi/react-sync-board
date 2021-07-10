@@ -81,14 +81,12 @@ const NewItem = memo(({ type, template, component: Component, name }) => {
   );
 
   return (
-    <>
-      <StyledItem onClick={addItem}>
-        <div>
-          <Component {...template} width={size} height={size} size={size} />
-          <span>{name}</span>
-        </div>
-      </StyledItem>
-    </>
+    <StyledItem onClick={addItem}>
+      <div>
+        <Component {...template} width={size} height={size} size={size} />
+        <span>{name}</span>
+      </div>
+    </StyledItem>
   );
 });
 

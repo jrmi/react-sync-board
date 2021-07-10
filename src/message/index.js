@@ -1,1 +1,1 @@
-export { default } from "./MessageButton";
+export { default } from "./useMessage";

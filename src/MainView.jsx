@@ -1,25 +1,19 @@
 import React from "react";
 import styled from "@emotion/styled";
-import useTranslation from "@/hooks/useTranslation";
 import { RecoilRoot, useSetRecoilState, useRecoilState } from "recoil";
 import { QueryClientProvider, QueryClient } from "react-query";
-
 import { nanoid } from "nanoid";
-import { C2CProvider } from "./hooks/useC2C";
+
+import useC2C, { C2CProvider } from "@/hooks/useC2C";
 
 import { BoardConfigAtom, ConfigurationAtom, Board } from "./board";
 
 import SelectedItemsPane from "./SelectedItemsPane";
 import { SubscribeUserEvents, useUsers } from "./users";
-import Touch from "./ui/Touch";
 
-import { MediaLibraryProvider } from "./mediaLibrary";
-import ImageDropNPaste from "./ImageDropNPaste";
-import AddItemButton from "./AddItemButton";
-import MessageButton from "./message";
 import { insideClass } from "./utils";
-import EditInfoButton from "./EditInfoButton";
 import { useItems } from "./board/Items";
+import WatchItemsChange from "./WatchItemChange";
 
 const StyledBoardView = styled.div`
   overflow: hidden;
@@ -59,41 +53,6 @@ const BoardContainer = styled.div`
   background-color: var(--color-darkGrey);
 `;
 
-const ActionBar = styled.div`
-  position: absolute;
-  bottom: 1em;
-  right: 0em;
-  display: flex;
-  width: 100%;
-  text-shadow: 1px 1px 2px #222;
-  font-size: 0.8em;
-  pointer-events: none;
-
-  & > *:not(.spacer) {
-    padding: 0 1.5em;
-    pointer-events: all;
-  }
-
-  & .spacer {
-    flex: 1;
-  }
-
-  @media screen and (max-width: 640px) {
-    & > *:not(.spacer) {
-      padding: 0 0.5em;
-    }
-    & .spacer {
-      padding: 0;
-    }
-  }
-
-  @media screen and (max-width: 420px) {
-    & > *:not(.spacer) {
-      padding: 0 0.2em;
-    }
-  }
-`;
-
 const emptyList = [];
 const emptyMap = {};
 const NullComponent = () => null;
@@ -105,21 +64,19 @@ const defaultBoard = {
 const MainView = ({
   boardConfig: initialBoardConfig = defaultBoard,
   items: initialItems = emptyList,
-  edit: editMode = false,
-  mediaLibraries = emptyList,
-  mediaHandlers = emptyMap,
   itemTemplates = emptyMap,
-  itemLibraries = emptyList,
   actions = emptyMap,
+  onItemsChange,
+  onMasterChange,
   ItemFormComponent = NullComponent,
-  BoardFormComponent = NullComponent,
+  moveFirst = false,
+  hideMenu = false,
+  children,
+  style,
 }) => {
-  const { t } = useTranslation();
+  const { isMaster } = useC2C("board");
 
   const { currentUser, localUsers: users } = useUsers();
-
-  const [moveFirst, setMoveFirst] = React.useState(false);
-  const [hideMenu, setHideMenu] = React.useState(false);
 
   const setBoardConfig = useSetRecoilState(BoardConfigAtom);
   const [{ uid }, setSettings] = useRecoilState(ConfigurationAtom);
@@ -164,57 +121,29 @@ const MainView = ({
     setItemList(initialItems);
   }, [initialItems, setItemList]);
 
+  React.useEffect(() => {
+    if (onMasterChange) {
+      onMasterChange(isMaster);
+    }
+  }, [isMaster, onMasterChange]);
+
   return (
-    <StyledBoardView id={uid} className="sync-board">
-      <MediaLibraryProvider libraries={mediaLibraries} {...mediaHandlers}>
-        <BoardContainer className="sync-board-container">
-          <ImageDropNPaste>
-            <Board
-              user={currentUser}
-              users={users}
-              moveFirst={moveFirst}
-              hideMenu={hideMenu}
-            />
-          </ImageDropNPaste>
-          <SelectedItemsPane
-            hideMenu={hideMenu}
-            ItemFormComponent={ItemFormComponent}
-          />
-        </BoardContainer>
-        <ActionBar>
-          {!editMode && <MessageButton />}
-          {editMode && (
-            <EditInfoButton BoardFormComponent={BoardFormComponent} />
-          )}
-          <div className="spacer" />
-          <Touch
-            onClick={() => setMoveFirst(false)}
-            alt={t("Select mode")}
-            label={t("Select")}
-            title={t("Switch to select mode")}
-            icon={"mouse-pointer"}
-            active={!moveFirst}
-          />
-          <Touch
-            onClick={() => setMoveFirst(true)}
-            alt={t("Move mode")}
-            label={t("Move")}
-            title={t("Switch to move mode")}
-            icon={"hand"}
-            active={moveFirst}
-          />
-          <Touch
-            onClick={() => setHideMenu((prev) => !prev)}
-            alt={hideMenu ? t("Show menu") : t("Hide menu")}
-            label={hideMenu ? t("Show menu") : t("Hide menu")}
-            title={hideMenu ? t("Show action menu") : t("Hide action menu")}
-            icon={hideMenu ? "eye-with-line" : "eye"}
-          />
-          <div className="spacer" />
-          <AddItemButton itemLibraries={itemLibraries} />
-        </ActionBar>
-      </MediaLibraryProvider>
+    <StyledBoardView id={uid} className="sync-board" style={style}>
+      <BoardContainer className="sync-board-container">
+        <Board
+          user={currentUser}
+          users={users}
+          moveFirst={moveFirst}
+          hideMenu={hideMenu}
+        />
+        <SelectedItemsPane
+          hideMenu={hideMenu}
+          ItemFormComponent={ItemFormComponent}
+        />
+      </BoardContainer>
+      {children}
       <div id={`portal-container-${uid}`} />
+      {onItemsChange && <WatchItemsChange onChange={onItemsChange} />}
     </StyledBoardView>
   );
 };
