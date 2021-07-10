@@ -8,7 +8,17 @@ import Slider from "../ui/Slider";
 
 import itemMap from "./itemMap";
 
-import { getDefaultActionsFromItem } from "../board/Items/useAvailableActions";
+const getDefaultActionsFromItem = (item) => {
+  if (item.type in itemMap) {
+    const actions = itemMap[item.type].defaultActions;
+    if (typeof actions === "function") {
+      return actions(item);
+    }
+    return actions;
+  }
+
+  return [];
+};
 
 export const getFormFieldComponent = (type) => {
   if (type in itemMap) {

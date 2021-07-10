@@ -1,13 +1,13 @@
 import React from "react";
 import useTranslation from "@/hooks/useTranslation";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import UserConfig from "./UserConfig";
 import useUsers from "./useUsers";
 import Touch from "../ui/Touch";
 import DropDown from "../ui/DropDown";
 
-const InlineUserList = styled.ul.attrs(() => ({ className: "uk-card" }))`
+const InlineUserList = styled.ul`
   list-style: none;
   margin: 0;
   padding: 0;
@@ -21,7 +21,7 @@ const InlineUserListItem = styled.li`
   margin-right: 3px;
 `;
 
-const UserList = styled.ul.attrs(() => {})`
+const UserList = styled.ul`
   list-style: none;
   margin: 0;
   padding: 1em;
@@ -46,7 +46,7 @@ export const Users = ({ maxDisplayedUsers = 3 }) => {
   const firstUsers = users.slice(0, 3);
 
   return (
-    <InlineUserList>
+    <InlineUserList className="uk-card">
       {firstUsers.map((u, index) => (
         <InlineUserListItem key={u.id}>
           <UserConfig

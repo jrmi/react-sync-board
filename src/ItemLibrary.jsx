@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import useTranslation from "@/hooks/useTranslation";
 import { nanoid } from "nanoid";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { useRecoilCallback } from "recoil";
 import debounce from "lodash.debounce";
 

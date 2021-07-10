@@ -1,6 +1,6 @@
 import React from "react";
 import { Range } from "rc-slider";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import "rc-slider/assets/index.css";
 

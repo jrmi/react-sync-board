@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 const StyledMessage = styled.div`
   font-size: 1.2em;

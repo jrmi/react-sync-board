@@ -1,6 +1,6 @@
 import React from "react";
 import useTranslation from "@/hooks/useTranslation";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import useMessage from "./useMessage";
 import useNotify from "../hooks/useNotify";

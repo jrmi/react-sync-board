@@ -1,6 +1,6 @@
 import React from "react";
 import useTranslation from "@/hooks/useTranslation";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import MediaLibraryButton from "./MediaLibraryButton";
 import { media2Url } from "./utils";

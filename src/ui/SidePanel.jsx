@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import useTranslation from "@/hooks/useTranslation";
 import usePortal from "react-useportal";
 import { useRecoilValue } from "recoil";
@@ -80,7 +80,7 @@ const StyledSidePanel = styled.div`
       }
     }
 
-    & header:first-child {
+    & header:first-of-type {
       margin-top: 0;
     }
 

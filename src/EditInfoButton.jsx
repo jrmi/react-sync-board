@@ -1,6 +1,6 @@
 import React from "react";
 import useTranslation from "@/hooks/useTranslation";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { Form } from "react-final-form";
 
 import Touch from "./ui/Touch";

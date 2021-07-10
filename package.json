@@ -66,6 +66,8 @@
     "styled-components": ">= 5"
   },
   "dependencies": {
+    "@emotion/react": "^11.4.0",
+    "@emotion/styled": "^11.3.0",
     "chota": "^0.8.0",
     "client2client.io": "^2.0.3",
     "color2k": "^1.2.4",

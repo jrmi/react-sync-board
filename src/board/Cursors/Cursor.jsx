@@ -1,16 +1,13 @@
 import React from "react";
 
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import { readableColorIsBlack } from "color2k";
 
-const StyledCursor = styled.div.attrs(({ top, left }) => ({
-  style: {
-    transform: `translate(${left}px, ${top}px)`,
-  },
-}))`
+const StyledCursor = styled.div`
   top: 0;
   left: 0;
+  transform: ${({ top, left }) => `translate(${left}px, ${top}px)`};
   position: fixed;
   display: flex;
   flex-direction: row;

@@ -43,7 +43,6 @@ const ItemList = () => {
   const selectedItems = useRecoilValue(SelectedItemsAtom);
   const unlocked = useUnlock();
   const { itemTemplates } = useRecoilValue(ConfigurationAtom);
-  console.log(itemList);
 
   return itemList.map((itemId) => (
     <Item

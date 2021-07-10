@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import useTranslation from "@/hooks/useTranslation";
 import { RecoilRoot, useSetRecoilState, useRecoilState } from "recoil";
 import { QueryClientProvider, QueryClient } from "react-query";
@@ -21,7 +21,7 @@ import { insideClass } from "./utils";
 import EditInfoButton from "./EditInfoButton";
 import { useItems } from "./board/Items";
 
-const StyledBoardView = styled.div.attrs(() => ({ className: "sync-board" }))`
+const StyledBoardView = styled.div`
   overflow: hidden;
   position: absolute;
   top: 0;
@@ -50,9 +50,7 @@ const StyledBoardView = styled.div.attrs(() => ({ className: "sync-board" }))`
   --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
 `;
 
-const BoardContainer = styled.div.attrs(() => ({
-  className: "sync-board-container",
-}))`
+const BoardContainer = styled.div`
   position: relative;
   width: 100%;
   height: 100%;
@@ -167,9 +165,9 @@ const MainView = ({
   }, [initialItems, setItemList]);
 
   return (
-    <StyledBoardView id={uid}>
+    <StyledBoardView id={uid} className="sync-board">
       <MediaLibraryProvider libraries={mediaLibraries} {...mediaHandlers}>
-        <BoardContainer>
+        <BoardContainer className="sync-board-container">
           <ImageDropNPaste>
             <Board
               user={currentUser}

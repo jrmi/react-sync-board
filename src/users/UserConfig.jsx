@@ -1,7 +1,7 @@
 import React from "react";
 import { SketchPicker } from "react-color";
 import useTranslation from "@/hooks/useTranslation";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import Modal from "../ui/Modal";
 

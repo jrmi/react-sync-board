@@ -1,6 +1,6 @@
 import React from "react";
 import RCSlider from "rc-slider";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import "rc-slider/assets/index.css";
 
@@ -43,12 +43,10 @@ export const sliderStyling = {
 // Please check https://github.com/react-component/slider#user-content-common-api
 // for all available props.
 // RCSlider refers to the Slider component of the rc-react library.
-const Slider = (props) => {
-  return (
-    <StyledSlider className={props.className}>
-      <RCSlider {...props} {...sliderStyling} />
-    </StyledSlider>
-  );
-};
+const Slider = (props) => (
+  <StyledSlider className={props.className}>
+    <RCSlider {...props} {...sliderStyling} />
+  </StyledSlider>
+);
 
 export default Slider;

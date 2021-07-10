@@ -1,5 +1,5 @@
 import React from "react";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 const StyledWrapper = styled.div`
   display: flex;
@@ -15,9 +15,7 @@ const StyledWrapper = styled.div`
   }
 `;
 
-const StyledButton = styled.div.attrs(({ active }) => ({
-  className: active ? "active" : "",
-}))`
+const StyledButton = styled.div`
   border-radius: 100%;
   line-height: 1;
   text-decoration: none;
@@ -58,7 +56,7 @@ const Touch = ({ onClick, to, icon, title, alt, active, label, ...rest }) => {
 
   return (
     <StyledWrapper {...rest}>
-      <StyledButton onClick={handleClick} active={active}>
+      <StyledButton onClick={handleClick} className={active ? "active" : ""}>
         <img src={iconSrc} alt={alt} title={title} />
       </StyledButton>
       {label && <span>{label}</span>}

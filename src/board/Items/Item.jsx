@@ -1,32 +1,14 @@
 import React, { memo } from "react";
 
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import lockIcon from "../../images/lock.svg";
 
-const ItemWrapper = styled.div.attrs(({ rotation, locked, selected }) => {
-  let className = "item";
-  if (locked) {
-    className += " locked";
-  }
-  if (selected) {
-    className += " selected";
-  }
-  return {
-    className,
-    style: {
-      transform: `rotate(${rotation}deg)`,
-    },
-  };
-})`
+const ItemWrapper = styled.div`
   display: inline-block;
   transition: transform 150ms;
   user-select: none;
-
-  & .corner {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-  }
+  padding: 4px;
+  transform: rotate(${({ rotation }) => rotation}deg);
 
   & .top-left {
     top: 0;
@@ -44,8 +26,6 @@ const ItemWrapper = styled.div.attrs(({ rotation, locked, selected }) => {
     bottom: 0;
     right: 0;
   }
-
-  padding: 4px;
 
   &.selected {
     border: 2px dashed var(--color-primary);
@@ -79,7 +59,6 @@ const Item = ({
   itemMap,
   unlocked,
 }) => {
-  const itemRef = React.useRef(null);
   const isMountedRef = React.useRef(false);
   const animateRef = React.useRef(null);
 
@@ -105,15 +84,21 @@ const Item = ({
   const removeClass = (e) => {
     e.target.className = "";
   };
-
+  let className = "item";
+  if (locked) {
+    className += " locked";
+  }
+  if (isSelected) {
+    className += " selected";
+  }
   return (
     <ItemWrapper
       rotation={rotation}
       locked={locked && !unlocked}
       selected={isSelected}
-      ref={itemRef}
       layer={layer}
       id={id}
+      className={className}
     >
       <div
         ref={animateRef}
@@ -155,7 +140,7 @@ const MemoizedItem = memo(
 
 // Exclude positionning from memoization
 const PositionedItem = ({
-  state: { x, y, layer, moving, ...stateRest } = {},
+  state: { x = 0, y = 0, layer, moving, ...stateRest } = {},
   ...rest
 }) => (
   <div

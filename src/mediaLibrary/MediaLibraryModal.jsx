@@ -1,7 +1,7 @@
 import React from "react";
 import useTranslation from "@/hooks/useTranslation";
 import { useQuery, useMutation, useQueryClient } from "react-query";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 import { confirmAlert } from "react-confirm-alert";
 import { toast } from "react-toastify";
 import { useDropzone } from "react-dropzone";

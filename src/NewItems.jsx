@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 import { nanoid } from "nanoid";
 import { useRecoilCallback } from "recoil";
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 import { useItems } from "./board/Items";
 import { PanZoomRotateAtom } from "./board";
@@ -64,14 +64,12 @@ const NewItem = memo(({ type }) => {
 
 NewItem.displayName = "NewItem";
 
-const NewItems = () => {
-  return (
-    <ItemList>
-      {Object.keys(itemMap).map((type) => (
-        <NewItem type={type} key={type} />
-      ))}
-    </ItemList>
-  );
-};
+const NewItems = () => (
+  <ItemList>
+    {Object.keys(itemMap).map((type) => (
+      <NewItem type={type} key={type} />
+    ))}
+  </ItemList>
+);
 
 export default memo(NewItems);

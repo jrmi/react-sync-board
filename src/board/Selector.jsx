@@ -23,6 +23,9 @@ const SelectorZone = styled.div.attrs(({ top, left, height, width }) => ({
     width: `${width}px`,
   },
 }))`
+  transform: ${({ left, top }) => `translate(${left}px, ${top}px)`};
+  height: ${({ height }) => `${height}px`};
+  width: ${({ width }) => `${width}px`};
   z-index: 210;
   position: absolute;
   background-color: hsla(0, 40%, 50%, 10%);

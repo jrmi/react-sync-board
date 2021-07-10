@@ -1,7 +1,7 @@
 import React from "react";
 import { SketchPicker } from "react-color";
 
-import styled from "styled-components";
+import styled from "@emotion/styled";
 
 const Color = styled.div`
   background-color: ${({ color }) => color};
