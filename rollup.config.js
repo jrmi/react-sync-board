@@ -50,6 +50,7 @@ export default [
       "react-dom",
       "@scripters/use-socket.io",
       "styled-components",
+      "react-final-form",
     ],
     plugins: [
       alias({

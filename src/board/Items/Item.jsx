@@ -10,6 +10,12 @@ const ItemWrapper = styled.div`
   padding: 4px;
   transform: rotate(${({ rotation }) => rotation}deg);
 
+  & .corner {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+  }
+
   & .top-left {
     top: 0;
     left: 0;
@@ -41,7 +47,7 @@ const ItemWrapper = styled.div`
     top: 4px;
     right: 4px;
     opacity: 0.1;
-    background-image: url(${lockIcon});
+    background-image: url("${lockIcon}");
     background-size: cover;
     user-select: none;
   }

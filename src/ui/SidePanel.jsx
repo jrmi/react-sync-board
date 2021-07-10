@@ -132,11 +132,17 @@ const SidePanel = ({
 
   React.useEffect(() => {
     if (isOpen && modal) {
-      document.getElementById("root").classList.add("blurry");
+      document
+        .getElementById(uid)
+        .getElementsByClassName("sync-board-container")[0]
+        .classList.add("blurry");
     } else {
-      document.getElementById("root").classList.remove("blurry");
+      document
+        .getElementById(uid)
+        .getElementsByClassName("sync-board-container")[0]
+        .classList.remove("blurry");
     }
-  }, [isOpen, modal]);
+  }, [isOpen, modal, uid]);
 
   return (
     <Portal>
