@@ -14,6 +14,7 @@ import { SubscribeUserEvents, useUsers } from "./users";
 import { insideClass } from "./utils";
 import { useItemBaseActions } from "./board/Items";
 import WatchItemsChange from "./WatchItemChange";
+import { MessagesAtom, parseMessage } from "./message/useMessage";
 
 const StyledBoardView = styled.div`
   overflow: hidden;
@@ -62,8 +63,9 @@ const defaultBoard = {
 };
 
 const MainView = ({
-  boardConfig: initialBoardConfig = defaultBoard,
+  initialBoardConfig = defaultBoard,
   initialItems = emptyList,
+  initialMessages = emptyList,
   itemTemplates = emptyMap,
   actions = emptyMap,
   onItemsChange,
@@ -79,6 +81,7 @@ const MainView = ({
   const { currentUser, localUsers: users } = useUsers();
 
   const setBoardConfig = useSetRecoilState(BoardConfigAtom);
+  const setMessages = useSetRecoilState(MessagesAtom);
   const [{ uid }, setSettings] = useRecoilState(ConfigurationAtom);
   const { setItemList } = useItemBaseActions();
 
@@ -120,6 +123,10 @@ const MainView = ({
   React.useEffect(() => {
     setItemList(initialItems);
   }, [initialItems, setItemList]);
+
+  React.useEffect(() => {
+    setMessages(initialMessages.map((m)=>parseMessage(m)));
+  }, [initialMessages, setMessages]);
 
   React.useEffect(() => {
     if (onMasterChange) {

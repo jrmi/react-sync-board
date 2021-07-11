@@ -38,7 +38,7 @@ export const parseMessage = (message) => {
 
 const noop = () => {};
 
-const useMessage = (onMessage = noop) => {
+const useMessage = (onMessage = noop, subscribeEvents = false) => {
   const [messages, setMessagesState] = useRecoilState(MessagesAtom);
   const { c2c, isMaster } = useC2C("board");
   const { currentUser } = useUsers();
@@ -78,6 +78,7 @@ const useMessage = (onMessage = noop) => {
           setMessages(messageHistory);
         });
       }
+      return unsub;
     },
     [c2c, getMessage, isMaster, onMessage, setMessages, setMessagesState]
   );
@@ -85,12 +86,14 @@ const useMessage = (onMessage = noop) => {
   React.useEffect(() => {
     const unsub = [];
 
-    initEvents(unsub);
+    if (subscribeEvents) {
+      initEvents(unsub);
+    }
 
     return () => {
       unsub.forEach((u) => u());
     };
-  }, [initEvents]);
+  }, [initEvents, subscribeEvents]);
 
   const sendMessage = React.useCallback(
     (messageContent) => {
