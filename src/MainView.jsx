@@ -12,7 +12,7 @@ import SelectedItemsPane from "./SelectedItemsPane";
 import { SubscribeUserEvents, useUsers } from "./users";
 
 import { insideClass } from "./utils";
-import { useItems } from "./board/Items";
+import { useItemBaseActions } from "./board/Items";
 import WatchItemsChange from "./WatchItemChange";
 
 const StyledBoardView = styled.div`
@@ -63,7 +63,7 @@ const defaultBoard = {
 
 const MainView = ({
   boardConfig: initialBoardConfig = defaultBoard,
-  items: initialItems = emptyList,
+  initialItems = emptyList,
   itemTemplates = emptyMap,
   actions = emptyMap,
   onItemsChange,
@@ -80,7 +80,7 @@ const MainView = ({
 
   const setBoardConfig = useSetRecoilState(BoardConfigAtom);
   const [{ uid }, setSettings] = useRecoilState(ConfigurationAtom);
-  const { setItemList } = useItems();
+  const { setItemList } = useItemBaseActions();
 
   React.useEffect(() => {
     // Chrome-related issue.

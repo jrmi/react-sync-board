@@ -4,7 +4,7 @@ import { Form } from "react-final-form";
 
 import { ItemMapAtom, SelectedItemsAtom } from "../atoms";
 import AutoSave from "../../ui/formUtils/AutoSave";
-import { useItems } from ".";
+import { useItemBaseActions } from ".";
 
 export const getFormFieldComponent = (type, itemMap) => {
   if (type in itemMap) {
@@ -14,7 +14,7 @@ export const getFormFieldComponent = (type, itemMap) => {
 };
 
 const ItemFormFactory = ({ ItemFormComponent }) => {
-  const { batchUpdateItems } = useItems();
+  const { batchUpdateItems } = useItemBaseActions();
 
   const selectedItems = useRecoilValue(SelectedItemsAtom);
   const itemMap = useRecoilValue(ItemMapAtom);

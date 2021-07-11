@@ -2,10 +2,10 @@ import React from "react";
 import { useRecoilValue, useRecoilCallback } from "recoil";
 
 import { ConfigurationAtom, ItemMapAtom, SelectedItemsAtom } from "../atoms";
-import useItems from "./useItems";
+import useItemBaseActions from "./useItemBaseActions";
 
 const useItemActions = () => {
-  const baseActions = useItems();
+  const baseActions = useItemBaseActions();
   const { actions } = useRecoilValue(ConfigurationAtom);
 
   const actionWrapper = useRecoilCallback(

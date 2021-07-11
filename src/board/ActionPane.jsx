@@ -7,13 +7,13 @@ import {
   PanZoomRotateAtom,
   BoardConfigAtom,
 } from "./atoms";
-import { useItems } from "./Items";
+import { useItemBaseActions } from "./Items";
 import { insideClass, hasClass } from "../utils";
 
 import Gesture from "./Gesture";
 
 const ActionPane = ({ children }) => {
-  const { moveItems, placeItems } = useItems();
+  const { moveItems, placeItems } = useItemBaseActions();
 
   const setSelectedItems = useSetRecoilState(SelectedItemsAtom);
   const setBoardState = useSetRecoilState(BoardStateAtom);

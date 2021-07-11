@@ -1,7 +1,7 @@
 import React from "react";
 import { useRecoilValue } from "recoil";
 import Item from "./Item";
-import useItems from "./useItems";
+import useItemBaseActions from "./useItemBaseActions";
 
 import {
   ConfigurationAtom,
@@ -37,7 +37,7 @@ const useUnlock = () => {
 };
 
 const ItemList = () => {
-  const { updateItem } = useItems();
+  const { updateItem } = useItemBaseActions();
   const itemList = useRecoilValue(ItemListAtom);
   const itemMap = useRecoilValue(ItemMapAtom);
   const selectedItems = useRecoilValue(SelectedItemsAtom);

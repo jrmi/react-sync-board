@@ -2,10 +2,15 @@ import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import useC2C from "../../hooks/useC2C";
-import { ItemListAtom, SelectedItemsAtom, ItemMapAtom } from "../atoms";
+import {
+  ItemListAtom,
+  SelectedItemsAtom,
+  ItemMapAtom,
+  PanZoomRotateAtom,
+} from "../atoms";
 import useItemInteraction from "./useItemInteraction";
 
-const useItems = () => {
+const useItemBaseActions = () => {
   const { c2c } = useC2C("board");
   const { call: callPlaceInteractions } = useItemInteraction("place");
 
@@ -71,8 +76,8 @@ const useItems = () => {
 
           result[id] = {
             ...item,
-            x: item.x + posDelta.x,
-            y: item.y + posDelta.y,
+            x: (item.x || 0) + posDelta.x,
+            y: (item.y || 0) + posDelta.y,
             moving: true,
           };
         });
@@ -321,7 +326,16 @@ const useItems = () => {
   );
 
   const insertItemBefore = useRecoilCallback(
-    () => (newItem, beforeId, sync = true) => {
+    ({ snapshot }) => async (itemToInsert, beforeId, sync = true) => {
+      const newItem = { ...itemToInsert };
+      if (newItem.x === undefined && !newItem.Y === undefined) {
+        const { centerX, centerY } = await snapshot.getPromise(
+          PanZoomRotateAtom
+        );
+        newItem.x = centerX;
+        newItem.y = centerY;
+      }
+
       setItemMap((prevItemMap) => ({
         ...prevItemMap,
         [newItem.id]: newItem,
@@ -386,4 +400,4 @@ const useItems = () => {
   };
 };
 
-export default useItems;
+export default useItemBaseActions;

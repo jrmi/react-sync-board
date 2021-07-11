@@ -5,7 +5,7 @@ import styled from "@emotion/styled";
 import { useRecoilCallback } from "recoil";
 import debounce from "lodash.debounce";
 
-import { useItems } from "./board/Items";
+import { useItemBaseActions } from "./board/Items";
 import useToggle from "./hooks/useToggle";
 import { search } from "./utils";
 
@@ -64,21 +64,15 @@ const StyledItem = styled.li`
 const size = 60;
 
 const NewItem = memo(({ type, template, component: Component, name }) => {
-  const { pushItem } = useItems();
+  const { pushItem } = useItemBaseActions();
 
-  const addItem = useRecoilCallback(
-    ({ snapshot }) => async () => {
-      const { centerX, centerY } = await snapshot.getPromise(PanZoomRotateAtom);
-      pushItem({
-        ...template,
-        x: centerX,
-        y: centerY,
-        id: nanoid(),
-        type,
-      });
-    },
-    [pushItem, template, type]
-  );
+  const addItem = React.useCallback(async () => {
+    pushItem({
+      ...template,
+      id: nanoid(),
+      type,
+    });
+  }, [pushItem, template, type]);
 
   return (
     <StyledItem onClick={addItem}>
@@ -95,7 +89,7 @@ NewItem.displayName = "NewItem";
 const SubItemList = ({ name, items }) => {
   const { t } = useTranslation();
   const [open, toggleOpen] = useToggle(false);
-  const { pushItem } = useItems();
+  const { pushItem } = useItemBaseActions();
 
   const addItems = useRecoilCallback(
     ({ snapshot }) => async (itemToAdd) => {
