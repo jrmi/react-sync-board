@@ -1,5 +1,3 @@
-// import i18n from "../i18n";
-
 import { nanoid } from "nanoid";
 import Rect from "./Rect";
 import Cube from "./Cube";

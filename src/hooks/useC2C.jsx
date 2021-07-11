@@ -3,7 +3,7 @@ import { useSocket } from "@scripters/use-socket.io";
 import { join } from "client2client.io";
 import useTranslation from "@/hooks/useTranslation";
 
-import Waiter from "../ui/Waiter";
+import Spinner from "../ui/Spinner";
 
 const Context = React.createContext();
 
@@ -75,7 +75,21 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
   }, [channel, room, socket]);
 
   if (!joined || !c2c) {
-    return <Waiter message={t("Waiting for connection…")} />;
+    return (
+      <div
+        style={{
+          position: "absolute",
+          top: "0",
+          bottom: "0",
+          width: "100%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <Spinner />
+      </div>
+    );
   }
 
   return (

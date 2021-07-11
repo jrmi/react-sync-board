@@ -328,7 +328,7 @@ const useItemBaseActions = () => {
   const insertItemBefore = useRecoilCallback(
     ({ snapshot }) => async (itemToInsert, beforeId, sync = true) => {
       const newItem = { ...itemToInsert };
-      if (newItem.x === undefined && !newItem.Y === undefined) {
+      if (!newItem.x || !newItem.y) {
         const { centerX, centerY } = await snapshot.getPromise(
           PanZoomRotateAtom
         );

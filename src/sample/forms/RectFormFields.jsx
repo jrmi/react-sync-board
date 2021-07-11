@@ -2,16 +2,16 @@ import React from "react";
 import useTranslation from "@/hooks/useTranslation";
 import { Field } from "react-final-form";
 
-import Label from "../../ui/formUtils/Label";
+import Label from "../ui/Label";
 
-import ColorPicker from "../../ui/formUtils/ColorPicker";
+import ColorPicker from "../ui/ColorPicker";
 
 const Form = ({ initialValues }) => {
   const { t } = useTranslation();
   return (
     <>
       <Label>
-        {t("Label")}
+        Label
         <Field
           name="text"
           component="input"
@@ -19,7 +19,7 @@ const Form = ({ initialValues }) => {
         />
       </Label>
       <Label>
-        {t("Width")}
+        Width
         <Field
           name="width"
           component="input"
@@ -29,7 +29,7 @@ const Form = ({ initialValues }) => {
         </Field>
       </Label>
       <Label>
-        {t("Height")}
+        Height
         <Field
           name="height"
           component="input"
@@ -40,7 +40,7 @@ const Form = ({ initialValues }) => {
       </Label>
 
       <Label>
-        {t("Color")}
+        Color
         <Field
           name="color"
           component="input"

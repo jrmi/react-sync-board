@@ -2,9 +2,9 @@ import React from "react";
 import useTranslation from "@/hooks/useTranslation";
 import { Field } from "react-final-form";
 
-import Label from "../ui/formUtils/Label";
-import Hint from "../ui/formUtils/Hint";
-import Slider from "../ui/Slider";
+import Label from "./ui/Label";
+import Hint from "./ui/Hint";
+import Slider from "./ui/Slider";
 
 import itemMap from "./itemMap";
 
