@@ -13,6 +13,7 @@ import {
   PanZoomRotateAtom,
   BoardStateAtom,
   ItemMapAtom,
+  ConfigurationAtom,
 } from "./board";
 import ItemFormFactory from "./board/Items/ItemFormFactory";
 import useItemActions from "./board/Items/useItemActions";
@@ -89,10 +90,10 @@ const BoundingBoxZone = styled.div.attrs(({ top, left, height, width }) => ({
     width: `${width}px`,
   },
 }))`
+  position: absolute;
   top: 0;
   left: 0;
   z-index: 210;
-  position: absolute;
   background-color: hsla(0, 40%, 50%, 0%);
   border: 1px dashed hsl(20, 55%, 40%);
   pointer-events: none;
@@ -105,6 +106,7 @@ const BoundingBox = ({
 }) => {
   const panZoomRotate = useRecoilValue(PanZoomRotateAtom);
   const itemMap = useRecoilValue(ItemMapAtom);
+  const { uid } = useRecoilValue(ConfigurationAtom);
 
   // Update selection bounding box
   const updateBox = useRecoilCallback(
@@ -118,17 +120,21 @@ const BoundingBox = ({
 
       let boundingBox = null;
 
+      const container = document.getElementById(uid);
+      const origin = container.getBoundingClientRect();
+
       currentSelectedItems.forEach((itemId) => {
         const elem = document.getElementById(itemId);
 
         if (!elem) return;
 
-        const {
-          right: x2,
-          bottom: y2,
-          top: y,
-          left: x,
-        } = elem.getBoundingClientRect();
+        const itemRect = elem.getBoundingClientRect();
+
+        // From origin
+        const x = itemRect.left - origin.left;
+        const y = itemRect.top - origin.top;
+        const x2 = itemRect.right - origin.left;
+        const y2 = itemRect.bottom - origin.top;
 
         if (!boundingBox) {
           boundingBox = { x, y, x2, y2 };

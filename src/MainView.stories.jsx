@@ -38,6 +38,7 @@ const itemLibraries = [
 
 const initialItems = [
   { type: "round", x: 450, y: 450, id: "test", color: "#923456" },
+  { type: "token", x: 650, y: 450, id: "test2", color: "#0077AA" },
 ];
 
 const AddItems = () => {
@@ -82,6 +83,7 @@ const UserList = () => {
 const Overlay = () => (
   <div
     style={{
+      display: "none",
       position: "absolute",
       top: 0,
       left: 0,

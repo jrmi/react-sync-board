@@ -124,7 +124,7 @@ const MainView = ({
   }, [initialItems, setItemList]);
 
   React.useEffect(() => {
-    setMessages(initialMessages.map((m)=>parseMessage(m)));
+    setMessages(initialMessages.map((m) => parseMessage(m)));
   }, [initialMessages, setMessages]);
 
   React.useEffect(() => {
