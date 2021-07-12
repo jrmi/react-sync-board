@@ -17,8 +17,6 @@ import {
 import ItemFormFactory from "./board/Items/ItemFormFactory";
 import useItemActions from "./board/Items/useItemActions";
 
-// import { confirmAlert } from "react-confirm-alert";
-
 const ActionPane = styled.div.attrs(({ top, left, height }) => {
   if (top < 120) {
     return {
@@ -270,24 +268,6 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
   if (hideMenu || selectedItems.length === 0) {
     return null;
   }
-
-  // Keep this code for later
-  /* const onRemove = () => {
-    confirmAlert({
-      title: t("Confirmation"),
-      message: t("Do you really want to remove selected items ?"),
-      buttons: [
-        {
-          label: t("Yes"),
-          onClick: remove,
-        },
-        {
-          label: t("No"),
-          onClick: () => {},
-        },
-      ],
-    });
-  }; */
 
   let title = "";
   if (selectedItems.length === 1) {

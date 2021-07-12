@@ -1,8 +1,12 @@
+/* eslint-disable import/no-extraneous-dependencies */
 import React from "react";
 import { Provider as SocketIOProvider } from "@scripters/use-socket.io";
 import { nanoid } from "nanoid";
+
 import MainView from "./MainView";
 import { itemMap, ItemForm, actionMap, itemLibrary } from "./sample";
+import { useItemBaseActions } from "./board/Items";
+import { useUsers } from "./users";
 
 const { SOCKET_URL } = process.env;
 const SOCKET_PATH = process.env.SOCKET_PATH || "/socket.io";
@@ -32,7 +36,65 @@ const itemLibraries = [
   },
 ];
 
-export const OneView = () => (
+const initialItems = [
+  { type: "round", x: 450, y: 450, id: "test", color: "#923456" },
+];
+
+const AddItems = () => {
+  const { pushItem } = useItemBaseActions();
+
+  const addItem = (key, tpl) => {
+    pushItem({ type: key, ...tpl, id: nanoid() });
+  };
+
+  return (
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "start" }}
+    >
+      {Object.entries(itemMap).map(([key, itemTpl]) => (
+        <div key={key}>
+          <button onClick={() => addItem(key, itemTpl.template)}>
+            Add {key}
+          </button>
+        </div>
+      ))}
+    </div>
+  );
+};
+
+const UserList = () => {
+  const { currentUser, localUsers } = useUsers();
+  return (
+    <>
+      <h1>Users</h1>
+      <ul>
+        {localUsers.map((user) => (
+          <li key={user.id}>
+            {currentUser.id === user.id ? "You: " : ""}
+            {user.name}
+          </li>
+        ))}
+      </ul>
+    </>
+  );
+};
+
+const Overlay = () => (
+  <div
+    style={{
+      position: "absolute",
+      top: 0,
+      left: 0,
+      backgroundColor: "#999999",
+      padding: "0.5em",
+    }}
+  >
+    <AddItems />
+    <UserList />
+  </div>
+);
+
+export const OneView = ({ moveFirst, hideMenu, room, session }) => (
   <WithSocketIO>
     <div
       style={{
@@ -43,18 +105,30 @@ export const OneView = () => (
       }}
     >
       <MainView
-        room={nanoid()}
-        session={nanoid()}
+        room={room}
+        session={session}
         itemTemplates={itemMap}
         itemLibraries={itemLibraries}
         actions={actionMap}
         ItemFormComponent={ItemForm}
-      />
+        initialItems={initialItems}
+        moveFirst={moveFirst}
+        hideMenu={hideMenu}
+      >
+        <Overlay />
+      </MainView>
     </div>
   </WithSocketIO>
 );
 
-export const TwoView = () => {
+OneView.args = {
+  moveFirst: false,
+  hideMenu: false,
+  room: nanoid(),
+  session: nanoid(),
+};
+
+export const TwoView = ({ moveFirst, hideMenu }) => {
   // Generate stable room and sessions
   const [[room, session]] = React.useState(() => [nanoid(), nanoid()]);
 
@@ -82,7 +156,11 @@ export const TwoView = () => {
             actions={actionMap}
             itemLibraries={itemLibraries}
             ItemFormComponent={ItemForm}
-          />
+            moveFirst={moveFirst}
+            hideMenu={hideMenu}
+          >
+            <Overlay />
+          </MainView>
         </div>
       </WithSocketIO>
       <WithSocketIO>
@@ -101,9 +179,18 @@ export const TwoView = () => {
             actions={actionMap}
             itemLibraries={itemLibraries}
             ItemFormComponent={ItemForm}
-          />
+            moveFirst={moveFirst}
+            hideMenu={hideMenu}
+          >
+            <Overlay />
+          </MainView>
         </div>
       </WithSocketIO>
     </div>
   );
+};
+
+TwoView.args = {
+  moveFirst: false,
+  hideMenu: false,
 };

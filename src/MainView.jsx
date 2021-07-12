@@ -1,7 +1,6 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { RecoilRoot, useSetRecoilState, useRecoilState } from "recoil";
-import { QueryClientProvider, QueryClient } from "react-query";
 import { nanoid } from "nanoid";
 
 import useC2C, { C2CProvider } from "@/hooks/useC2C";
@@ -155,21 +154,17 @@ const MainView = ({
   );
 };
 
-const queryClient = new QueryClient();
-
 const RecoilMainRoot = (props) => {
   const [room] = React.useState(props.room || nanoid());
   const [session] = React.useState(props.session || nanoid());
   return (
     <RecoilRoot>
-      <QueryClientProvider client={queryClient}>
-        <C2CProvider room={room} channel="room">
-          <SubscribeUserEvents />
-          <C2CProvider room={session} channel="board">
-            <MainView {...props} />
-          </C2CProvider>
+      <C2CProvider room={room} channel="room">
+        <SubscribeUserEvents />
+        <C2CProvider room={session} channel="board">
+          <MainView {...props} />
         </C2CProvider>
-      </QueryClientProvider>
+      </C2CProvider>
     </RecoilRoot>
   );
 };
