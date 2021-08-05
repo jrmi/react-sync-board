@@ -3,10 +3,17 @@ import React from "react";
 import { Provider as SocketIOProvider } from "@scripters/use-socket.io";
 import { nanoid } from "nanoid";
 
-import MainView from "./MainView";
-import { itemMap, ItemForm, actionMap, itemLibrary } from "./sample";
-import { useItemBaseActions } from "./board/Items";
-import { useUsers } from "./users";
+import {
+  BoardWrapper,
+  RoomWrapper,
+  useUsers,
+  useItemBaseActions,
+  Board,
+} from "@/";
+
+import { itemMap, ItemForm, actionMap, itemLibrary } from "../sample";
+
+import SelectedItemsPane from "./SelectedItemsPane";
 
 const { SOCKET_URL } = process.env;
 const SOCKET_PATH = process.env.SOCKET_PATH || "/socket.io";
@@ -24,7 +31,7 @@ const WithSocketIO = ({ children }) => (
 );
 
 export default {
-  component: MainView,
+  component: BoardWrapper,
   title: "SyncBoard/Main",
 };
 
@@ -80,19 +87,31 @@ const UserList = () => {
   );
 };
 
-const Overlay = () => (
+const Overlay = ({ children, hideMenu }) => (
   <div
     style={{
-      display: "none",
       position: "absolute",
       top: 0,
       left: 0,
-      backgroundColor: "#999999",
-      padding: "0.5em",
+      right: 0,
+      bottom: 0,
     }}
   >
-    <AddItems />
-    <UserList />
+    {children}
+    <div
+      style={{
+        position: "absolute",
+        top: 0,
+        left: 0,
+        backgroundColor: "#999999",
+        padding: "0.5em",
+      }}
+    >
+      <AddItems />
+      <UserList />
+    </div>
+    <SelectedItemsPane hideMenu={hideMenu} ItemFormComponent={ItemForm} />
+    <div id={`portal-container-uid`} />
   </div>
 );
 
@@ -106,19 +125,52 @@ export const OneView = ({ moveFirst, hideMenu, room, session }) => (
         border: "1px solid black",
       }}
     >
-      <MainView
+      <BoardWrapper
         room={room}
         session={session}
         itemTemplates={itemMap}
         itemLibraries={itemLibraries}
         actions={actionMap}
-        ItemFormComponent={ItemForm}
         initialItems={initialItems}
-        moveFirst={moveFirst}
-        hideMenu={hideMenu}
       >
-        <Overlay />
-      </MainView>
+        <Overlay hideMenu={hideMenu}>
+          <Board moveFirst={moveFirst} />
+        </Overlay>
+      </BoardWrapper>
+    </div>
+  </WithSocketIO>
+);
+
+OneView.args = {
+  moveFirst: false,
+  hideMenu: false,
+  room: nanoid(),
+  session: nanoid(),
+};
+
+export const OneViewWithRoom = ({ moveFirst, hideMenu, room, session }) => (
+  <WithSocketIO>
+    <div
+      style={{
+        width: "100%",
+        height: "500px",
+        position: "relative",
+        border: "1px solid black",
+      }}
+    >
+      <RoomWrapper room={room}>
+        <BoardWrapper
+          session={session}
+          itemTemplates={itemMap}
+          itemLibraries={itemLibraries}
+          actions={actionMap}
+          initialItems={initialItems}
+        >
+          <Overlay hideMenu={hideMenu}>
+            <Board moveFirst={moveFirst} />
+          </Overlay>
+        </BoardWrapper>
+      </RoomWrapper>
     </div>
   </WithSocketIO>
 );
@@ -151,18 +203,18 @@ export const TwoView = ({ moveFirst, hideMenu }) => {
             border: "1px solid grey",
           }}
         >
-          <MainView
+          <BoardWrapper
             room={room}
             session={session}
             itemTemplates={itemMap}
-            actions={actionMap}
             itemLibraries={itemLibraries}
-            ItemFormComponent={ItemForm}
-            moveFirst={moveFirst}
-            hideMenu={hideMenu}
+            actions={actionMap}
+            initialItems={initialItems}
           >
-            <Overlay />
-          </MainView>
+            <Overlay hideMenu={hideMenu}>
+              <Board moveFirst={moveFirst} />
+            </Overlay>
+          </BoardWrapper>
         </div>
       </WithSocketIO>
       <WithSocketIO>
@@ -174,18 +226,18 @@ export const TwoView = ({ moveFirst, hideMenu }) => {
             border: "1px solid grey",
           }}
         >
-          <MainView
+          <BoardWrapper
             room={room}
             session={session}
             itemTemplates={itemMap}
-            actions={actionMap}
             itemLibraries={itemLibraries}
-            ItemFormComponent={ItemForm}
-            moveFirst={moveFirst}
-            hideMenu={hideMenu}
+            actions={actionMap}
+            initialItems={initialItems}
           >
-            <Overlay />
-          </MainView>
+            <Overlay hideMenu={hideMenu}>
+              <Board moveFirst={moveFirst} />
+            </Overlay>
+          </BoardWrapper>
         </div>
       </WithSocketIO>
     </div>

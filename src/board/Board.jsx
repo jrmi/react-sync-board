@@ -1,5 +1,4 @@
 import React from "react";
-import useTranslation from "@/hooks/useTranslation";
 import styled from "styled-components";
 import { useRecoilValue } from "recoil";
 
@@ -10,6 +9,8 @@ import CursorPane from "./Cursors/CursorPane";
 import PanZoomRotate from "./PanZoomRotate";
 import { BoardConfigAtom } from "./atoms";
 import board from "../images/board.png";
+import Selection from "./Selection";
+import { useUsers } from "../users";
 
 /*
 
@@ -20,14 +21,6 @@ import board from "../images/board.png";
     rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
   
 */
-
-const Placeholder = styled.p`
-  position: absolute;
-  top: 40%;
-  width: 100%;
-  text-align: center;
-  color: hsl(0, 0%, 70%);
-`;
 
 const StyledBoard = styled.div.attrs(() => ({ className: "board" }))`
   position: relative;
@@ -49,13 +42,13 @@ const StyledBoard = styled.div.attrs(() => ({ className: "board" }))`
   user-select: none;
 `;
 
-export const Board = ({ user, users, moveFirst = true }) => {
-  const { t } = useTranslation();
-
+export const Board = ({ moveFirst = true }) => {
   const config = useRecoilValue(BoardConfigAtom);
+  const { currentUser, users } = useUsers();
 
   if (!config.size) {
-    return <Placeholder>{t("No board selected")}</Placeholder>;
+    console.log("No board size. Please configure the board");
+    return null;
   }
 
   return (
@@ -64,7 +57,7 @@ export const Board = ({ user, users, moveFirst = true }) => {
       <PanZoomRotate moveFirst={moveFirst}>
         <Selector moveFirst={moveFirst}>
           <ActionPane>
-            <CursorPane user={user} users={users}>
+            <CursorPane user={currentUser} users={users}>
               <StyledBoard size={config.size}>
                 <ItemList />
               </StyledBoard>
@@ -72,6 +65,7 @@ export const Board = ({ user, users, moveFirst = true }) => {
           </ActionPane>
         </Selector>
       </PanZoomRotate>
+      <Selection />
     </>
   );
 };

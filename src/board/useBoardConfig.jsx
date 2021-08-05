@@ -2,8 +2,8 @@ import React from "react";
 import { useRecoilState } from "recoil";
 import debounce from "lodash.debounce";
 
-import useC2C from "./hooks/useC2C";
-import { BoardConfigAtom } from "./board/atoms";
+import useC2C from "../hooks/useC2C";
+import { BoardConfigAtom } from "./atoms";
 
 const useBoardConfig = () => {
   const { c2c } = useC2C("board");

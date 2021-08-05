@@ -8,4 +8,5 @@ export {
   BoardStateAtom,
   PanZoomRotateAtom,
   ConfigurationAtom,
+  SelectionBoxAtom,
 } from "./atoms";

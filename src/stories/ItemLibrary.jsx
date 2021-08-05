@@ -5,12 +5,10 @@ import styled from "@emotion/styled";
 import { useRecoilCallback } from "recoil";
 import debounce from "lodash.debounce";
 
-import { useItemBaseActions } from "./board/Items";
-import useToggle from "./hooks/useToggle";
-import { search } from "./utils";
+import { search } from "@/utils";
+import { useItemBaseActions } from "@/";
 
 import Chevron from "./ui/Chevron";
-import { PanZoomRotateAtom } from "./board";
 
 const StyledItemList = styled.ul`
   display: flex;
@@ -88,12 +86,16 @@ NewItem.displayName = "NewItem";
 
 const SubItemList = ({ name, items }) => {
   const { t } = useTranslation();
-  const [open, toggleOpen] = useToggle(false);
+  const [open, setOpen] = React.useState(false);
   const { pushItem } = useItemBaseActions();
 
   const addItems = useRecoilCallback(
+    // TODO HERE
     ({ snapshot }) => async (itemToAdd) => {
-      const { centerX, centerY } = await snapshot.getPromise(PanZoomRotateAtom);
+      // const { centerX, centerY } = await snapshot.getPromise(PanZoomRotateAtom);
+      const centerX = 0;
+      const centerY = 0;
+
       itemToAdd.forEach(({ template }, index) => {
         pushItem({
           ...template,
@@ -108,7 +110,10 @@ const SubItemList = ({ name, items }) => {
 
   return (
     <>
-      <h3 onClick={toggleOpen} style={{ cursor: "pointer" }}>
+      <h3
+        onClick={() => setOpen((prev) => !prev)}
+        style={{ cursor: "pointer" }}
+      >
         {open ? (
           <Chevron orientation="bottom" color="#8c8c8c" />
         ) : (

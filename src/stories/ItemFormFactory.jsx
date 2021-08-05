@@ -1,10 +1,8 @@
 import React from "react";
-import { useRecoilValue } from "recoil";
 import { Form } from "react-final-form";
 
-import { ItemMapAtom, SelectedItemsAtom } from "../atoms";
-import AutoSave from "../../ui/formUtils/AutoSave";
-import { useItemBaseActions } from ".";
+import AutoSave from "./ui/formUtils/AutoSave";
+import { useItemBaseActions, useSelectedItems, useItems } from "@/";
 
 export const getFormFieldComponent = (type, itemMap) => {
   if (type in itemMap) {
@@ -15,9 +13,8 @@ export const getFormFieldComponent = (type, itemMap) => {
 
 const ItemFormFactory = ({ ItemFormComponent }) => {
   const { batchUpdateItems } = useItemBaseActions();
-
-  const selectedItems = useRecoilValue(SelectedItemsAtom);
-  const itemMap = useRecoilValue(ItemMapAtom);
+  const items = useItems();
+  const selectedItems = useSelectedItems();
 
   const onSubmitHandler = React.useCallback(
     (formValues) => {
@@ -41,7 +38,7 @@ const ItemFormFactory = ({ ItemFormComponent }) => {
         >
           <AutoSave save={onSubmitHandler} />
           <ItemFormComponent
-            items={selectedItems.map((itemId) => itemMap[itemId])}
+            items={items.filter(({ id }) => selectedItems.includes(id))}
           />
         </div>
       )}

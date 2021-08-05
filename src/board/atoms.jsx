@@ -66,6 +66,11 @@ export const SelectedItemsAtom = atom({
   default: [],
 });
 
+export const SelectionBoxAtom = atom({
+  key: "selectionBox",
+  default: null,
+});
+
 export default {
   ItemListAtom,
   BoardConfigAtom,

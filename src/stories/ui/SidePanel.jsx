@@ -1,9 +1,8 @@
 import React from "react";
 import styled from "@emotion/styled";
-import useTranslation from "@/hooks/useTranslation";
 import usePortal from "react-useportal";
-import { useRecoilValue } from "recoil";
-import { ConfigurationAtom } from "../board";
+
+import useTranslation from "@/hooks/useTranslation";
 
 const Overlay = styled.div`
   position: absolute;
@@ -109,11 +108,10 @@ const SidePanel = ({
   width,
 }) => {
   const { t } = useTranslation();
-  const { uid } = useRecoilValue(ConfigurationAtom);
 
   const { ref, Portal, openPortal, closePortal, isOpen } = usePortal({
     closeOnOutsideClick: modal,
-    bindTo: document.getElementById(`portal-container-${uid}`),
+    bindTo: document.getElementById(`portal-container-uid`),
   });
 
   const onAnimationEnd = React.useCallback(() => {
@@ -129,20 +127,6 @@ const SidePanel = ({
       closePortal();
     }
   }, [openPortal, closePortal, open]);
-
-  React.useEffect(() => {
-    if (isOpen && modal) {
-      document
-        .getElementById(uid)
-        .getElementsByClassName("sync-board-container")[0]
-        .classList.add("blurry");
-    } else {
-      document
-        .getElementById(uid)
-        .getElementsByClassName("sync-board-container")[0]
-        .classList.remove("blurry");
-    }
-  }, [isOpen, modal, uid]);
 
   return (
     <Portal>

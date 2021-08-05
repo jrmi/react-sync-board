@@ -1,14 +1,12 @@
 import React, { useContext } from "react";
 import { useSocket } from "@scripters/use-socket.io";
 import { join } from "client2client.io";
-import useTranslation from "@/hooks/useTranslation";
 
 import Spinner from "../ui/Spinner";
 
 const Context = React.createContext();
 
 export const C2CProvider = ({ room, channel = "default", children }) => {
-  const { t } = useTranslation();
   const socket = useSocket();
   const [joined, setJoined] = React.useState(false);
   const [isMaster, setIsMaster] = React.useState(false);
@@ -101,6 +99,9 @@ export const C2CProvider = ({ room, channel = "default", children }) => {
   );
 };
 
-const useC2C = (channel = "default") => useContext(Context)[channel];
+const useC2C = (channel = "default") => {
+  const channels = useContext(Context) || {};
+  return channels[channel];
+};
 
 export default useC2C;

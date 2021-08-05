@@ -7,7 +7,6 @@ import useC2C, { C2CProvider } from "@/hooks/useC2C";
 
 import { BoardConfigAtom, ConfigurationAtom, Board } from "./board";
 
-import SelectedItemsPane from "./SelectedItemsPane";
 import { SubscribeUserEvents, useUsers } from "./users";
 
 import { insideClass } from "./utils";
@@ -55,29 +54,22 @@ const BoardContainer = styled.div`
 
 const emptyList = [];
 const emptyMap = {};
-const NullComponent = () => null;
 
 const defaultBoard = {
   size: 1000,
 };
 
-const MainView = ({
+const SyncBoard = ({
   initialBoardConfig = defaultBoard,
   initialItems = emptyList,
   initialMessages = emptyList,
   itemTemplates = emptyMap,
   actions = emptyMap,
-  onItemsChange,
   onMasterChange,
-  ItemFormComponent = NullComponent,
-  moveFirst = false,
-  hideMenu = false,
   children,
   style,
 }) => {
   const { isMaster } = useC2C("board");
-
-  const { currentUser, localUsers: users } = useUsers();
 
   const setBoardConfig = useSetRecoilState(BoardConfigAtom);
   const setMessages = useSetRecoilState(MessagesAtom);
@@ -135,38 +127,35 @@ const MainView = ({
 
   return (
     <StyledBoardView id={uid} className="sync-board" style={style}>
-      <BoardContainer className="sync-board-container">
-        <Board
-          user={currentUser}
-          users={users}
-          moveFirst={moveFirst}
-          hideMenu={hideMenu}
-        />
-        <SelectedItemsPane
-          hideMenu={hideMenu}
-          ItemFormComponent={ItemFormComponent}
-        />
-      </BoardContainer>
       {children}
-      <div id={`portal-container-${uid}`} />
-      {onItemsChange && <WatchItemsChange onChange={onItemsChange} />}
     </StyledBoardView>
   );
 };
 
-const RecoilMainRoot = (props) => {
+const ConnectedSyncBoard = (props) => {
   const [room] = React.useState(props.room || nanoid());
   const [session] = React.useState(props.session || nanoid());
-  return (
-    <RecoilRoot>
-      <C2CProvider room={room} channel="room">
-        <SubscribeUserEvents />
-        <C2CProvider room={session} channel="board">
-          <MainView {...props} />
+
+  const boardChannel = useC2C("board");
+
+  if (!boardChannel) {
+    // No room declared so we create one
+    return (
+      <RecoilRoot>
+        <C2CProvider room={room} channel="room">
+          <SubscribeUserEvents />
+          <C2CProvider room={session} channel="board">
+            <SyncBoard {...props} />
+          </C2CProvider>
         </C2CProvider>
-      </C2CProvider>
-    </RecoilRoot>
+      </RecoilRoot>
+    );
+  }
+  return (
+    <C2CProvider room={session} channel="board">
+      <SyncBoard {...props} />
+    </C2CProvider>
   );
 };
 
-export default RecoilMainRoot;
+export default ConnectedSyncBoard;
