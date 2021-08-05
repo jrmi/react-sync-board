@@ -11,8 +11,8 @@ const StyledSpinner = styled.div`
   animation: ${spin} 1s infinite linear;
   border: solid ${({ size }) => size / 10}px transparent;
   border-radius: 50%;
-  border-right-color: var(--color-primary);
-  border-top-color: var(--color-primary);
+  border-right-color: #db5034;
+  border-top-color: #db5034;
   box-sizing: border-box;
   height: ${({ size }) => size}px;
   width: ${({ size }) => size}px;
@@ -22,8 +22,8 @@ const StyledSpinner = styled.div`
     animation: ${spin} 2s infinite linear;
     border: solid ${({ size }) => size / 10}px transparent;
     border-radius: 50%;
-    border-right-color: var(--color-primary);
-    border-top-color: var(--color-primary);
+    border-right-color: #db5034;
+    border-top-color: #db5034;
     box-sizing: border-box;
     content: "";
     height: ${({ size }) => size - (2 * size) / 10}px;
@@ -36,8 +36,8 @@ const StyledSpinner = styled.div`
     animation: ${spin} 3s infinite linear;
     border: solid ${({ size }) => size / 10}px transparent;
     border-radius: 50%;
-    border-right-color: var(--color-primary);
-    border-top-color: var(--color-primary);
+    border-right-color: #db5034;
+    border-top-color: #db5034;
     box-sizing: border-box;
     content: "";
     height: ${({ size }) => size - (4 * size) / 10}px;

@@ -20,26 +20,6 @@ const StyledBoardView = styled.div`
   bottom: 0;
   right: 0;
   left: 0;
-
-  --bg-color: #000000;
-  --bg-secondary-color: #121212;
-  --font-color: #f9fbfa;
-  --font-color2: #b3b3b3;
-  --color-darkGrey: #121212;
-  --color-darkBlueGrey: #151a23;
-  --color-blueGrey: #19202c;
-  --color-lightGrey: #90969d;
-  --color-grey: #454545;
-  --color-midGrey: #2c3749;
-  --color-primary: #db5034;
-  --color-secondary: #00a698ff;
-  --color-error: #d43939;
-  --color-success: #28bd14;
-  --grid-maxWidth: 120rem;
-  --grid-gutter: 2rem;
-  --font-size: 1.6rem;
-  --font-family-sans: "Roboto", sans-serif;
-  --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
 `;
 
 const emptyList = [];

@@ -34,7 +34,7 @@ const ItemWrapper = styled.div`
   }
 
   &.selected {
-    border: 2px dashed var(--color-primary);
+    border: 2px dashed #db5034;
     padding: 2px;
     cursor: pointer;
   }

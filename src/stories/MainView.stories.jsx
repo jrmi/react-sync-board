@@ -3,6 +3,8 @@ import React from "react";
 import { Provider as SocketIOProvider } from "@scripters/use-socket.io";
 import { nanoid } from "nanoid";
 
+import "./index.css";
+
 import {
   BoardWrapper,
   RoomWrapper,
@@ -95,6 +97,7 @@ const Overlay = ({ children, hideMenu }) => (
       left: 0,
       right: 0,
       bottom: 0,
+      backgroundColor: "#eee",
     }}
   >
     {children}
@@ -134,7 +137,10 @@ export const OneView = ({ moveFirst, hideMenu, room, session }) => (
         initialItems={initialItems}
       >
         <Overlay hideMenu={hideMenu}>
-          <Board moveFirst={moveFirst} />
+          <Board
+            moveFirst={moveFirst}
+            style={{ backgroundColor: "#cca", borderRadius: "2em" }}
+          />
         </Overlay>
       </BoardWrapper>
     </div>
