@@ -5,10 +5,20 @@ import styled from "@emotion/styled";
 import { useRecoilCallback } from "recoil";
 import debounce from "lodash.debounce";
 
-import { search } from "@/utils";
 import { useItemBaseActions } from "@/";
 
 import Chevron from "./ui/Chevron";
+
+const cleanWord = (term) => term.toLowerCase();
+
+export const search = (term, string) => {
+  let strings = string;
+  if (typeof string === "string") {
+    strings = [string];
+  }
+  const cleanedTerm = cleanWord(term);
+  return strings.some((s) => cleanWord(s).includes(cleanedTerm));
+};
 
 const StyledItemList = styled.ul`
   display: flex;
@@ -87,25 +97,15 @@ NewItem.displayName = "NewItem";
 const SubItemList = ({ name, items }) => {
   const { t } = useTranslation();
   const [open, setOpen] = React.useState(false);
-  const { pushItem } = useItemBaseActions();
+  const { pushItems } = useItemBaseActions();
 
   const addItems = useRecoilCallback(
-    // TODO HERE
-    ({ snapshot }) => async (itemToAdd) => {
-      // const { centerX, centerY } = await snapshot.getPromise(PanZoomRotateAtom);
-      const centerX = 0;
-      const centerY = 0;
-
-      itemToAdd.forEach(({ template }, index) => {
-        pushItem({
-          ...template,
-          x: centerX + 2 * index,
-          y: centerY + 2 * index,
-          id: nanoid(),
-        });
-      });
+    async (itemsToAdd) => {
+      pushItems(
+        itemsToAdd.map(({ template }) => ({ ...template, id: nanoid() }))
+      );
     },
-    [pushItem]
+    [pushItems]
   );
 
   return (

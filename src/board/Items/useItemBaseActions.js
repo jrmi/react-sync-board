@@ -325,37 +325,44 @@ const useItemBaseActions = () => {
     [c2c, setItemList, setItemMap]
   );
 
-  const insertItemBefore = useRecoilCallback(
-    ({ snapshot }) => async (itemToInsert, beforeId, sync = true) => {
-      const newItem = { ...itemToInsert };
-      if (!newItem.x || !newItem.y) {
-        const { centerX, centerY } = await snapshot.getPromise(
-          PanZoomRotateAtom
-        );
-        newItem.x = centerX;
-        newItem.y = centerY;
-      }
-
-      setItemMap((prevItemMap) => ({
-        ...prevItemMap,
-        [newItem.id]: newItem,
-      }));
-
-      setItemList((prevItemList) => {
-        if (beforeId) {
-          const insertAt = prevItemList.findIndex((id) => id === beforeId);
-
-          const newItemList = [...prevItemList];
-          newItemList.splice(insertAt, 0, newItem.id);
-          return newItemList;
+  const pushItems = useRecoilCallback(
+    ({ snapshot }) => async (itemsToInsert, beforeId, sync = true) => {
+      const { centerX, centerY } = await snapshot.getPromise(PanZoomRotateAtom);
+      itemsToInsert.forEach(async (item, index) => {
+        const newItem = { ...item };
+        if (!newItem.x || !newItem.y) {
+          newItem.x = centerX + 2 * index;
+          newItem.y = centerY + 2 * index;
         }
-        return [...prevItemList, newItem.id];
+
+        setItemMap((prevItemMap) => ({
+          ...prevItemMap,
+          [newItem.id]: newItem,
+        }));
+
+        setItemList((prevItemList) => {
+          if (beforeId) {
+            const insertAt = prevItemList.findIndex((id) => id === beforeId);
+
+            const newItemList = [...prevItemList];
+            newItemList.splice(insertAt, 0, newItem.id);
+            return newItemList;
+          }
+          return [...prevItemList, newItem.id];
+        });
+        if (sync) {
+          c2c.publish("insertItemBefore", [newItem, beforeId]);
+        }
       });
-      if (sync) {
-        c2c.publish("insertItemBefore", [newItem, beforeId]);
-      }
     },
     [c2c, setItemList, setItemMap]
+  );
+
+  const pushItem = React.useCallback(
+    (itemToInsert, beforeId, sync = true) => {
+      pushItems([itemToInsert], beforeId, sync);
+    },
+    [pushItems]
   );
 
   const removeItems = React.useCallback(
@@ -394,9 +401,9 @@ const useItemBaseActions = () => {
     swapItems,
     reverseItemsOrder,
     setItemList: setItemListFull,
-    pushItem: insertItemBefore,
+    pushItem,
+    pushItems,
     removeItems,
-    insertItemBefore,
   };
 };
 

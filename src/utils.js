@@ -1,5 +1,3 @@
-import Diacritics from "diacritic";
-
 /**
  * Check if element or parent has className.
  * @param {DOMElement} element
@@ -42,15 +40,4 @@ export const isItemInsideElement = (itemElement, otherElem) => {
     const { top: y, left: x } = corner.getBoundingClientRect();
     return isPointInsideRect({ x, y }, rect);
   });
-};
-
-const cleanWord = (word) => Diacritics.clean(word).toLowerCase();
-
-export const search = (term, string) => {
-  let strings = string;
-  if (typeof string === "string") {
-    strings = [string];
-  }
-  const cleanedTerm = cleanWord(term);
-  return strings.some((s) => cleanWord(s).includes(cleanedTerm));
 };
