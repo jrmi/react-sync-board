@@ -1,5 +1,5 @@
-import deleteIcon from "../images/delete.svg";
-import lockIcon from "../images/lock.svg";
+import deleteIcon from "./images/delete.svg";
+import lockIcon from "./images/lock.svg";
 
 const t = (s) => s;
 

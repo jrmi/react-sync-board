@@ -47,7 +47,6 @@ export const Board = ({ moveFirst = true }) => {
   const { currentUser, users } = useUsers();
 
   if (!config.size) {
-    console.log("No board size. Please configure the board");
     return null;
   }
 

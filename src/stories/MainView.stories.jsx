@@ -11,7 +11,7 @@ import {
   Board,
 } from "@/";
 
-import { itemMap, ItemForm, actionMap, itemLibrary } from "../sample";
+import { itemMap, ItemForm, actionMap, itemLibrary } from "./sample";
 
 import SelectedItemsPane from "./SelectedItemsPane";
 

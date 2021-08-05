@@ -5,13 +5,12 @@ import { nanoid } from "nanoid";
 
 import useC2C, { C2CProvider } from "@/hooks/useC2C";
 
-import { BoardConfigAtom, ConfigurationAtom, Board } from "./board";
+import { BoardConfigAtom, ConfigurationAtom } from "./board";
 
-import { SubscribeUserEvents, useUsers } from "./users";
+import { SubscribeUserEvents } from "./users";
 
 import { insideClass } from "./utils";
 import { useItemBaseActions } from "./board/Items";
-import WatchItemsChange from "./WatchItemChange";
 import { MessagesAtom, parseMessage } from "./message/useMessage";
 
 const StyledBoardView = styled.div`
@@ -41,15 +40,6 @@ const StyledBoardView = styled.div`
   --font-size: 1.6rem;
   --font-family-sans: "Roboto", sans-serif;
   --font-family-mono: monaco, "Consolas", "Lucida Console", monospace;
-`;
-
-const BoardContainer = styled.div`
-  position: relative;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  box-sizing: border-box;
-  background-color: var(--color-darkGrey);
 `;
 
 const emptyList = [];

@@ -15,7 +15,7 @@ export const SubcribeItemEvents = () => {
     updateItemOrder,
     moveItems,
     removeItems,
-    insertItemBefore,
+    pushItem,
   } = useItemBaseActions();
 
   const batchUpdate = React.useCallback(
@@ -51,17 +51,17 @@ export const SubcribeItemEvents = () => {
 
   React.useEffect(() => {
     const unsub = c2c.subscribe("pushItem", (newItem) => {
-      insertItemBefore(newItem, null, false);
+      pushItem(newItem, null, false);
     });
     return unsub;
-  }, [c2c, insertItemBefore]);
+  }, [c2c, pushItem]);
 
   React.useEffect(() => {
     const unsub = c2c.subscribe("insertItemBefore", ([newItem, beforeId]) => {
-      insertItemBefore(newItem, beforeId, false);
+      pushItem(newItem, beforeId, false);
     });
     return unsub;
-  }, [c2c, insertItemBefore]);
+  }, [c2c, pushItem]);
 
   React.useEffect(() => {
     const unsub = c2c.subscribe("removeItems", (itemIds) => {

@@ -10,7 +10,7 @@ import {
   ItemMapAtom,
   ConfigurationAtom,
   SelectionBoxAtom,
-} from ".";
+} from "./atoms";
 
 const BoundingBoxZone = styled.div.attrs(({ top, left, height, width }) => ({
   style: {

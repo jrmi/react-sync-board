@@ -351,6 +351,7 @@ const useItemBaseActions = () => {
           return [...prevItemList, newItem.id];
         });
         if (sync) {
+          console.log("push here");
           c2c.publish("insertItemBefore", [newItem, beforeId]);
         }
       });
