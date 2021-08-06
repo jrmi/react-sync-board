@@ -14,6 +14,17 @@ export const Board = ({ moveFirst = true, style }) => {
   const config = useRecoilValue(BoardConfigAtom);
   const { currentUser, users } = useUsers();
 
+  const boardStyle = React.useMemo(
+    () => ({
+      userSelect: "none",
+      width: `${config.size}px`,
+      height: `${config.size}px`,
+      backgroundColor: "#333",
+      ...style,
+    }),
+    [config.size, style]
+  );
+
   if (!config.size) {
     return null;
   }
@@ -25,16 +36,7 @@ export const Board = ({ moveFirst = true, style }) => {
         <Selector moveFirst={moveFirst}>
           <ActionPane>
             <CursorPane user={currentUser} users={users}>
-              <div
-                style={{
-                  userSelect: "none",
-                  width: config.size,
-                  height: config.size,
-                  backgroundColor: "#333",
-                  ...style,
-                }}
-                className="board"
-              >
+              <div style={boardStyle} className="board">
                 <ItemList />
               </div>
             </CursorPane>

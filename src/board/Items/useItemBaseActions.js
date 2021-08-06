@@ -7,6 +7,7 @@ import {
   SelectedItemsAtom,
   ItemMapAtom,
   PanZoomRotateAtom,
+  AllItemsSelector,
 } from "../atoms";
 import useItemInteraction from "./useItemInteraction";
 
@@ -46,7 +47,7 @@ const useItemBaseActions = () => {
   );
 
   const setItemListFull = React.useCallback(
-    (items) => {
+    (items, sync = true) => {
       setItemMap(
         items.reduce((acc, item) => {
           if (item && item.id) {
@@ -391,6 +392,11 @@ const useItemBaseActions = () => {
     [c2c, setItemList, setItemMap, setSelectItems]
   );
 
+  const getItemList = useRecoilCallback(
+    ({ snapshot }) => () => snapshot.getPromise(AllItemsSelector),
+    []
+  );
+
   return {
     putItemsOnTop,
     batchUpdateItems,
@@ -404,6 +410,7 @@ const useItemBaseActions = () => {
     pushItem,
     pushItems,
     removeItems,
+    getItemList,
   };
 };
 

@@ -37,13 +37,12 @@ const SyncBoard = ({
   initialMessages = emptyList,
   itemTemplates = emptyMap,
   actions = emptyMap,
-  onMasterChange,
   children,
   style,
 }) => {
   const setCurrentUserState = useSetRecoilState(userAtom);
 
-  const { room: session, isMaster } = useC2C("board");
+  const { room: session } = useC2C("board");
 
   const setBoardConfig = useSetRecoilState(BoardConfigAtom);
   const setMessages = useSetRecoilState(MessagesAtom);
@@ -106,12 +105,6 @@ const SyncBoard = ({
   React.useEffect(() => {
     setMessages(initialMessages.map((m) => parseMessage(m)));
   }, [initialMessages, setMessages]);
-
-  React.useEffect(() => {
-    if (onMasterChange) {
-      onMasterChange(isMaster);
-    }
-  }, [isMaster, onMasterChange]);
 
   return (
     <StyledBoardView id={uid} className="sync-board" style={style}>
