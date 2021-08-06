@@ -33,6 +33,7 @@ export const Board = ({ moveFirst = true, style }) => {
                   backgroundColor: "#333",
                   ...style,
                 }}
+                className="board"
               >
                 <ItemList />
               </div>

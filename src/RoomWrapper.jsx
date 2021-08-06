@@ -8,6 +8,7 @@ import { SubscribeUserEvents } from "./users";
 
 const ConnectedSyncRoom = ({ room: givenRoom, children }) => {
   const [room] = React.useState(() => givenRoom || nanoid());
+
   return (
     <RecoilRoot>
       <C2CProvider room={room} channel="room">

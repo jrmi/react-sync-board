@@ -70,7 +70,6 @@
     "@scripters/use-socket.io": "git+https://github.com/jrmi/use-socket.io.git#updated",
     "react": ">= 17",
     "react-dom": ">= 17",
-    "client2client.io": ">= 2.0.3",
     "styled-components": ">= 5"
   },
   "dependencies": {

@@ -7,6 +7,8 @@ import useC2C, { C2CProvider } from "@/hooks/useC2C";
 
 import { BoardConfigAtom, ConfigurationAtom } from "./board";
 
+import { userAtom } from "./users/atoms";
+
 import { SubscribeUserEvents } from "./users";
 
 import { insideClass } from "./utils";
@@ -39,7 +41,9 @@ const SyncBoard = ({
   children,
   style,
 }) => {
-  const { isMaster } = useC2C("board");
+  const setCurrentUserState = useSetRecoilState(userAtom);
+
+  const { room: session, isMaster } = useC2C("board");
 
   const setBoardConfig = useSetRecoilState(BoardConfigAtom);
   const setMessages = useSetRecoilState(MessagesAtom);
@@ -61,6 +65,20 @@ const SyncBoard = ({
       document.body.removeEventListener("wheel", cancelWheel);
     };
   }, []);
+
+  // Set user space
+  React.useEffect(() => {
+    setCurrentUserState((prevUser) => ({
+      ...prevUser,
+      space: session,
+    }));
+    return () => {
+      setCurrentUserState((prevUser) => ({
+        ...prevUser,
+        space: null,
+      }));
+    };
+  }, [session, setCurrentUserState]);
 
   React.useEffect(() => {
     setBoardConfig(initialBoardConfig);
@@ -106,9 +124,9 @@ const ConnectedSyncBoard = (props) => {
   const [room] = React.useState(props.room || nanoid());
   const [session] = React.useState(props.session || nanoid());
 
-  const boardChannel = useC2C("board");
+  const roomChannel = useC2C("room");
 
-  if (!boardChannel) {
+  if (!roomChannel) {
     // No room declared so we create one
     return (
       <RecoilRoot>

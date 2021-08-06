@@ -21,7 +21,7 @@ const ActionPane = ({ children }) => {
   const wrapperRef = React.useRef(null);
   const actionRef = React.useRef({});
 
-  // Use ref as pointer events are faster than react state management
+  // Use ref because pointer events are faster than react state management
   const selectedItemRef = React.useRef({
     items: [],
   });

@@ -11,15 +11,21 @@ const SubscribeUserEvents = () => {
   const [currentUser, setCurrentUserState] = useRecoilState(userAtom);
 
   const { c2c, isMaster, room: roomSpace } = useC2C("room");
-  const { room: boardSpace } = useC2C("board") || {};
 
   React.useEffect(() => {
     setCurrentUserState((prevUser) => ({
       ...prevUser,
       id: c2c.userId,
-      space: boardSpace || roomSpace,
+      space: roomSpace,
     }));
-  }, [boardSpace, c2c.userId, roomSpace, setCurrentUserState]);
+    return () => {
+      setCurrentUserState((prevUser) => ({
+        ...prevUser,
+        id: c2c.userId,
+        space: null,
+      }));
+    };
+  }, [c2c.userId, roomSpace, setCurrentUserState]);
 
   React.useEffect(() => {
     if (!isMaster) {
@@ -33,6 +39,7 @@ const SubscribeUserEvents = () => {
         setTimeout(() => {
           c2c
             .call("getUserList")
+            // eslint-disable-next-line no-console
             .then(onGetUserList, (error) => console.log(error));
         }, 1000);
       });
