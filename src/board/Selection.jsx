@@ -28,11 +28,11 @@ const BoundingBoxZone = styled.div.attrs(({ top, left, height, width }) => ({
   pointer-events: none;
 `;
 
-const BoundingBox = ({
-  boundingBoxLast,
-  setBoundingBoxLast,
-  selectedItems,
-}) => {
+const BoundingBox = () => {
+  const selectedItems = useRecoilValue(SelectedItemsAtom);
+  const [boundingBoxLast, setBoundingBoxLast] = useRecoilState(
+    SelectionBoxAtom
+  );
   const panZoomRotate = useRecoilValue(PanZoomRotateAtom);
   const itemMap = useRecoilValue(ItemMapAtom);
   const { uid } = useRecoilValue(ConfigurationAtom);
@@ -131,23 +131,13 @@ const BoundingBox = ({
 };
 
 const Selection = () => {
-  const selectedItems = useRecoilValue(SelectedItemsAtom);
   const boardState = useRecoilValue(BoardStateAtom);
-  const [boundingBoxLast, setBoundingBoxLast] = useRecoilState(
-    SelectionBoxAtom
-  );
 
-  return (
-    <>
-      {!boardState.movingItems && (
-        <BoundingBox
-          boundingBoxLast={boundingBoxLast}
-          setBoundingBoxLast={setBoundingBoxLast}
-          selectedItems={selectedItems}
-        />
-      )}
-    </>
-  );
+  if (boardState.movingItems) {
+    return null;
+  }
+
+  return <BoundingBox />;
 };
 
 export default Selection;

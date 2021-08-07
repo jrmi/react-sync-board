@@ -5,15 +5,13 @@ import { nanoid } from "nanoid";
 
 import useC2C, { C2CProvider } from "@/hooks/useC2C";
 
-import { BoardConfigAtom, ConfigurationAtom } from "./board";
+import { ConfigurationAtom } from "./board";
 
 import { userAtom } from "./users/atoms";
 
 import { SubscribeUserEvents } from "./users";
 
 import { insideClass } from "./utils";
-import { useItemBaseActions } from "./board/Items";
-import { MessagesAtom, parseMessage } from "./message/useMessage";
 
 const StyledBoardView = styled.div`
   overflow: hidden;
@@ -24,17 +22,9 @@ const StyledBoardView = styled.div`
   left: 0;
 `;
 
-const emptyList = [];
 const emptyMap = {};
 
-const defaultBoard = {
-  size: 1000,
-};
-
 const SyncBoard = ({
-  initialBoardConfig = defaultBoard,
-  initialItems = emptyList,
-  initialMessages = emptyList,
   itemTemplates = emptyMap,
   actions = emptyMap,
   children,
@@ -44,10 +34,7 @@ const SyncBoard = ({
 
   const { room: session } = useC2C("board");
 
-  const setBoardConfig = useSetRecoilState(BoardConfigAtom);
-  const setMessages = useSetRecoilState(MessagesAtom);
   const [{ uid }, setSettings] = useRecoilState(ConfigurationAtom);
-  const { setItemList } = useItemBaseActions();
 
   React.useEffect(() => {
     // Chrome-related issue.
@@ -80,10 +67,6 @@ const SyncBoard = ({
   }, [session, setCurrentUserState]);
 
   React.useEffect(() => {
-    setBoardConfig(initialBoardConfig);
-  }, [initialBoardConfig, setBoardConfig]);
-
-  React.useEffect(() => {
     setSettings((prev) => ({
       ...prev,
       itemTemplates,
@@ -97,14 +80,6 @@ const SyncBoard = ({
       uid: nanoid(),
     }));
   }, [setSettings]);
-
-  React.useEffect(() => {
-    setItemList(initialItems);
-  }, [initialItems, setItemList]);
-
-  React.useEffect(() => {
-    setMessages(initialMessages.map((m) => parseMessage(m)));
-  }, [initialMessages, setMessages]);
 
   return (
     <StyledBoardView id={uid} className="sync-board" style={style}>

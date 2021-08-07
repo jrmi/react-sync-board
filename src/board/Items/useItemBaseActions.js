@@ -2,6 +2,7 @@ import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import useC2C from "../../hooks/useC2C";
+
 import {
   ItemListAtom,
   SelectedItemsAtom,
@@ -47,7 +48,7 @@ const useItemBaseActions = () => {
   );
 
   const setItemListFull = React.useCallback(
-    (items, sync = true) => {
+    (items) => {
       setItemMap(
         items.reduce((acc, item) => {
           if (item && item.id) {

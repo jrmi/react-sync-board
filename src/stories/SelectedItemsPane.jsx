@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "styled-components";
-import { toast } from "react-toastify";
 import useTranslation from "@/hooks/useTranslation";
 
 import { insideClass, hasClass } from "@/utils";
@@ -123,7 +122,6 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
       if (!foundElement) return;
 
       if (hasClass(foundElement, "locked")) {
-        toast.info(t("Long click to select locked elements"));
         return;
       }
 
@@ -140,7 +138,7 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
         actionMap[filteredActions[0]].action();
       }
     },
-    [actionMap, availableActions, t]
+    [actionMap, availableActions]
   );
 
   React.useEffect(() => {
