@@ -400,7 +400,6 @@ const useItemActions = () => {
 
   const getItems = useRecoilCallback(
     ({ snapshot }) => async (itemIds) => {
-      console.log("itemIds", itemIds);
       const itemMap = await snapshot.getPromise(ItemMapAtom);
       return itemIds.map((id) => itemMap[id]);
     },
