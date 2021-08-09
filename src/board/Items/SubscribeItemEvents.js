@@ -2,7 +2,7 @@ import React from "react";
 import { useSetRecoilState } from "recoil";
 
 import useC2C from "../../hooks/useC2C";
-import useItemBaseActions from "./useItemBaseActions";
+import useItemActions from "./useItemActions";
 
 import { ItemMapAtom } from "../atoms";
 
@@ -16,7 +16,7 @@ export const SubcribeItemEvents = () => {
     moveItems,
     removeItems,
     pushItem,
-  } = useItemBaseActions();
+  } = useItemActions();
 
   const batchUpdate = React.useCallback(
     (updatedItems) => {

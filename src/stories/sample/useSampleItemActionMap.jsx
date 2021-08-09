@@ -2,14 +2,14 @@ import React from "react";
 import useTranslation from "@/hooks/useTranslation";
 import { useRecoilCallback } from "recoil";
 
-import { useItemBaseActions } from "../board/Items";
+import { useItemActions } from "../board/Items";
 import { SelectedItemsAtom, ItemMapAtom } from "../board";
 
 import deleteIcon from "../images/delete.svg";
 import lockIcon from "../images/lock.svg";
 
 const useGameItemActionMap = () => {
-  const { removeItems, batchUpdateItems } = useItemBaseActions();
+  const { removeItems, batchUpdateItems } = useItemActions();
 
   const { t } = useTranslation();
 

@@ -2,7 +2,7 @@ import React from "react";
 import { Form } from "react-final-form";
 
 import AutoSave from "./ui/formUtils/AutoSave";
-import { useItemBaseActions, useSelectedItems, useItems } from "@/";
+import { useItemActions, useSelectedItems, useItems } from "@/";
 
 export const getFormFieldComponent = (type, itemMap) => {
   if (type in itemMap) {
@@ -12,7 +12,7 @@ export const getFormFieldComponent = (type, itemMap) => {
 };
 
 const ItemFormFactory = ({ ItemFormComponent }) => {
-  const { batchUpdateItems } = useItemBaseActions();
+  const { batchUpdateItems } = useItemActions();
   const items = useItems();
   const selectedItems = useSelectedItems();
 

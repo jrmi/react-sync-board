@@ -7,11 +7,11 @@ import SidePanel from "./ui/SidePanel";
 import ItemFormFactory from "./ItemFormFactory";
 import {
   useAvailableActions,
-  useItemActions,
   useSelectionBox,
   useSelectedItems,
   useBoardState,
 } from "@/";
+import useActions from "./sample/useActions";
 
 const ActionPane = styled.div.attrs(({ top, left, height }) => {
   if (top < 120) {
@@ -79,7 +79,7 @@ const CardContent = styled.div.attrs(() => ({ className: "content" }))`
 `;
 
 const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
-  const actionMap = useItemActions();
+  const actionMap = useActions();
 
   const { availableActions } = useAvailableActions();
   const [showEdit, setShowEdit] = React.useState(false);
@@ -104,7 +104,7 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
           showEdit === !!whileEdit
         ) {
           // here
-          action();
+          action(selectedItems);
         }
       });
     };
@@ -112,7 +112,7 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
     return () => {
       document.removeEventListener("keyup", onKeyUp);
     };
-  }, [actionMap, availableActions, showEdit]);
+  }, [actionMap, availableActions, selectedItems, showEdit]);
 
   const onDblClick = React.useCallback(
     (e) => {
@@ -132,13 +132,13 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
       if (e.ctrlKey && filteredActions.length > 1) {
         // Use second action
         // here
-        actionMap[filteredActions[1]].action();
+        actionMap[filteredActions[1]].action(selectedItems);
       } else if (filteredActions.length > 0) {
         // here
-        actionMap[filteredActions[0]].action();
+        actionMap[filteredActions[0]].action(selectedItems);
       }
     },
-    [actionMap, availableActions]
+    [actionMap, availableActions, selectedItems]
   );
 
   React.useEffect(() => {
@@ -205,7 +205,7 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
                   className="button clear icon-only"
                   key={action}
                   // here
-                  onClick={() => handler()}
+                  onClick={() => handler(selectedItems)}
                   title={label + (shortcut ? ` (${shortcut})` : "")}
                 >
                   <img

@@ -16,6 +16,7 @@
     "test": "jest -i",
     "test:coverage": "npm run test -- --coverage",
     "storybook": "start-storybook -p 6006",
+    "prepare": "npm run build",
     "build-storybook": "build-storybook"
   },
   "author": "",

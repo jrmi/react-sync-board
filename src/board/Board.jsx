@@ -1,16 +1,17 @@
 import React from "react";
-import { useRecoilValue } from "recoil";
+import { useSetRecoilState, useRecoilValue } from "recoil";
 
 import { ItemList, SubscribeItemEvents } from "./Items";
 import Selector from "./Selector";
 import ActionPane from "./ActionPane";
 import CursorPane from "./Cursors/CursorPane";
 import PanZoomRotate from "./PanZoomRotate";
-import { BoardConfigAtom } from "./atoms";
+import { BoardConfigAtom, ConfigurationAtom } from "./atoms";
 import Selection from "./Selection";
 import { useUsers } from "../users";
 
-export const Board = ({ moveFirst = true, style }) => {
+export const Board = ({ moveFirst = true, style, itemTemplates = {} }) => {
+  const setSettings = useSetRecoilState(ConfigurationAtom);
   const config = useRecoilValue(BoardConfigAtom);
   const { currentUser, users } = useUsers();
 
@@ -25,6 +26,13 @@ export const Board = ({ moveFirst = true, style }) => {
     [config.size, style]
   );
 
+  React.useEffect(() => {
+    setSettings((prev) => ({
+      ...prev,
+      itemTemplates,
+    }));
+  }, [itemTemplates, setSettings]);
+
   if (!config.size) {
     return null;
   }
@@ -37,7 +45,7 @@ export const Board = ({ moveFirst = true, style }) => {
           <ActionPane>
             <CursorPane user={currentUser} users={users}>
               <div style={boardStyle} className="board">
-                <ItemList />
+                <ItemList itemTemplates={itemTemplates} />
               </div>
             </CursorPane>
           </ActionPane>

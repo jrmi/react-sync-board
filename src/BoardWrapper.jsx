@@ -22,14 +22,7 @@ const StyledBoardView = styled.div`
   left: 0;
 `;
 
-const emptyMap = {};
-
-const SyncBoard = ({
-  itemTemplates = emptyMap,
-  actions = emptyMap,
-  children,
-  style,
-}) => {
+const SyncBoard = ({ children, style }) => {
   const setCurrentUserState = useSetRecoilState(userAtom);
 
   const { room: session } = useC2C("board");
@@ -65,14 +58,6 @@ const SyncBoard = ({
       }));
     };
   }, [session, setCurrentUserState]);
-
-  React.useEffect(() => {
-    setSettings((prev) => ({
-      ...prev,
-      itemTemplates,
-      actions,
-    }));
-  }, [actions, itemTemplates, setSettings]);
 
   React.useEffect(() => {
     setSettings((prev) => ({

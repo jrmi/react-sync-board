@@ -2,7 +2,6 @@ export { default as useC2C } from "./hooks/useC2C";
 
 export { default as useItems } from "./board/Items/useItems";
 export { default as useSelectedItems } from "./board/Items/useSelectedItems";
-export { default as useItemBaseActions } from "./board/Items/useItemBaseActions";
 export { default as useItemActions } from "./board/Items/useItemActions";
 export { default as useItemInteraction } from "./board/Items/useItemInteraction";
 export { default as useAvailableActions } from "./board/Items/useAvailableActions";

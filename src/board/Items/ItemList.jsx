@@ -1,14 +1,9 @@
 import React from "react";
 import { useRecoilValue } from "recoil";
 import Item from "./Item";
-import useItemBaseActions from "./useItemBaseActions";
+import useItemActions from "./useItemActions";
 
-import {
-  ConfigurationAtom,
-  ItemListAtom,
-  ItemMapAtom,
-  SelectedItemsAtom,
-} from "../atoms";
+import { ItemListAtom, ItemMapAtom, SelectedItemsAtom } from "../atoms";
 
 /** Allow to operate on locked items while u or l key is pressed  */
 const useUnlock = () => {
@@ -36,13 +31,12 @@ const useUnlock = () => {
   return unlock;
 };
 
-const ItemList = () => {
-  const { updateItem } = useItemBaseActions();
+const ItemList = ({ itemTemplates }) => {
+  const { updateItem } = useItemActions();
   const itemList = useRecoilValue(ItemListAtom);
   const itemMap = useRecoilValue(ItemMapAtom);
   const selectedItems = useRecoilValue(SelectedItemsAtom);
   const unlocked = useUnlock();
-  const { itemTemplates } = useRecoilValue(ConfigurationAtom);
 
   return itemList.map((itemId) => (
     <Item

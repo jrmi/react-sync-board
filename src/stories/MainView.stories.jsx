@@ -8,13 +8,7 @@ import { nanoid } from "nanoid";
 
 import "./index.css";
 
-import {
-  BoardWrapper,
-  RoomWrapper,
-  useUsers,
-  useItemBaseActions,
-  Board,
-} from "@/";
+import { BoardWrapper, RoomWrapper, useUsers, useItemActions, Board } from "@/";
 
 import { itemMap, ItemForm, actionMap, itemLibrary } from "./sample";
 
@@ -55,7 +49,7 @@ const initialItems = [
 ];
 
 const AddItems = () => {
-  const { pushItem } = useItemBaseActions();
+  const { pushItem } = useItemActions();
 
   const addItem = (key, tpl) => {
     pushItem({ type: key, ...tpl, id: nanoid() });
@@ -94,7 +88,7 @@ const UserList = () => {
 };
 
 const Init = () => {
-  const { setItemList } = useItemBaseActions();
+  const { setItemList } = useItemActions();
   const [, setBoardConfig] = useBoardConfig();
   React.useEffect(() => {
     setItemList(initialItems);
@@ -136,18 +130,12 @@ const Overlay = ({ children, hideMenu }) => (
 const OneViewContent = ({ moveFirst, hideMenu, room, session }) => {
   const socket = useSocket();
   return (
-    <BoardWrapper
-      room={room}
-      session={session}
-      itemTemplates={itemMap}
-      itemLibraries={itemLibraries}
-      actions={actionMap}
-      socket={socket}
-    >
+    <BoardWrapper room={room} session={session} socket={socket}>
       <Overlay hideMenu={hideMenu}>
         <Board
           moveFirst={moveFirst}
           style={{ backgroundColor: "#cca", borderRadius: "2em" }}
+          itemTemplates={itemMap}
         />
       </Overlay>
     </BoardWrapper>
@@ -180,16 +168,9 @@ const OneViewWithRoomContent = ({ moveFirst, hideMenu, room, session }) => {
   const socket = useSocket();
   return (
     <RoomWrapper room={room} socket={socket}>
-      <BoardWrapper
-        session={session}
-        itemTemplates={itemMap}
-        itemLibraries={itemLibraries}
-        actions={actionMap}
-        initialItems={initialItems}
-        socket={socket}
-      >
+      <BoardWrapper session={session} socket={socket}>
         <Overlay hideMenu={hideMenu}>
-          <Board moveFirst={moveFirst} />
+          <Board moveFirst={moveFirst} itemTemplates={itemMap} />
         </Overlay>
       </BoardWrapper>
     </RoomWrapper>
