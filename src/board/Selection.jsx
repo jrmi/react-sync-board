@@ -1,5 +1,4 @@
 import React from "react";
-import styled from "styled-components";
 import { useRecoilValue, useRecoilCallback, useRecoilState } from "recoil";
 import debounce from "lodash.debounce";
 
@@ -12,21 +11,15 @@ import {
   SelectionBoxAtom,
 } from "./atoms";
 
-const BoundingBoxZone = styled.div.attrs(({ top, left, height, width }) => ({
-  style: {
-    transform: `translate(${left}px, ${top}px)`,
-    height: `${height}px`,
-    width: `${width}px`,
-  },
-}))`
-  position: absolute;
-  top: 0;
-  left: 0;
-  z-index: 210;
-  background-color: hsla(0, 40%, 50%, 0%);
-  border: 1px dashed hsl(20, 55%, 40%);
-  pointer-events: none;
-`;
+const defaultZoneStyle = {
+  position: "absolute",
+  top: 0,
+  left: 0,
+  zIndex: 210,
+  backgroundColor: "hsla(0, 40%, 50%, 0%)",
+  border: "1px dashed hsl(20, 55%, 40%)",
+  pointerEvents: "none",
+};
 
 const BoundingBox = () => {
   const selectedItems = useRecoilValue(SelectedItemsAtom);
@@ -127,7 +120,17 @@ const BoundingBox = () => {
 
   if (!boundingBoxLast || selectedItems.length < 2) return null;
 
-  return <BoundingBoxZone {...boundingBoxLast} />;
+  return (
+    <div
+      style={{
+        ...defaultZoneStyle,
+        transform: `translate(${boundingBoxLast.left}px, ${boundingBoxLast.top}px)`,
+        height: `${boundingBoxLast.height}px`,
+        width: `${boundingBoxLast.width}px`,
+      }}
+      className="selection"
+    />
+  );
 };
 
 const Selection = () => {

@@ -1,13 +1,18 @@
 import React, { useContext } from "react";
-import { useSocket } from "@scripters/use-socket.io";
+// import { useSocket } from "@scripters/use-socket.io";
 import { join } from "client2client.io";
 
 import Spinner from "../ui/Spinner";
 
 const Context = React.createContext();
 
-export const C2CProvider = ({ room, channel = "default", children }) => {
-  const socket = useSocket();
+export const C2CProvider = ({
+  socket,
+  room,
+  channel = "default",
+  children,
+}) => {
+  // const socket = useSocket();
   const [joined, setJoined] = React.useState(false);
   const [isMaster, setIsMaster] = React.useState(false);
   const [c2c, setC2c] = React.useState(null);

@@ -1,14 +1,11 @@
 import React from "react";
-import useTranslation from "@/hooks/useTranslation";
-import { toast } from "react-toastify";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import { PanZoomRotateAtom } from "./atoms";
 
-const digitCodes = [...Array(5).keys()].map((id) => `Digit${id}`);
+const digitCodes = [...Array(5).keys()].map((id) => `Digit${id + 1}`);
 
 const usePositionNavigator = () => {
-  const { t } = useTranslation();
   const setDim = useSetRecoilState(PanZoomRotateAtom);
   const [positions, setPositions] = React.useState({});
 
@@ -22,17 +19,13 @@ const usePositionNavigator = () => {
         const dim = await snapshot.getPromise(PanZoomRotateAtom);
         if (e.altKey || e.metaKey || e.ctrlKey) {
           setPositions((prev) => ({ ...prev, [positionKey]: { ...dim } }));
-          toast.info(t("Position saved!"), {
-            autoClose: 800,
-            hideProgressBar: true,
-          });
         } else if (positions[positionKey]) {
           setDim((prev) => ({ ...prev, ...positions[positionKey] }));
         }
         e.preventDefault();
       }
     },
-    [positions, setDim, t]
+    [positions, setDim]
   );
 
   React.useEffect(() => {

@@ -1,6 +1,9 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import React from "react";
-import { Provider as SocketIOProvider } from "@scripters/use-socket.io";
+import {
+  Provider as SocketIOProvider,
+  useSocket,
+} from "@scripters/use-socket.io";
 import { nanoid } from "nanoid";
 
 import "./index.css";
@@ -16,6 +19,7 @@ import {
 import { itemMap, ItemForm, actionMap, itemLibrary } from "./sample";
 
 import SelectedItemsPane from "./SelectedItemsPane";
+import useBoardConfig from "../board/useBoardConfig";
 
 const { SOCKET_URL } = process.env;
 const SOCKET_PATH = process.env.SOCKET_PATH || "/socket.io";
@@ -89,6 +93,16 @@ const UserList = () => {
   );
 };
 
+const Init = () => {
+  const { setItemList } = useItemBaseActions();
+  const [, setBoardConfig] = useBoardConfig();
+  React.useEffect(() => {
+    setItemList(initialItems);
+    setBoardConfig({ size: 1000 });
+  }, [setBoardConfig, setItemList]);
+  return null;
+};
+
 const Overlay = ({ children, hideMenu }) => (
   <div
     style={{
@@ -110,6 +124,7 @@ const Overlay = ({ children, hideMenu }) => (
         padding: "0.5em",
       }}
     >
+      <Init />
       <AddItems />
       <UserList />
     </div>
@@ -118,7 +133,28 @@ const Overlay = ({ children, hideMenu }) => (
   </div>
 );
 
-export const OneView = ({ moveFirst, hideMenu, room, session }) => (
+const OneViewContent = ({ moveFirst, hideMenu, room, session }) => {
+  const socket = useSocket();
+  return (
+    <BoardWrapper
+      room={room}
+      session={session}
+      itemTemplates={itemMap}
+      itemLibraries={itemLibraries}
+      actions={actionMap}
+      socket={socket}
+    >
+      <Overlay hideMenu={hideMenu}>
+        <Board
+          moveFirst={moveFirst}
+          style={{ backgroundColor: "#cca", borderRadius: "2em" }}
+        />
+      </Overlay>
+    </BoardWrapper>
+  );
+};
+
+export const OneView = (props) => (
   <WithSocketIO>
     <div
       style={{
@@ -128,33 +164,39 @@ export const OneView = ({ moveFirst, hideMenu, room, session }) => (
         border: "1px solid black",
       }}
     >
+      <OneViewContent {...props} />
+    </div>
+  </WithSocketIO>
+);
+
+OneView.args = {
+  moveFirst: false,
+  hideMenu: false,
+  room: nanoid(),
+  session: nanoid(),
+};
+
+const OneViewWithRoomContent = ({ moveFirst, hideMenu, room, session }) => {
+  const socket = useSocket();
+  return (
+    <RoomWrapper room={room} socket={socket}>
       <BoardWrapper
-        room={room}
         session={session}
         itemTemplates={itemMap}
         itemLibraries={itemLibraries}
         actions={actionMap}
         initialItems={initialItems}
+        socket={socket}
       >
         <Overlay hideMenu={hideMenu}>
-          <Board
-            moveFirst={moveFirst}
-            style={{ backgroundColor: "#cca", borderRadius: "2em" }}
-          />
+          <Board moveFirst={moveFirst} />
         </Overlay>
       </BoardWrapper>
-    </div>
-  </WithSocketIO>
-);
-
-OneView.args = {
-  moveFirst: false,
-  hideMenu: false,
-  room: nanoid(),
-  session: nanoid(),
+    </RoomWrapper>
+  );
 };
 
-export const OneViewWithRoom = ({ moveFirst, hideMenu, room, session }) => (
+export const OneViewWithRoom = (props) => (
   <WithSocketIO>
     <div
       style={{
@@ -164,31 +206,19 @@ export const OneViewWithRoom = ({ moveFirst, hideMenu, room, session }) => (
         border: "1px solid black",
       }}
     >
-      <RoomWrapper room={room}>
-        <BoardWrapper
-          session={session}
-          itemTemplates={itemMap}
-          itemLibraries={itemLibraries}
-          actions={actionMap}
-          initialItems={initialItems}
-        >
-          <Overlay hideMenu={hideMenu}>
-            <Board moveFirst={moveFirst} />
-          </Overlay>
-        </BoardWrapper>
-      </RoomWrapper>
+      <OneViewWithRoomContent {...props} />
     </div>
   </WithSocketIO>
 );
 
-OneView.args = {
+OneViewWithRoom.args = {
   moveFirst: false,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),
 };
 
-export const TwoView = ({ moveFirst, hideMenu }) => {
+export const TwoView = (props) => {
   // Generate stable room and sessions
   const [[room, session]] = React.useState(() => [nanoid(), nanoid()]);
 
@@ -209,18 +239,7 @@ export const TwoView = ({ moveFirst, hideMenu }) => {
             border: "1px solid grey",
           }}
         >
-          <BoardWrapper
-            room={room}
-            session={session}
-            itemTemplates={itemMap}
-            itemLibraries={itemLibraries}
-            actions={actionMap}
-            initialItems={initialItems}
-          >
-            <Overlay hideMenu={hideMenu}>
-              <Board moveFirst={moveFirst} />
-            </Overlay>
-          </BoardWrapper>
+          <OneViewContent room={room} session={session} {...props} />
         </div>
       </WithSocketIO>
       <WithSocketIO>
@@ -232,18 +251,7 @@ export const TwoView = ({ moveFirst, hideMenu }) => {
             border: "1px solid grey",
           }}
         >
-          <BoardWrapper
-            room={room}
-            session={session}
-            itemTemplates={itemMap}
-            itemLibraries={itemLibraries}
-            actions={actionMap}
-            initialItems={initialItems}
-          >
-            <Overlay hideMenu={hideMenu}>
-              <Board moveFirst={moveFirst} />
-            </Overlay>
-          </BoardWrapper>
+          <OneViewContent room={room} session={session} {...props} />
         </div>
       </WithSocketIO>
     </div>

@@ -1,7 +1,9 @@
 import React from "react";
-import platform from "platform";
 
-export const isMacOS = () => platform.os.family === "OS X";
+export const isMacOS = () => {
+  const userAgent = navigator.userAgent.toLowerCase();
+  return /mac osx 10/.test(userAgent);
+};
 
 // From https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
 const getScrollLineHeight = () => {

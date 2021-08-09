@@ -6,12 +6,12 @@ import { C2CProvider } from "@/hooks/useC2C";
 
 import { SubscribeUserEvents } from "./users";
 
-const ConnectedSyncRoom = ({ room: givenRoom, children }) => {
+const ConnectedSyncRoom = ({ socket, room: givenRoom, children }) => {
   const [room] = React.useState(() => givenRoom || nanoid());
 
   return (
     <RecoilRoot>
-      <C2CProvider room={room} channel="room">
+      <C2CProvider room={room} channel="room" socket={socket}>
         <SubscribeUserEvents />
         {children}
       </C2CProvider>

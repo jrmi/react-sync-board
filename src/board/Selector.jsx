@@ -1,6 +1,5 @@
 import React from "react";
 import throttle from "lodash.throttle";
-import styled from "styled-components";
 import { useRecoilValue, useSetRecoilState, useRecoilCallback } from "recoil";
 
 import { insideClass, isItemInsideElement } from "../utils";
@@ -15,22 +14,12 @@ import {
 
 import Gesture from "./Gesture";
 
-const SelectorZone = styled.div.attrs(({ top, left, height, width }) => ({
-  className: "selector",
-  style: {
-    transform: `translate(${left}px, ${top}px)`,
-    height: `${height}px`,
-    width: `${width}px`,
-  },
-}))`
-  transform: ${({ left, top }) => `translate(${left}px, ${top}px)`};
-  height: ${({ height }) => `${height}px`};
-  width: ${({ width }) => `${width}px`};
-  z-index: 210;
-  position: absolute;
-  background-color: hsla(0, 40%, 50%, 10%);
-  border: 2px solid hsl(0, 55%, 40%);
-`;
+const defaultSelectorStyle = {
+  zIndex: 210,
+  position: "absolute",
+  backgroundColor: "hsla(0, 40%, 50%, 10%)",
+  border: "2px solid hsl(0, 55%, 40%)",
+};
 
 const findSelected = (itemMap) => {
   const selector = document.body.querySelector(".selector");
@@ -205,7 +194,17 @@ const Selector = ({ children, moveFirst }) => {
       onLongTap={onLongTap}
     >
       <div ref={wrapperRef}>
-        {selector.moving && <SelectorZone {...selector} />}
+        {selector.moving && (
+          <div
+            style={{
+              ...defaultSelectorStyle,
+              transform: `translate(${selector.left}px, ${selector.top}px)`,
+              height: `${selector.height}px`,
+              width: `${selector.width}px`,
+            }}
+            className="selector"
+          />
+        )}
         {children}
       </div>
     </Gesture>

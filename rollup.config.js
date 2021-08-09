@@ -7,12 +7,13 @@ import alias from "@rollup/plugin-alias";
 import path from "path";
 import css from "rollup-plugin-css-only";
 import pkg from "./package.json";
+// import analyze from "rollup-plugin-analyzer";
 
 const projectRootDir = path.resolve(__dirname);
 
 const input = ["src/index.js"];
 export default [
-  /*{
+  {
     // UMD
     input,
     plugins: [
@@ -41,17 +42,11 @@ export default [
       exports: "named",
       sourcemap: true,
     },
-  },*/
+  },
   // ESM and CJS
   {
     input,
-    external: [
-      "react",
-      "react-dom",
-      "@scripters/use-socket.io",
-      "styled-components",
-      "react-final-form",
-    ],
+    external: ["react", "react-dom", "recoil", "@scripters/use-socket.io"],
     plugins: [
       alias({
         entries: [
@@ -67,6 +62,7 @@ export default [
       }),
       css({ output: "bundle.css" }),
       image(),
+      // analyze({ summaryOnly: true }),
     ],
     output: [
       {
@@ -78,7 +74,7 @@ export default [
           crypto: "crypto",
         },
       },
-      /* {
+      {
         dir: "dist/cjs",
         format: "cjs",
         exports: "named",
@@ -86,7 +82,7 @@ export default [
         globals: {
           crypto: "crypto",
         },
-      },*/
+      },
     ],
   },
 ];

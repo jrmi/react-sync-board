@@ -6,7 +6,6 @@ import {
   useSetRecoilState,
   useRecoilCallback,
 } from "recoil";
-import styled from "styled-components";
 import debounce from "lodash.debounce";
 import {
   BoardConfigAtom,
@@ -22,16 +21,6 @@ import Gesture from "./Gesture";
 import usePositionNavigator from "./usePositionNavigator";
 
 const TOLERANCE = 100;
-
-const Pane = styled.div.attrs(({ translateX, translateY, scale, rotate }) => ({
-  style: {
-    transform: `translate(${translateX}px, ${translateY}px) scale(${scale}) rotate(${rotate}deg)`,
-  },
-  className: "board-pane",
-}))`
-  transform-origin: top left;
-  display: inline-block;
-`;
 
 const PanZoomRotate = ({ children, moveFirst }) => {
   const wrappedRef = React.useRef(null);
@@ -346,15 +335,20 @@ const PanZoomRotate = ({ children, moveFirst }) => {
 
   return (
     <Gesture onPan={onPan} onZoom={onZoom} onDrag={onDrag}>
-      <Pane
-        {...dim}
+      <div
+        style={{
+          transformOrigin: "top left",
+          display: "inline-block",
+          transform: `translate(${dim.translateX}px, ${dim.translateY}px) scale(${dim.scale}) rotate(${dim.rotate}deg)`,
+        }}
+        className="board-pane"
         ref={wrappedRef}
         onContextMenu={(e) => {
           e.preventDefault();
         }}
       >
         {children}
-      </Pane>
+      </div>
     </Gesture>
   );
 };

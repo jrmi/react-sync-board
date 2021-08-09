@@ -88,9 +88,9 @@ const SyncBoard = ({
   );
 };
 
-const ConnectedSyncBoard = (props) => {
-  const [room] = React.useState(props.room || nanoid());
-  const [session] = React.useState(props.session || nanoid());
+const ConnectedSyncBoard = ({ socket, room, session, ...props }) => {
+  const [stableRoom] = React.useState(room || nanoid());
+  const [stableSession] = React.useState(session || nanoid());
 
   const roomChannel = useC2C("room");
 
@@ -98,9 +98,9 @@ const ConnectedSyncBoard = (props) => {
     // No room declared so we create one
     return (
       <RecoilRoot>
-        <C2CProvider room={room} channel="room">
+        <C2CProvider room={stableRoom} channel="room" socket={socket}>
           <SubscribeUserEvents />
-          <C2CProvider room={session} channel="board">
+          <C2CProvider room={stableSession} channel="board" socket={socket}>
             <SyncBoard {...props} />
           </C2CProvider>
         </C2CProvider>
@@ -108,7 +108,7 @@ const ConnectedSyncBoard = (props) => {
     );
   }
   return (
-    <C2CProvider room={session} channel="board">
+    <C2CProvider room={stableSession} channel="board" socket={socket}>
       <SyncBoard {...props} />
     </C2CProvider>
   );

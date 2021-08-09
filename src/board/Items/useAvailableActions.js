@@ -1,6 +1,5 @@
 import React from "react";
 import { useRecoilValue, useRecoilCallback } from "recoil";
-import intersection from "lodash.intersection";
 
 import { SelectedItemsAtom, ItemMapAtom } from "..";
 import { ConfigurationAtom } from "../atoms";
@@ -69,10 +68,11 @@ const useAvailableActions = () => {
       // Prevent set state on unmounted component
       if (!isMountedRef.current) return;
 
-      const allActions = selectedItemList.reduce(
-        (acc, item) => intersection(acc, getActionsFromItem(item, itemMap)),
-        getActionsFromItem(selectedItemList[0], itemMap)
-      );
+      const allActions = selectedItemList.reduce((acc, item) => {
+        const itemActions = getActionsFromItem(item, itemMap);
+        return acc.filter((value) => itemActions.includes(value));
+        // intersection(acc, getActionsFromItem(item, itemMap)),
+      }, getActionsFromItem(selectedItemList[0], itemMap));
 
       setAvailableActions(allActions);
     } else {
