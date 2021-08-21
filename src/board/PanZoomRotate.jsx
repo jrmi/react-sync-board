@@ -316,6 +316,9 @@ const PanZoomRotate = ({ children, moveFirst }) => {
 
   const onKeyUp = React.useCallback(
     (e) => {
+      // Ignore text in Input or Textarea
+      if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+
       // Zoom out on release
       if (e.key === " ") {
         zoomTo(1 / 3);
