@@ -10,13 +10,13 @@ import "./index.css";
 
 import { BoardWrapper, RoomWrapper, useUsers, useItemActions, Board } from "@/";
 
-import { itemMap, ItemForm, actionMap, itemLibrary } from "./sample";
+import { itemMap, ItemForm } from "./sample";
 
 import SelectedItemsPane from "./SelectedItemsPane";
 import useBoardConfig from "../board/useBoardConfig";
 
-const { SOCKET_URL } = process.env;
-const SOCKET_PATH = process.env.SOCKET_PATH || "/socket.io";
+const { STORYBOOK_SOCKET_URL } = process.env;
+const SOCKET_PATH = process.env.STORYBOOK_SOCKET_PATH || "/socket.io";
 
 const SOCKET_OPTIONS = {
   forceNew: true,
@@ -25,7 +25,7 @@ const SOCKET_OPTIONS = {
 };
 
 const WithSocketIO = ({ children }) => (
-  <SocketIOProvider url={SOCKET_URL} options={SOCKET_OPTIONS}>
+  <SocketIOProvider url={STORYBOOK_SOCKET_URL} options={SOCKET_OPTIONS}>
     {children}
   </SocketIOProvider>
 );
@@ -34,14 +34,6 @@ export default {
   component: BoardWrapper,
   title: "SyncBoard/Main",
 };
-
-const itemLibraries = [
-  {
-    name: "Standard",
-    key: "standard",
-    items: itemLibrary,
-  },
-];
 
 const initialItems = [
   { type: "round", x: 450, y: 450, id: "test", color: "#923456" },
