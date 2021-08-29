@@ -5,6 +5,10 @@ time collaboration on a board to any React project.
 
 You can see it live in [AirBoardGame](https://airboardgame.net/) website.
 
+## Demo
+
+You can access the demo storybook [here](https://react-sync-board.netlify.app).
+
 ## Installation
 
 ```sh
