@@ -112,7 +112,7 @@ const Item = ({
         onKeyDown={(e) => e.stopPropagation()}
         onKeyUp={(e) => e.stopPropagation()}
       >
-        <Component {...rest} setState={updateState} />
+        <Component {...rest} id={id} setState={updateState} />
         <div className="corner top-left"></div>
         <div className="corner top-right"></div>
         <div className="corner bottom-left"></div>
