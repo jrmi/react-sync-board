@@ -130,7 +130,7 @@ const useItemActions = () => {
           // If item specific
           if (itemType) {
             type = itemType;
-            size = itemSize;
+            size = itemSize || 1;
           }
 
           const [centerX, centerY] = [
