@@ -196,8 +196,8 @@ const useItemActions = () => {
               }
               break;
             default:
-              newX = item.x;
-              newY = item.y;
+              newX = item.x + elem.clientWidth / 2;
+              newY = item.y + elem.clientHeight / 2;
           }
 
           result[id] = {
