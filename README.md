@@ -15,15 +15,15 @@ You can access the demo storybook [here](https://react-sync-board.netlify.app).
 npm install react-sync-board
 ```
 
-You need an up and running instance of the [client2client.io](https://github.com/jrmi/client2client.io)
+You need an up and running instance of the [wire.io](https://github.com/jrmi/wire.io)
 server to be able to synchronize two boards. You can achieve that by using npm >= v7
 and execute:
 
 ```sh
-npx client2client.io
+npx wire.io
 ```
 
-See [client2client.io](https://github.com/jrmi/client2client.io) for mor information.
+See [wire.io](https://github.com/jrmi/wire.io) for more information.
 
 ## Usage
 
@@ -40,4 +40,4 @@ npm ci
 npm start
 ```
 
-Remember to start a client2client.io instance as explained above.
+Remember to start a `wire.io` instance as explained above.

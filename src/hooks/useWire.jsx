@@ -1,21 +1,19 @@
 import React, { useContext } from "react";
-// import { useSocket } from "@scripters/use-socket.io";
-import { join } from "client2client.io";
+import { joinWire } from "wire.io";
 
 import Spinner from "../ui/Spinner";
 
 const Context = React.createContext();
 
-export const C2CProvider = ({
+export const WireProvider = ({
   socket,
   room,
   channel = "default",
   children,
 }) => {
-  // const socket = useSocket();
   const [joined, setJoined] = React.useState(false);
   const [isMaster, setIsMaster] = React.useState(false);
-  const [c2c, setC2c] = React.useState(null);
+  const [wire, setWire] = React.useState(null);
   const roomRef = React.useRef(null);
   const mountedRef = React.useRef(false);
   const existingC2C = useContext(Context);
@@ -53,8 +51,8 @@ export const C2CProvider = ({
     if (!socket.connected) {
       socket.connect();
     }
-    console.log(`Try to connect to room ${room} on channel ${channel}`);
-    join({
+    console.log(`Try to connect to wire ${room} on channel ${channel}`);
+    joinWire({
       socket,
       room,
       onMaster: () => {
@@ -67,7 +65,7 @@ export const C2CProvider = ({
         roomRef.current = newRoom;
 
         if (!mountedRef.current) return;
-        setC2c(newRoom);
+        setWire(newRoom);
         setJoined(true);
       },
     });
@@ -77,7 +75,7 @@ export const C2CProvider = ({
     };
   }, [channel, room, socket]);
 
-  if (!joined || !c2c) {
+  if (!joined || !wire) {
     return (
       <div
         style={{
@@ -97,16 +95,16 @@ export const C2CProvider = ({
 
   return (
     <Context.Provider
-      value={{ ...existingC2C, [channel]: { c2c, joined, isMaster, room } }}
+      value={{ ...existingC2C, [channel]: { wire, joined, isMaster, room } }}
     >
       {children}
     </Context.Provider>
   );
 };
 
-const useC2C = (channel = "default") => {
+const useWire = (channel = "default") => {
   const channels = useContext(Context) || {};
   return channels[channel];
 };
 
-export default useC2C;
+export default useWire;

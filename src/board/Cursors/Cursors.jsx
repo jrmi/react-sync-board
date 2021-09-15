@@ -1,10 +1,10 @@
 import React from "react";
 
-import useC2C from "../../hooks/useC2C";
+import useWire from "../../hooks/useWire";
 import Cursor from "./Cursor";
 
 const Cursors = ({ users }) => {
-  const { c2c } = useC2C("board");
+  const { wire } = useWire("board");
   const [cursors, setCursors] = React.useState({});
 
   const preventRef = React.useRef(false);
@@ -44,7 +44,7 @@ const Cursors = ({ users }) => {
   React.useEffect(() => {
     const unsub = [];
     unsub.push(
-      c2c.subscribe("cursorMove", ({ userId, pos }) => {
+      wire.subscribe("cursorMove", ({ userId, pos }) => {
         // Avoid move after cursor off
         if (preventRef.current) return;
 
@@ -55,7 +55,7 @@ const Cursors = ({ users }) => {
       })
     );
     unsub.push(
-      c2c.subscribe("cursorOff", ({ userId }) => {
+      wire.subscribe("cursorOff", ({ userId }) => {
         setCursors((prevCursors) => {
           const newCursors = {
             ...prevCursors,
@@ -73,7 +73,7 @@ const Cursors = ({ users }) => {
     return () => {
       unsub.map((c) => c());
     };
-  }, [c2c]);
+  }, [wire]);
 
   return (
     <div>

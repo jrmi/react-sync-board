@@ -2,21 +2,21 @@ import React from "react";
 import { useRecoilValue } from "recoil";
 
 import Cursors from "./Cursors";
-import useC2C from "../../hooks/useC2C";
+import useWire from "../../hooks/useWire";
 import { PanZoomRotateAtom } from "../atoms";
 
 export const Board = ({ children, user, users }) => {
-  const { c2c } = useC2C("board");
+  const { wire } = useWire("board");
   const panZoomRotate = useRecoilValue(PanZoomRotateAtom);
 
   const publish = React.useCallback(
     (newPos) => {
-      c2c.publish("cursorMove", {
+      wire.publish("cursorMove", {
         userId: user.id,
         pos: newPos,
       });
     },
-    [c2c, user.id]
+    [wire, user.id]
   );
 
   const onMouseMove = (e) => {
@@ -28,7 +28,7 @@ export const Board = ({ children, user, users }) => {
   };
 
   const onLeave = () => {
-    c2c.publish("cursorOff", {
+    wire.publish("cursorOff", {
       userId: user.id,
     });
   };

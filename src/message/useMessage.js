@@ -5,7 +5,7 @@ import { atom, useRecoilState, useRecoilCallback } from "recoil";
 import dayjs from "dayjs";
 
 import { useUsers } from "../users";
-import useC2C from "../hooks/useC2C";
+import useWire from "../hooks/useWire";
 
 export const MessagesAtom = atom({
   key: "messages",
@@ -40,7 +40,7 @@ const noop = () => {};
 
 const useMessage = (onMessage = noop, subscribeEvents = false) => {
   const [messages, setMessagesState] = useRecoilState(MessagesAtom);
-  const { c2c, isMaster } = useC2C("board");
+  const { wire, isMaster } = useWire("board");
   const { currentUser } = useUsers();
 
   const getMessage = useRecoilCallback(
@@ -61,7 +61,7 @@ const useMessage = (onMessage = noop, subscribeEvents = false) => {
   const initEvents = React.useCallback(
     (unsub) => {
       unsub.push(
-        c2c.subscribe("newMessage", (newMessage) => {
+        wire.subscribe("newMessage", (newMessage) => {
           setMessagesState((prevMessages) => [
             ...prevMessages,
             parseMessage(newMessage),
@@ -70,17 +70,17 @@ const useMessage = (onMessage = noop, subscribeEvents = false) => {
         })
       );
       if (isMaster) {
-        c2c.register("getMessageHistory", getMessage).then((unregister) => {
+        wire.register("getMessageHistory", getMessage).then((unregister) => {
           unsub.push(unregister);
         });
       } else {
-        c2c.call("getMessageHistory").then((messageHistory) => {
+        wire.call("getMessageHistory").then((messageHistory) => {
           setMessages(messageHistory);
         });
       }
       return unsub;
     },
-    [c2c, getMessage, isMaster, onMessage, setMessages, setMessagesState]
+    [wire, getMessage, isMaster, onMessage, setMessages, setMessagesState]
   );
 
   React.useEffect(() => {
@@ -101,9 +101,9 @@ const useMessage = (onMessage = noop, subscribeEvents = false) => {
         user: currentUser,
         content: messageContent,
       });
-      if (newMessage) c2c.publish("newMessage", newMessage, true);
+      if (newMessage) wire.publish("newMessage", newMessage, true);
     },
-    [c2c, currentUser]
+    [wire, currentUser]
   );
 
   return { messages, setMessages, sendMessage };

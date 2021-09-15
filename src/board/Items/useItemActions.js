@@ -1,7 +1,7 @@
 import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
-import useC2C from "../../hooks/useC2C";
+import useWire from "../../hooks/useWire";
 
 import {
   ItemListAtom,
@@ -13,7 +13,7 @@ import {
 import useItemInteraction from "./useItemInteraction";
 
 const useItemActions = () => {
-  const { c2c } = useC2C("board");
+  const { wire } = useWire("board");
   const { call: callPlaceInteractions } = useItemInteraction("place");
 
   const setItemList = useSetRecoilState(ItemListAtom);
@@ -39,12 +39,12 @@ const useItemActions = () => {
           updatedItems[id] = newItem;
         });
         if (sync) {
-          c2c.publish("batchItemsUpdate", updatedItems);
+          wire.publish("batchItemsUpdate", updatedItems);
         }
         return result;
       });
     },
-    [c2c, setItemMap]
+    [wire, setItemMap]
   );
 
   const setItemListFull = React.useCallback(
@@ -87,13 +87,13 @@ const useItemActions = () => {
       });
 
       if (sync) {
-        c2c.publish("selectedItemsMove", {
+        wire.publish("selectedItemsMove", {
           itemIds,
           posDelta,
         });
       }
     },
-    [c2c, setItemMap]
+    [wire, setItemMap]
   );
 
   const putItemsOnTop = React.useCallback(
@@ -107,12 +107,12 @@ const useItemActions = () => {
         );
         const result = [...filtered, ...toBePutOnTop];
         if (sync) {
-          c2c.publish("updateItemListOrder", result);
+          wire.publish("updateItemListOrder", result);
         }
         return result;
       });
     },
-    [setItemList, c2c]
+    [setItemList, wire]
   );
 
   const stickOnGrid = React.useCallback(
@@ -211,10 +211,10 @@ const useItemActions = () => {
       });
 
       if (sync) {
-        c2c.publish("batchItemsUpdate", updatedItems);
+        wire.publish("batchItemsUpdate", updatedItems);
       }
     },
-    [c2c, setItemMap]
+    [wire, setItemMap]
   );
 
   const placeItems = React.useCallback(
@@ -241,10 +241,10 @@ const useItemActions = () => {
     (newOrder, sync = true) => {
       setItemList(newOrder);
       if (sync) {
-        c2c.publish("updateItemListOrder", newOrder);
+        wire.publish("updateItemListOrder", newOrder);
       }
     },
-    [c2c, setItemList]
+    [wire, setItemList]
   );
 
   const reverseItemsOrder = React.useCallback(
@@ -260,7 +260,7 @@ const useItemActions = () => {
           return itemId;
         });
         if (sync) {
-          c2c.publish("updateItemListOrder", result);
+          wire.publish("updateItemListOrder", result);
         }
         return result;
       });
@@ -271,7 +271,7 @@ const useItemActions = () => {
         return reversed;
       });
     },
-    [setItemList, c2c, setSelectItems]
+    [setItemList, wire, setSelectItems]
   );
 
   const swapItems = useRecoilCallback(
@@ -299,7 +299,7 @@ const useItemActions = () => {
           return prev;
         }, {});
         if (sync) {
-          c2c.publish("batchItemsUpdate", updatedItems);
+          wire.publish("batchItemsUpdate", updatedItems);
         }
         return { ...prevItemMap, ...updatedItems };
       });
@@ -319,12 +319,12 @@ const useItemActions = () => {
         });
 
         if (sync) {
-          c2c.publish("updateItemListOrder", result);
+          wire.publish("updateItemListOrder", result);
         }
         return result;
       });
     },
-    [c2c, setItemList, setItemMap]
+    [wire, setItemList, setItemMap]
   );
 
   const pushItems = useRecoilCallback(
@@ -353,11 +353,11 @@ const useItemActions = () => {
           return [...prevItemList, newItem.id];
         });
         if (sync) {
-          c2c.publish("insertItemBefore", [newItem, beforeId]);
+          wire.publish("insertItemBefore", [newItem, beforeId]);
         }
       });
     },
-    [c2c, setItemList, setItemMap]
+    [wire, setItemList, setItemMap]
   );
 
   const pushItem = React.useCallback(
@@ -387,10 +387,10 @@ const useItemActions = () => {
       });
 
       if (sync) {
-        c2c.publish("removeItems", itemsIdToRemove);
+        wire.publish("removeItems", itemsIdToRemove);
       }
     },
-    [c2c, setItemList, setItemMap, setSelectItems]
+    [wire, setItemList, setItemMap, setSelectItems]
   );
 
   const getItemList = useRecoilCallback(
