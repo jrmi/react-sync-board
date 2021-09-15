@@ -2,19 +2,19 @@ import React from "react";
 import { useRecoilState } from "recoil";
 import debounce from "lodash.debounce";
 
-import useC2C from "../hooks/useC2C";
+import useWire from "../hooks/useWire";
 import { BoardConfigAtom } from "./atoms";
 
 const useBoardConfig = () => {
-  const { c2c } = useC2C("board");
+  const { wire } = useWire("board");
   const [boardConfig, setBoardConfig] = useRecoilState(BoardConfigAtom);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const debouncedPublishUpdate = React.useCallback(
     debounce((newConfig) => {
-      c2c.publish("updateBoardConfig", newConfig);
+      wire.publish("updateBoardConfig", newConfig);
     }, 1000),
-    [c2c]
+    [wire]
   );
 
   const setSyncBoardConfig = React.useCallback(

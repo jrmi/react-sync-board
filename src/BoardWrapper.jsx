@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 import { RecoilRoot, useSetRecoilState, useRecoilState } from "recoil";
 import { nanoid } from "nanoid";
 
-import useC2C, { C2CProvider } from "@/hooks/useC2C";
+import useWire, { WireProvider } from "@/hooks/useWire";
 
 import { ConfigurationAtom } from "./board";
 
@@ -25,7 +25,7 @@ const StyledBoardView = styled.div`
 const SyncBoard = ({ children, style }) => {
   const setCurrentUserState = useSetRecoilState(userAtom);
 
-  const { room: session } = useC2C("board");
+  const { room: session } = useWire("board");
 
   const [{ uid }, setSettings] = useRecoilState(ConfigurationAtom);
 
@@ -77,25 +77,25 @@ const ConnectedSyncBoard = ({ socket, room, session, ...props }) => {
   const [stableRoom] = React.useState(room || nanoid());
   const [stableSession] = React.useState(session || nanoid());
 
-  const roomChannel = useC2C("room");
+  const roomChannel = useWire("room");
 
   if (!roomChannel) {
     // No room declared so we create one
     return (
       <RecoilRoot>
-        <C2CProvider room={stableRoom} channel="room" socket={socket}>
+        <WireProvider room={stableRoom} channel="room" socket={socket}>
           <SubscribeUserEvents />
-          <C2CProvider room={stableSession} channel="board" socket={socket}>
+          <WireProvider room={stableSession} channel="board" socket={socket}>
             <SyncBoard {...props} />
-          </C2CProvider>
-        </C2CProvider>
+          </WireProvider>
+        </WireProvider>
       </RecoilRoot>
     );
   }
   return (
-    <C2CProvider room={stableSession} channel="board" socket={socket}>
+    <WireProvider room={stableSession} channel="board" socket={socket}>
       <SyncBoard {...props} />
-    </C2CProvider>
+    </WireProvider>
   );
 };
 

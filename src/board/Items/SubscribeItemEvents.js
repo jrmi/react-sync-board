@@ -1,13 +1,13 @@
 import React from "react";
 import { useSetRecoilState } from "recoil";
 
-import useC2C from "../../hooks/useC2C";
+import useWire from "../../hooks/useWire";
 import useItemActions from "./useItemActions";
 
 import { ItemMapAtom } from "../atoms";
 
 export const SubcribeItemEvents = () => {
-  const { c2c } = useC2C("board");
+  const { wire } = useWire("board");
 
   const setItemMap = useSetRecoilState(ItemMapAtom);
 
@@ -26,49 +26,49 @@ export const SubcribeItemEvents = () => {
   );
 
   React.useEffect(() => {
-    const unsub = c2c.subscribe("batchItemsUpdate", (updatedItems) => {
+    const unsub = wire.subscribe("batchItemsUpdate", (updatedItems) => {
       batchUpdate(updatedItems);
     });
     return unsub;
-  }, [c2c, batchUpdate]);
+  }, [wire, batchUpdate]);
 
   React.useEffect(() => {
-    const unsub = c2c.subscribe(
+    const unsub = wire.subscribe(
       "selectedItemsMove",
       ({ itemIds, posDelta }) => {
         moveItems(itemIds, posDelta, false);
       }
     );
     return unsub;
-  }, [c2c, moveItems]);
+  }, [wire, moveItems]);
 
   React.useEffect(() => {
-    const unsub = c2c.subscribe("updateItemListOrder", (itemIds) => {
+    const unsub = wire.subscribe("updateItemListOrder", (itemIds) => {
       updateItemOrder(itemIds, false);
     });
     return unsub;
-  }, [c2c, updateItemOrder]);
+  }, [wire, updateItemOrder]);
 
   React.useEffect(() => {
-    const unsub = c2c.subscribe("pushItem", (newItem) => {
+    const unsub = wire.subscribe("pushItem", (newItem) => {
       pushItem(newItem, null, false);
     });
     return unsub;
-  }, [c2c, pushItem]);
+  }, [wire, pushItem]);
 
   React.useEffect(() => {
-    const unsub = c2c.subscribe("insertItemBefore", ([newItem, beforeId]) => {
+    const unsub = wire.subscribe("insertItemBefore", ([newItem, beforeId]) => {
       pushItem(newItem, beforeId, false);
     });
     return unsub;
-  }, [c2c, pushItem]);
+  }, [wire, pushItem]);
 
   React.useEffect(() => {
-    const unsub = c2c.subscribe("removeItems", (itemIds) => {
+    const unsub = wire.subscribe("removeItems", (itemIds) => {
       removeItems(itemIds, false);
     });
     return unsub;
-  }, [c2c, removeItems]);
+  }, [wire, removeItems]);
 
   return null;
 };

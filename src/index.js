@@ -1,4 +1,4 @@
-export { default as useC2C } from "./hooks/useC2C";
+export { default as useWire } from "./hooks/useWire";
 
 export { default as useItems } from "./board/Items/useItems";
 export { default as useSelectedItems } from "./board/Items/useSelectedItems";
