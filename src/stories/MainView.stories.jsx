@@ -36,6 +36,22 @@ export default {
 };
 
 const initialItems = [
+  {
+    type: "cube",
+    x: 400,
+    y: 250,
+    id: "test00",
+    color: "#023456",
+    actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
+  },
+  {
+    type: "cube",
+    x: 450,
+    y: 250,
+    id: "test01",
+    color: "#727456",
+    actions: ["rotate45", { name: "rotate", args: { angle: 20 } }, "remove"],
+  },
   { type: "round", x: 450, y: 450, id: "test", color: "#923456" },
   { type: "token", x: 650, y: 450, id: "test2", color: "#0077AA" },
 ];

@@ -1,9 +1,16 @@
 import React from "react";
+import deepEqual from "fast-deep-equal/es6";
 import { useRecoilValue, useRecoilCallback } from "recoil";
 
 import { SelectedItemsAtom, ItemMapAtom } from "..";
 import { ConfigurationAtom } from "../atoms";
 
+/**
+ * Returns the default actions of an item
+ * @param {object} item to consider
+ * @param {object} itemMap item template map with default actions
+ * @returns An array of default action for this item
+ */
 const getDefaultActionsFromItem = (item, itemMap) => {
   if (item.type in itemMap) {
     const actions = itemMap[item.type].defaultActions;
@@ -16,24 +23,21 @@ const getDefaultActionsFromItem = (item, itemMap) => {
   return [];
 };
 
-const getAvailableActionsFromItem = (item, itemMap) => {
-  if (item.type in itemMap) {
-    const actions = itemMap[item.type].availableActions;
-    if (typeof actions === "function") {
-      return actions(item);
-    }
-    return actions;
-  }
-
-  return [];
-};
-
+/**
+ * Returns actual actions from an item ordered by the configured available
+ * actions. If no action is defined, default actions are returned.
+ * @param {object} item item to use
+ * @param {object} itemMap item template map with available action for this item
+ * @returns the array of actions for this item
+ */
 const getActionsFromItem = (item, itemMap) => {
   const { actions = getDefaultActionsFromItem(item, itemMap) } = item;
-  // Filter availableActions to keep same order
-  return getAvailableActionsFromItem(item, itemMap).filter((action) =>
-    actions.includes(action)
-  );
+  return actions.map((action) => {
+    if (typeof action === "string") {
+      return { name: action };
+    }
+    return action;
+  });
 };
 
 const useAvailableActions = () => {
@@ -62,6 +66,10 @@ const useAvailableActions = () => {
     };
   }, []);
 
+  /**
+   * Returns available actions for selected items. An action is kept only if all
+   * items have this exact same action with same parameters.
+   */
   const updateAvailableActions = React.useCallback(async () => {
     const [selectedItemIds, selectedItemList] = await getItemListOrSelected();
     if (selectedItemIds.length > 0) {
@@ -70,8 +78,10 @@ const useAvailableActions = () => {
 
       const allActions = selectedItemList.reduce((acc, item) => {
         const itemActions = getActionsFromItem(item, itemMap);
-        return acc.filter((value) => itemActions.includes(value));
-        // intersection(acc, getActionsFromItem(item, itemMap)),
+
+        return acc.filter((value) =>
+          itemActions.some((itemAction) => deepEqual(value, itemAction))
+        );
       }, getActionsFromItem(selectedItemList[0], itemMap));
 
       setAvailableActions(allActions);

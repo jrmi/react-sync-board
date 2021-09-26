@@ -91,6 +91,17 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
 
   const selectionBox = useSelectionBox();
 
+  const parsedAvailableActions = availableActions.map((action) => {
+    if (typeof action === "string") {
+      return actionMap[action];
+    }
+    const realAction = actionMap[action.name];
+    return {
+      ...realAction,
+      action: (itemIds) => realAction.action(itemIds, action.args),
+    };
+  });
+
   React.useEffect(() => {
     const onKeyUp = (e) => {
       // Block shortcut if we are typing in a textarea or input
@@ -189,33 +200,34 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
             </div>
           )}
           {!boardState.selecting &&
-            availableActions.map((action) => {
-              const {
+            parsedAvailableActions.map(
+              ({
                 label,
                 action: handler,
                 multiple,
                 edit: onlyEdit,
                 shortcut,
                 icon,
-              } = actionMap[action];
-              if (multiple && selectedItems.length < 2) return null;
-              if (onlyEdit && !showEdit) return null;
-              return (
-                <button
-                  className="button clear icon-only"
-                  key={action}
-                  // here
-                  onClick={() => handler(selectedItems)}
-                  title={label + (shortcut ? ` (${shortcut})` : "")}
-                >
-                  <img
-                    src={icon}
-                    style={{ width: "32px", height: "32px" }}
-                    alt={label}
-                  />
-                </button>
-              );
-            })}
+              }) => {
+                if (multiple && selectedItems.length < 2) return null;
+                if (onlyEdit && !showEdit) return null;
+                return (
+                  <button
+                    className="button clear icon-only"
+                    key={label}
+                    // here
+                    onClick={() => handler(selectedItems)}
+                    title={label + (shortcut ? ` (${shortcut})` : "")}
+                  >
+                    <img
+                      src={icon}
+                      style={{ width: "32px", height: "32px" }}
+                      alt={label}
+                    />
+                  </button>
+                );
+              }
+            )}
 
           {!boardState.selecting && (
             <button
