@@ -2,7 +2,7 @@ import React from "react";
 
 export const isMacOS = () => {
   const userAgent = navigator.userAgent.toLowerCase();
-  return /mac osx 10/.test(userAgent);
+  return /mac os ?x 10/.test(userAgent);
 };
 
 // From https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line

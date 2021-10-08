@@ -17,6 +17,7 @@
     "test:coverage": "npm run test -- --coverage",
     "storybook": "start-storybook -p 6006",
     "prepare": "npm run build",
+    "version": "git changelog -n -t $npm_package_version && git add CHANGELOG.md",
     "build-storybook": "build-storybook"
   },
   "author": "",
