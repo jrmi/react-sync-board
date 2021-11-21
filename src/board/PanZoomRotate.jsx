@@ -30,6 +30,7 @@ const PanZoomRotate = ({ children, moveFirst }) => {
   const config = useRecoilValue(BoardConfigAtom);
   const setBoardState = useSetRecoilState(BoardStateAtom);
   const prevDim = usePrevious(dim);
+  const mouseRef = React.useRef({ hover: false, x: 0, y: 0 });
 
   // Hooks to save/restore position
   usePositionNavigator();
@@ -306,9 +307,11 @@ const PanZoomRotate = ({ children, moveFirst }) => {
 
         e.preventDefault();
       }
-      // Temporally zoom
+      // Temporary zoom
       if (e.key === " " && !e.repeat) {
-        zoomTo(3);
+        if (mouseRef.current.hover) {
+          zoomTo(3, mouseRef.current);
+        }
       }
     },
     [setDim, zoomTo]
@@ -320,12 +323,27 @@ const PanZoomRotate = ({ children, moveFirst }) => {
       if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
 
       // Zoom out on release
-      if (e.key === " ") {
-        zoomTo(1 / 3);
+      if (e.key === " " && mouseRef.current.hover) {
+        zoomTo(1 / 3, mouseRef.current);
       }
     },
     [zoomTo]
   );
+
+  // Save mouse position for temporary zoom
+  const onMouseMove = React.useCallback((e) => {
+    const { clientX, clientY } = e;
+    mouseRef.current.x = clientX;
+    mouseRef.current.y = clientY;
+  }, []);
+
+  const onMouseEnter = React.useCallback(() => {
+    mouseRef.current.hover = true;
+  }, []);
+
+  const onMouseLeave = React.useCallback(() => {
+    mouseRef.current.hover = false;
+  }, []);
 
   React.useEffect(() => {
     document.addEventListener("keydown", onKeyDown);
@@ -349,6 +367,9 @@ const PanZoomRotate = ({ children, moveFirst }) => {
         onContextMenu={(e) => {
           e.preventDefault();
         }}
+        onMouseMove={onMouseMove}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
       >
         {children}
       </div>
