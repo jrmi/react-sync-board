@@ -67,13 +67,16 @@ const AddItems = () => {
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "start" }}
     >
-      {Object.entries(itemMap).map(([key, itemTpl]) => (
-        <div key={key}>
-          <button onClick={() => addItem(key, itemTpl.template)}>
-            Add {key}
-          </button>
-        </div>
-      ))}
+      {Object.entries(itemMap).map(
+        ([key, itemTpl]) =>
+          key !== "error" && (
+            <div key={key}>
+              <button onClick={() => addItem(key, itemTpl.template)}>
+                Add {key}
+              </button>
+            </div>
+          )
+      )}
     </div>
   );
 };
