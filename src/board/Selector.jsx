@@ -58,7 +58,7 @@ const Selector = ({ children, moveFirst }) => {
 
   const config = useRecoilValue(BoardConfigAtom);
 
-  // Reset selection on game loading
+  // Reset selection on board loading
   React.useEffect(() => {
     setSelected(emptySelection);
   }, [config, emptySelection, setSelected]);

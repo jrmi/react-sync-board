@@ -66,7 +66,7 @@ const PanZoomRotate = ({ children, moveFirst }) => {
     });
   }, [scale, setDim]);
 
-  // Center board on game loading
+  // Center board on board loading
   React.useEffect(() => {
     const {
       width: innerWidth,
