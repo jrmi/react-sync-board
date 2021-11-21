@@ -1,4 +1,11 @@
 
+0.3.4 / 2021-11-21
+==================
+
+  * Fix comments
+  * Enhance perf and fix errors (#2)
+  * Temp zoom now on mouse position
+
 0.3.3 / 2021-10-09
 ==================
 
