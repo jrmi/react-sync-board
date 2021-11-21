@@ -57,6 +57,53 @@ const ItemWrapper = styled.div`
   }
 `;
 
+const DefaultErrorComponent = ({ onReload }) => (
+  <div
+    style={{
+      width: "100px",
+      display: "flex",
+      flexDirection: "column",
+      justifyContent: "center",
+      textAlign: "center",
+      color: "red",
+    }}
+    className="syncboard-error-item"
+  >
+    Sorry, this item seems broken.
+    <button onClick={onReload}>Reload it</button>
+  </div>
+);
+
+/* Error boundary for broken item */
+class ItemErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, itemId: props.itemId };
+    this.onReload = this.onReload.bind(this);
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch(error) {
+    // eslint-disable-next-line no-console
+    console.log(`Error for item ${this.state.itemId}`, error, this.props.state);
+  }
+
+  onReload() {
+    this.setState({ hasError: false });
+  }
+
+  render() {
+    const { ErrorComponent } = this.props;
+    if (this.state.hasError) {
+      return <ErrorComponent onReload={this.onReload} />;
+    }
+    return this.props.children;
+  }
+}
+
 const Item = ({
   setState,
   state: { type, rotation = 0, id, locked, layer, ...rest } = {},
@@ -112,7 +159,14 @@ const Item = ({
         onKeyDown={(e) => e.stopPropagation()}
         onKeyUp={(e) => e.stopPropagation()}
       >
-        <Component {...rest} id={id} setState={updateState} />
+        <ItemErrorBoundary
+          itemId={id}
+          state={rest}
+          setState={updateState}
+          ErrorComponent={itemMap?.error?.component || DefaultErrorComponent}
+        >
+          <Component {...rest} id={id} setState={updateState} />
+        </ItemErrorBoundary>
         <div className="corner top-left"></div>
         <div className="corner top-right"></div>
         <div className="corner bottom-left"></div>

@@ -10,6 +10,7 @@ import CubeFormFields from "./forms/CubeFormFields";
 import RoundFormFields from "./forms/RoundFormFields";
 import TokenFormFields from "./forms/TokenFormFields";
 import CylinderFormFields from "./forms/CylinderFormFields";
+import ErrorItem from "./ErrorItem";
 
 const i18n = {
   t: (i) => i,
@@ -97,6 +98,13 @@ const itemTemplates = {
     ],
     form: TokenFormFields,
     name: i18n.t("Token"),
+    template: {},
+  },
+  error: {
+    component: ErrorItem,
+    defaultActions: [],
+    availableActions: [],
+    name: i18n.t("Error"),
     template: {},
   },
 };

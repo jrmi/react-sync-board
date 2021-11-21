@@ -5,10 +5,6 @@ import styled from "@emotion/styled";
 import { readableColorIsBlack } from "color2k";
 
 const StyledCursor = styled.div`
-  top: 0;
-  left: 0;
-  transform: ${({ top, left }) => `translate(${left}px, ${top}px)`};
-  position: fixed;
   display: flex;
   flex-direction: row;
   align-items: center;
@@ -29,10 +25,10 @@ const CursorName = styled.div`
   background-color: ${({ color }) => color};
 `;
 
-const Cursor = ({ color = "#666", size = 40, pos, text }) => {
+const Cursor = ({ color = "#666", size = 40, text }) => {
   const textColor = readableColorIsBlack(color) ? "#222" : "#EEE";
   return (
-    <StyledCursor top={pos.y - 10} left={pos.x - 5}>
+    <StyledCursor>
       <svg
         version="1.1"
         id="Layer_1"
@@ -64,4 +60,20 @@ const Cursor = ({ color = "#666", size = 40, pos, text }) => {
   );
 };
 
-export default Cursor;
+const MemoizedCursor = React.memo(Cursor);
+
+const PositionnedCursor = ({ pos, ...rest }) => (
+  <div
+    style={{
+      transform: `translate(${pos.x - 5}px, ${pos.y - 3}px)`,
+      top: 0,
+      left: 0,
+      zIndex: 210,
+      position: "fixed",
+    }}
+  >
+    <MemoizedCursor {...rest} />
+  </div>
+);
+
+export default PositionnedCursor;
