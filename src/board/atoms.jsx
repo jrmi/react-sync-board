@@ -1,11 +1,15 @@
 import { atom, selector } from "recoil";
+import { DEFAULT_BOARD_MAX_SIZE } from "../settings";
 
 export const ConfigurationAtom = atom({
   key: "configuration",
   default: {
     itemTemplates: {},
     actions: {},
-    uid: "empty",
+    uid: null,
+    itemExtent: {},
+    boardWrapperRect: {},
+    boardSize: DEFAULT_BOARD_MAX_SIZE,
   },
 });
 
@@ -44,15 +48,12 @@ export const AllItemsSelector = selector({
   },
 });
 
-export const PanZoomRotateAtom = atom({
-  key: "PanZoomRotate",
+export const BoardTransformAtom = atom({
+  key: "BoardTransform",
   default: {
     translateX: 0,
     translateY: 0,
     scale: 1,
-    rotate: 0,
-    centerX: 0,
-    centerY: 0,
   },
 });
 
@@ -77,6 +78,6 @@ export default {
   AllItemsSelector,
   ItemMapAtom,
   ItemInteractionsAtom,
-  PanZoomRotateAtom,
+  BoardTransformAtom,
   SelectedItemsAtom,
 };

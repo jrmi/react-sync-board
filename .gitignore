@@ -21,3 +21,5 @@ build
 /coverage/
 /lib/
 /dist/
+storybook-static/
+

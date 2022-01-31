@@ -7,44 +7,47 @@ import {
   ItemListAtom,
   SelectedItemsAtom,
   ItemMapAtom,
-  PanZoomRotateAtom,
   AllItemsSelector,
 } from "../atoms";
+import useDim from "../useDim";
 import useItemInteraction from "./useItemInteraction";
 
 const useItemActions = () => {
   const { wire } = useWire("board");
   const { call: callPlaceInteractions } = useItemInteraction("place");
+  const { getCenter, updateItemExtent } = useDim();
 
   const setItemList = useSetRecoilState(ItemListAtom);
   const setItemMap = useSetRecoilState(ItemMapAtom);
   const setSelectItems = useSetRecoilState(SelectedItemsAtom);
 
   const batchUpdateItems = useRecoilCallback(
-    ({ snapshot }) => async (itemIds, callbackOrItem, sync = true) => {
-      let callback = callbackOrItem;
-      if (typeof callbackOrItem === "object") {
-        callback = () => callbackOrItem;
-      }
-      const itemList = await snapshot.getPromise(ItemListAtom);
-
-      const orderedItemIds = itemList.filter((id) => itemIds.includes(id));
-
-      setItemMap((prevItemMap) => {
-        const result = { ...prevItemMap };
-        const updatedItems = {};
-        orderedItemIds.forEach((id) => {
-          const newItem = { ...callback(prevItemMap[id]) };
-          result[id] = newItem;
-          updatedItems[id] = newItem;
-        });
-        if (sync) {
-          wire.publish("batchItemsUpdate", updatedItems);
+    ({ snapshot }) =>
+      async (itemIds, callbackOrItem, sync = true) => {
+        let callback = callbackOrItem;
+        if (typeof callbackOrItem === "object") {
+          callback = () => callbackOrItem;
         }
-        return result;
-      });
-    },
-    [wire, setItemMap]
+        const itemList = await snapshot.getPromise(ItemListAtom);
+
+        const orderedItemIds = itemList.filter((id) => itemIds.includes(id));
+
+        setItemMap((prevItemMap) => {
+          const result = { ...prevItemMap };
+          const updatedItems = {};
+          orderedItemIds.forEach((id) => {
+            const newItem = { ...callback(prevItemMap[id]) };
+            result[id] = newItem;
+            updatedItems[id] = newItem;
+          });
+          if (sync) {
+            wire.publish("batchItemsUpdate", updatedItems);
+          }
+          return result;
+        });
+        updateItemExtent();
+      },
+    [setItemMap, updateItemExtent, wire]
   );
 
   const setItemListFull = React.useCallback(
@@ -58,8 +61,11 @@ const useItemActions = () => {
         }, {})
       );
       setItemList(items.map(({ id }) => id));
+      // Reset item selection as we are changing all items
+      setSelectItems([]);
+      updateItemExtent();
     },
-    [setItemList, setItemMap]
+    [setItemList, setItemMap, setSelectItems, updateItemExtent]
   );
 
   const updateItem = React.useCallback(
@@ -92,8 +98,10 @@ const useItemActions = () => {
           posDelta,
         });
       }
+
+      updateItemExtent();
     },
-    [wire, setItemMap]
+    [setItemMap, updateItemExtent, wire]
   );
 
   const putItemsOnTop = React.useCallback(
@@ -122,7 +130,8 @@ const useItemActions = () => {
         const result = { ...prevItemMap };
         itemIds.forEach((id) => {
           const item = prevItemMap[id];
-          const elem = document.getElementById(id);
+          const elems = document.getElementsByClassName(`item ${id}`);
+          const elem = elems[0];
 
           const { type: itemType, size: itemSize } = item.grid || {};
           let type = globalType;
@@ -218,7 +227,7 @@ const useItemActions = () => {
   );
 
   const placeItems = React.useCallback(
-    (itemIds, gridConfig, sync = true) => {
+    async (itemIds, gridConfig, sync = true) => {
       // Put moved items on top
       putItemsOnTop(itemIds, sync);
       // Remove moving state
@@ -233,8 +242,16 @@ const useItemActions = () => {
       );
       stickOnGrid(itemIds, gridConfig, sync);
       callPlaceInteractions(itemIds);
+
+      updateItemExtent();
     },
-    [batchUpdateItems, callPlaceInteractions, putItemsOnTop, stickOnGrid]
+    [
+      batchUpdateItems,
+      callPlaceInteractions,
+      putItemsOnTop,
+      stickOnGrid,
+      updateItemExtent,
+    ]
   );
 
   const updateItemOrder = React.useCallback(
@@ -275,66 +292,67 @@ const useItemActions = () => {
   );
 
   const swapItems = useRecoilCallback(
-    ({ snapshot }) => async (fromIds, toIds, sync = true) => {
-      const itemMap = await snapshot.getPromise(ItemMapAtom);
-      const fromItems = fromIds.map((id) => itemMap[id]);
-      const toItems = toIds.map((id) => itemMap[id]);
+    ({ snapshot }) =>
+      async (fromIds, toIds, sync = true) => {
+        const itemMap = await snapshot.getPromise(ItemMapAtom);
+        const fromItems = fromIds.map((id) => itemMap[id]);
+        const toItems = toIds.map((id) => itemMap[id]);
 
-      const replaceMapItems = toIds.reduce((theMap, id) => {
-        // eslint-disable-next-line no-param-reassign
-        theMap[id] = fromItems.shift();
-        return theMap;
-      }, {});
-
-      setItemMap((prevItemMap) => {
-        const updatedItems = toItems.reduce((prev, toItem) => {
-          const replaceBy = replaceMapItems[toItem.id];
-          const newItem = {
-            ...toItem,
-            x: replaceBy.x,
-            y: replaceBy.y,
-          };
+        const replaceMapItems = toIds.reduce((theMap, id) => {
           // eslint-disable-next-line no-param-reassign
-          prev[toItem.id] = newItem;
-          return prev;
+          theMap[id] = fromItems.shift();
+          return theMap;
         }, {});
-        if (sync) {
-          wire.publish("batchItemsUpdate", updatedItems);
-        }
-        return { ...prevItemMap, ...updatedItems };
-      });
 
-      const replaceMap = fromIds.reduce((theMap, id) => {
-        // eslint-disable-next-line no-param-reassign
-        theMap[id] = toIds.shift();
-        return theMap;
-      }, {});
-
-      setItemList((prevItemList) => {
-        const result = prevItemList.map((itemId) => {
-          if (fromIds.includes(itemId)) {
-            return replaceMap[itemId];
+        setItemMap((prevItemMap) => {
+          const updatedItems = toItems.reduce((prev, toItem) => {
+            const replaceBy = replaceMapItems[toItem.id];
+            const newItem = {
+              ...toItem,
+              x: replaceBy.x,
+              y: replaceBy.y,
+            };
+            // eslint-disable-next-line no-param-reassign
+            prev[toItem.id] = newItem;
+            return prev;
+          }, {});
+          if (sync) {
+            wire.publish("batchItemsUpdate", updatedItems);
           }
-          return itemId;
+          return { ...prevItemMap, ...updatedItems };
         });
 
-        if (sync) {
-          wire.publish("updateItemListOrder", result);
-        }
-        return result;
-      });
-    },
+        const replaceMap = fromIds.reduce((theMap, id) => {
+          // eslint-disable-next-line no-param-reassign
+          theMap[id] = toIds.shift();
+          return theMap;
+        }, {});
+
+        setItemList((prevItemList) => {
+          const result = prevItemList.map((itemId) => {
+            if (fromIds.includes(itemId)) {
+              return replaceMap[itemId];
+            }
+            return itemId;
+          });
+
+          if (sync) {
+            wire.publish("updateItemListOrder", result);
+          }
+          return result;
+        });
+      },
     [wire, setItemList, setItemMap]
   );
 
-  const pushItems = useRecoilCallback(
-    ({ snapshot }) => async (itemsToInsert, beforeId, sync = true) => {
-      const { centerX, centerY } = await snapshot.getPromise(PanZoomRotateAtom);
+  const pushItems = React.useCallback(
+    async (itemsToInsert, beforeId, sync = true) => {
       itemsToInsert.forEach(async (item, index) => {
+        const center = await getCenter();
         const newItem = { ...item };
         if (!newItem.x || !newItem.y) {
-          newItem.x = centerX + 2 * index;
-          newItem.y = centerY + 2 * index;
+          newItem.x = center.x + 2 * index;
+          newItem.y = center.y + 2 * index;
         }
 
         setItemMap((prevItemMap) => ({
@@ -356,8 +374,10 @@ const useItemActions = () => {
           wire.publish("insertItemBefore", [newItem, beforeId]);
         }
       });
+
+      updateItemExtent();
     },
-    [wire, setItemList, setItemMap]
+    [updateItemExtent, getCenter, setItemMap, setItemList, wire]
   );
 
   const pushItem = React.useCallback(
@@ -394,15 +414,18 @@ const useItemActions = () => {
   );
 
   const getItemList = useRecoilCallback(
-    ({ snapshot }) => () => snapshot.getPromise(AllItemsSelector),
+    ({ snapshot }) =>
+      () =>
+        snapshot.getPromise(AllItemsSelector),
     []
   );
 
   const getItems = useRecoilCallback(
-    ({ snapshot }) => async (itemIds) => {
-      const itemMap = await snapshot.getPromise(ItemMapAtom);
-      return itemIds.map((id) => itemMap[id]);
-    },
+    ({ snapshot }) =>
+      async (itemIds) => {
+        const itemMap = await snapshot.getPromise(ItemMapAtom);
+        return itemIds.map((id) => itemMap[id]);
+      },
     []
   );
 

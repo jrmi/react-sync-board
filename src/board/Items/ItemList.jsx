@@ -4,6 +4,7 @@ import Item from "./Item";
 import useItemActions from "./useItemActions";
 
 import { ItemListAtom, ItemMapAtom, SelectedItemsAtom } from "../atoms";
+import { ConfigurationAtom } from "..";
 
 /** Allow to operate on locked items while u or l key is pressed  */
 const useUnlock = () => {
@@ -36,6 +37,7 @@ const ItemList = ({ itemTemplates }) => {
   const itemList = useRecoilValue(ItemListAtom);
   const itemMap = useRecoilValue(ItemMapAtom);
   const selectedItems = useRecoilValue(SelectedItemsAtom);
+  const { boardSize } = useRecoilValue(ConfigurationAtom);
   const unlocked = useUnlock();
 
   return itemList.map((itemId) => (
@@ -46,6 +48,7 @@ const ItemList = ({ itemTemplates }) => {
       isSelected={selectedItems.includes(itemId)}
       unlocked={unlocked}
       itemMap={itemTemplates}
+      boardSize={boardSize}
     />
   ));
 };

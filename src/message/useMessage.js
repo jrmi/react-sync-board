@@ -44,10 +44,11 @@ const useMessage = (onMessage = noop, subscribeEvents = false) => {
   const { currentUser } = useUsers();
 
   const getMessage = useRecoilCallback(
-    ({ snapshot }) => async () => {
-      const currentMessages = await snapshot.getPromise(MessagesAtom);
-      return currentMessages;
-    },
+    ({ snapshot }) =>
+      async () => {
+        const currentMessages = await snapshot.getPromise(MessagesAtom);
+        return currentMessages;
+      },
     []
   );
 

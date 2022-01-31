@@ -11,12 +11,8 @@ export const SubcribeItemEvents = () => {
 
   const setItemMap = useSetRecoilState(ItemMapAtom);
 
-  const {
-    updateItemOrder,
-    moveItems,
-    removeItems,
-    pushItem,
-  } = useItemActions();
+  const { updateItemOrder, moveItems, removeItems, pushItem } =
+    useItemActions();
 
   const batchUpdate = React.useCallback(
     (updatedItems) => {

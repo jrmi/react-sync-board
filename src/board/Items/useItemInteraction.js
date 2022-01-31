@@ -30,13 +30,19 @@ const useItemInteraction = (interaction) => {
     [interaction, setInteractions]
   );
 
-  const call = useRecoilCallback(({ snapshot }) => async (items) => {
-    const itemInteractions = await snapshot.getPromise(ItemInteractionsAtom);
-    if (!itemInteractions[interaction]) return;
-    itemInteractions[interaction].forEach((callback) => {
-      callback(items);
-    });
-  });
+  const call = useRecoilCallback(
+    ({ snapshot }) =>
+      async (items) => {
+        const itemInteractions = await snapshot.getPromise(
+          ItemInteractionsAtom
+        );
+        if (!itemInteractions[interaction]) return;
+        itemInteractions[interaction].forEach((callback) => {
+          callback(items);
+        });
+      },
+    [interaction]
+  );
 
   return { register, call };
 };

@@ -4,7 +4,7 @@ import { useSetRecoilState, useRecoilCallback } from "recoil";
 import {
   BoardStateAtom,
   SelectedItemsAtom,
-  PanZoomRotateAtom,
+  BoardTransformAtom,
   BoardConfigAtom,
 } from "./atoms";
 import { useItemActions } from "./Items";
@@ -27,141 +27,147 @@ const ActionPane = ({ children }) => {
   });
 
   const onDragStart = useRecoilCallback(
-    ({ snapshot }) => async ({ target, ctrlKey, metaKey, event }) => {
-      // Allow text selection instead of moving
-      if (["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+    ({ snapshot }) =>
+      async ({ target, ctrlKey, metaKey, event }) => {
+        // Allow text selection instead of moving
+        if (["INPUT", "TEXTAREA"].includes(target.tagName)) return;
 
-      const foundElement = insideClass(target, "item");
+        const foundElement = insideClass(target, "item");
 
-      if (foundElement && !hasClass(foundElement, "locked")) {
-        event.stopPropagation();
+        if (foundElement && !hasClass(foundElement, "locked")) {
+          event.stopPropagation();
 
-        const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
+          const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
 
-        selectedItemRef.current.items = selectedItems;
+          selectedItemRef.current.items = selectedItems;
 
-        if (!selectedItems.includes(foundElement.id)) {
-          if (ctrlKey || metaKey) {
-            selectedItemRef.current.items = [...selectedItems, foundElement.id];
-            setSelectedItems((prev) => [...prev, foundElement.id]);
-          } else {
-            selectedItemRef.current.items = [foundElement.id];
-            setSelectedItems([foundElement.id]);
+          const itemId = foundElement.dataset.id;
+
+          if (!selectedItems.includes(itemId)) {
+            if (ctrlKey || metaKey) {
+              selectedItemRef.current.items = [...selectedItems, itemId];
+              setSelectedItems((prev) => [...prev, itemId]);
+            } else {
+              selectedItemRef.current.items = [itemId];
+              setSelectedItems([itemId]);
+            }
           }
-        }
 
-        Object.assign(actionRef.current, {
-          moving: true,
-          remainX: 0,
-          remainY: 0,
-        });
-      }
-    },
+          Object.assign(actionRef.current, {
+            moving: true,
+            remainX: 0,
+            remainY: 0,
+          });
+        }
+      },
     [setSelectedItems]
   );
 
   const onDrag = useRecoilCallback(
-    ({ snapshot }) => async ({ deltaX, deltaY }) => {
-      if (actionRef.current.moving) {
-        const panZoomRotate = await snapshot.getPromise(PanZoomRotateAtom);
-        const moveX = actionRef.current.remainX + deltaX / panZoomRotate.scale;
-        const moveY = actionRef.current.remainY + deltaY / panZoomRotate.scale;
+    ({ snapshot }) =>
+      async ({ deltaX, deltaY }) => {
+        if (actionRef.current.moving) {
+          const { scale } = await snapshot.getPromise(BoardTransformAtom);
+          const moveX = actionRef.current.remainX + deltaX / scale;
+          const moveY = actionRef.current.remainY + deltaY / scale;
 
-        moveItems(
-          selectedItemRef.current.items,
-          {
-            x: moveX,
-            y: moveY,
-          },
-          true
-        );
-
-        setBoardState((prev) =>
-          !prev.movingItems ? { ...prev, movingItems: true } : prev
-        );
-      }
-    },
-    [moveItems, setBoardState]
-  );
-
-  const onDragEnd = useRecoilCallback(
-    ({ snapshot }) => async () => {
-      if (actionRef.current.moving) {
-        const { gridSize: boardGridSize = 1 } = await snapshot.getPromise(
-          BoardConfigAtom
-        );
-        const gridSize = boardGridSize || 1; // avoid 0 grid size
-
-        actionRef.current = { moving: false };
-        placeItems(selectedItemRef.current.items, {
-          type: "grid",
-          size: gridSize,
-        });
-        setBoardState((prev) => ({ ...prev, movingItems: false }));
-      }
-    },
-    [placeItems, setBoardState]
-  );
-
-  const onKeyDown = useRecoilCallback(
-    ({ snapshot }) => async (e) => {
-      // Block shortcut if we are typing in a textarea or input
-      if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
-
-      const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
-
-      if (selectedItems.length) {
-        const { gridSize: boardGridSize = 1 } = await snapshot.getPromise(
-          BoardConfigAtom
-        );
-        let moveX = 0;
-        let moveY = 0;
-        switch (e.key) {
-          case "ArrowLeft":
-            // Left pressed
-            moveX = -10;
-            break;
-          case "ArrowRight":
-            moveX = 10;
-            // Right pressed
-            break;
-          case "ArrowUp":
-            // Up pressed
-            moveY = -10;
-            break;
-          case "ArrowDown":
-            // Down pressed
-            moveY = 10;
-            break;
-          default:
-        }
-        if (moveX || moveY) {
-          if (e.shiftKey) {
-            moveX *= 5;
-            moveY *= 5;
-          }
-          if (e.ctrlKey || e.altKey || e.metaKey) {
-            moveX /= 10;
-            moveY /= 10;
-          }
           moveItems(
-            selectedItems,
+            selectedItemRef.current.items,
             {
               x: moveX,
               y: moveY,
             },
             true
           );
+
+          setBoardState((prev) =>
+            !prev.movingItems ? { ...prev, movingItems: true } : prev
+          );
+        }
+      },
+    [moveItems, setBoardState]
+  );
+
+  const onDragEnd = useRecoilCallback(
+    ({ snapshot }) =>
+      async () => {
+        if (actionRef.current.moving) {
+          const { gridSize: boardGridSize = 1 } = await snapshot.getPromise(
+            BoardConfigAtom
+          );
           const gridSize = boardGridSize || 1; // avoid 0 grid size
 
-          placeItems(selectedItems, {
+          actionRef.current = { moving: false };
+          placeItems(selectedItemRef.current.items, {
             type: "grid",
             size: gridSize,
           });
-          e.preventDefault();
+          setBoardState((prev) => ({ ...prev, movingItems: false }));
         }
-      }
-    },
+      },
+    [placeItems, setBoardState]
+  );
+
+  const onKeyDown = useRecoilCallback(
+    ({ snapshot }) =>
+      async (e) => {
+        // Block shortcut if we are typing in a textarea or input
+        if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+
+        const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
+
+        if (selectedItems.length) {
+          const { gridSize: boardGridSize = 1 } = await snapshot.getPromise(
+            BoardConfigAtom
+          );
+          let moveX = 0;
+          let moveY = 0;
+          switch (e.key) {
+            case "ArrowLeft":
+              // Left pressed
+              moveX = -10;
+              break;
+            case "ArrowRight":
+              moveX = 10;
+              // Right pressed
+              break;
+            case "ArrowUp":
+              // Up pressed
+              moveY = -10;
+              break;
+            case "ArrowDown":
+              // Down pressed
+              moveY = 10;
+              break;
+            default:
+          }
+          if (moveX || moveY) {
+            if (e.shiftKey) {
+              moveX *= 5;
+              moveY *= 5;
+            }
+            if (e.ctrlKey || e.altKey || e.metaKey) {
+              moveX /= 10;
+              moveY /= 10;
+            }
+            moveItems(
+              selectedItems,
+              {
+                x: moveX,
+                y: moveY,
+              },
+              true
+            );
+            const gridSize = boardGridSize || 1; // avoid 0 grid size
+
+            placeItems(selectedItems, {
+              type: "grid",
+              size: gridSize,
+            });
+            e.preventDefault();
+          }
+        }
+      },
     [moveItems, placeItems]
   );
 

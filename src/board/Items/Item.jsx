@@ -137,7 +137,7 @@ const Item = ({
   const removeClass = (e) => {
     e.target.className = "";
   };
-  let className = "item";
+  let className = `item ${id}`;
   if (locked) {
     className += " locked";
   }
@@ -150,7 +150,7 @@ const Item = ({
       locked={locked && !unlocked}
       selected={isSelected}
       layer={layer}
-      id={id}
+      data-id={id}
       className={className}
     >
       <div
@@ -201,6 +201,7 @@ const MemoizedItem = memo(
 // Exclude positionning from memoization
 const PositionedItem = ({
   state: { x = 0, y = 0, layer, moving, ...stateRest } = {},
+  boardSize,
   ...rest
 }) => (
   <div
@@ -209,8 +210,8 @@ const PositionedItem = ({
       display: "inline-block",
       zIndex: ((layer || 0) + 4) * 10 + 100 + (moving ? 5 : 0), // Items z-index between 100 and 200
       position: "absolute",
-      top: 0,
-      left: 0,
+      top: `${boardSize / 2}px`,
+      left: `${boardSize / 2}px`,
     }}
   >
     <MemoizedItem {...rest} state={stateRest} />

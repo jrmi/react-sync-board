@@ -2,6 +2,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import { RecoilRoot, useSetRecoilState, useRecoilState } from "recoil";
 import { nanoid } from "nanoid";
+import { useResizeObserver } from "@react-hookz/web/esm";
 
 import useWire, { WireProvider } from "@/hooks/useWire";
 
@@ -16,18 +17,16 @@ import { insideClass } from "./utils";
 const StyledBoardView = styled.div`
   overflow: hidden;
   position: absolute;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  left: 0;
+  inset: 0;
 `;
 
 const SyncBoard = ({ children, style }) => {
+  const boardWrapperRef = React.useRef(null);
   const setCurrentUserState = useSetRecoilState(userAtom);
 
   const { room: session } = useWire("board");
 
-  const [{ uid }, setSettings] = useRecoilState(ConfigurationAtom);
+  const [{ uid }, setConfiguration] = useRecoilState(ConfigurationAtom);
 
   React.useEffect(() => {
     // Chrome-related issue.
@@ -60,14 +59,35 @@ const SyncBoard = ({ children, style }) => {
   }, [session, setCurrentUserState]);
 
   React.useEffect(() => {
-    setSettings((prev) => ({
+    if (!uid) {
+      setConfiguration((prev) => ({
+        ...prev,
+        uid: nanoid(),
+      }));
+    }
+  }, [setConfiguration, uid]);
+
+  React.useEffect(() => {
+    setConfiguration((prev) => ({
       ...prev,
-      uid: nanoid(),
+      boardWrapper: boardWrapperRef.current,
     }));
-  }, [setSettings]);
+  }, [setConfiguration, uid]);
+
+  useResizeObserver(boardWrapperRef, () =>
+    setConfiguration((prev) => ({
+      ...prev,
+      boardWrapperRect: boardWrapperRef.current.getBoundingClientRect(),
+    }))
+  );
 
   return (
-    <StyledBoardView id={uid} className="sync-board" style={style}>
+    <StyledBoardView
+      ref={boardWrapperRef}
+      id={uid}
+      className="sync-board"
+      style={style}
+    >
       {children}
     </StyledBoardView>
   );

@@ -404,15 +404,8 @@ const Gesture = ({
 
   const onPointerUp = React.useCallback(
     (e) => {
-      const {
-        clientX,
-        clientY,
-        altKey,
-        ctrlKey,
-        metaKey,
-        target,
-        pointerId,
-      } = e;
+      const { clientX, clientY, altKey, ctrlKey, metaKey, target, pointerId } =
+        e;
 
       if (!stateRef.current.pointers[pointerId]) {
         // Pointer already gone previously with another event

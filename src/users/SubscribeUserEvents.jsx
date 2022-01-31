@@ -1,5 +1,5 @@
 import React from "react";
-import debounce from "lodash.debounce";
+import { useDebouncedCallback } from "@react-hookz/web/esm";
 import { useSetRecoilState, useRecoilState } from "recoil";
 
 import { userAtom, usersAtom } from "./atoms";
@@ -47,11 +47,12 @@ const SubscribeUserEvents = () => {
   }, [wire, isMaster, setUsers]);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedEmitUpdateUser = React.useCallback(
-    debounce((newUser) => {
+  const debouncedEmitUpdateUser = useDebouncedCallback(
+    (newUser) => {
       wire.publish("userUpdate", newUser, true);
-    }, 500),
-    [wire]
+    },
+    [wire],
+    500
   );
 
   React.useEffect(() => {

@@ -1,13 +1,14 @@
 import React from "react";
-import { useRecoilValue } from "recoil";
+import { useRecoilCallback } from "recoil";
 
 import Cursors from "./Cursors";
 import useWire from "../../hooks/useWire";
-import { PanZoomRotateAtom } from "../atoms";
+import { BoardTransformAtom, ConfigurationAtom } from "../atoms";
+import { useUsers } from "../../users";
 
-export const Board = ({ children, user, users }) => {
+const CursorPane = ({ children }) => {
   const { wire } = useWire("board");
-  const panZoomRotate = useRecoilValue(PanZoomRotateAtom);
+  const { currentUser: user, users } = useUsers();
 
   const publish = React.useCallback(
     (newPos) => {
@@ -19,13 +20,23 @@ export const Board = ({ children, user, users }) => {
     [wire, user.id]
   );
 
-  const onMouseMove = (e) => {
-    const { top, left } = e.currentTarget.getBoundingClientRect();
-    publish({
-      x: (e.clientX - left) / panZoomRotate.scale,
-      y: (e.clientY - top) / panZoomRotate.scale,
-    });
-  };
+  const onMouseMove = useRecoilCallback(
+    ({ snapshot }) =>
+      async ({ clientX, clientY }) => {
+        const { scale, translateX, translateY } = await snapshot.getPromise(
+          BoardTransformAtom
+        );
+        const {
+          boardWrapperRect: { left, top },
+        } = await snapshot.getPromise(ConfigurationAtom);
+
+        publish({
+          x: (clientX - left - translateX) / scale,
+          y: (clientY - top - translateY) / scale,
+        });
+      },
+    [publish]
+  );
 
   const onLeave = () => {
     wire.publish("cursorOff", {
@@ -41,4 +52,4 @@ export const Board = ({ children, user, users }) => {
   );
 };
 
-export default Board;
+export default CursorPane;
