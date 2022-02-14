@@ -1,5 +1,5 @@
 import React from "react";
-import { useSetRecoilState } from "recoil";
+import { useRecoilValue, useSetRecoilState } from "recoil";
 
 import { ItemList, SubscribeItemEvents } from "./Items";
 import Selector from "./Selector";
@@ -19,6 +19,7 @@ export const Board = ({
 }) => {
   const setConfiguration = useSetRecoilState(ConfigurationAtom);
   const { updateItemExtent } = useDim();
+  const { itemExtent } = useRecoilValue(ConfigurationAtom);
 
   const boardStyle = React.useMemo(
     () => ({
@@ -41,6 +42,7 @@ export const Board = ({
 
   React.useEffect(() => {
     updateItemExtent();
+    setTimeout(updateItemExtent, 2000);
   }, [updateItemExtent]);
 
   return (
@@ -59,6 +61,13 @@ export const Board = ({
               >
                 <ItemList itemTemplates={itemTemplates} />
               </div>
+              <div
+                style={{
+                  ...itemExtent,
+                  border: "3px solid red",
+                  position: "absolute",
+                }}
+              />
             </CursorPane>
           </ActionPane>
         </Selector>

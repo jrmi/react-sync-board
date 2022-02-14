@@ -7,6 +7,7 @@ import { getItemBoundingBox } from "../utils";
 import { BoardTransformAtom, ConfigurationAtom } from "./atoms";
 
 const TOLERANCE = 100;
+const MIN_SIZE = 1000;
 
 const translateBoundaries = ({
   x,
@@ -43,7 +44,6 @@ const useDim = () => {
   const setDim = useSetRecoilState(BoardTransformAtom);
   const scaleBoundariesRef = React.useRef([0.1, 8]);
   const { itemExtent: itemExtentGlobal } = useRecoilValue(ConfigurationAtom);
-
   const setDimSafe = useRecoilCallback(
     ({ snapshot }) =>
       async (fn) => {
@@ -214,24 +214,19 @@ const useDim = () => {
         relativeExtent.right = relativeExtent.left + relativeExtent.width;
         relativeExtent.bottom = relativeExtent.top + relativeExtent.height;
 
-        // Correct if not minimal
-        if (relativeExtent.left > boardSize / 2 - 500) {
-          relativeExtent.left = boardSize / 2 - 500;
+        // Resize to have a minimal size
+        if (relativeExtent.width < MIN_SIZE) {
+          const delta = (MIN_SIZE - relativeExtent.width) / 2;
+          relativeExtent.left -= delta;
+          relativeExtent.right += delta;
+          relativeExtent.width = MIN_SIZE;
         }
-
-        if (relativeExtent.top > boardSize / 2 - 500) {
-          relativeExtent.top = boardSize / 2 - 500;
+        if (relativeExtent.height < MIN_SIZE) {
+          const delta = (MIN_SIZE - relativeExtent.height) / 2;
+          relativeExtent.top -= delta;
+          relativeExtent.bottom += delta;
+          relativeExtent.height = MIN_SIZE;
         }
-        if (relativeExtent.right < boardSize / 2 + 500) {
-          relativeExtent.right = boardSize / 2 + 500;
-        }
-
-        if (relativeExtent.bottom < boardSize / 2 + 500) {
-          relativeExtent.bottom = boardSize / 2 + 500;
-        }
-
-        relativeExtent.width = relativeExtent.right - relativeExtent.left;
-        relativeExtent.height = relativeExtent.bottom - relativeExtent.top;
 
         set(ConfigurationAtom, (prev) => ({
           ...prev,
