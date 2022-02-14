@@ -19,7 +19,6 @@ export const Board = ({
 }) => {
   const setConfiguration = useSetRecoilState(ConfigurationAtom);
   const { updateItemExtent } = useDim();
-  const { itemExtent } = useRecoilValue(ConfigurationAtom);
 
   const boardStyle = React.useMemo(
     () => ({
@@ -61,13 +60,6 @@ export const Board = ({
               >
                 <ItemList itemTemplates={itemTemplates} />
               </div>
-              <div
-                style={{
-                  ...itemExtent,
-                  border: "3px solid red",
-                  position: "absolute",
-                }}
-              />
             </CursorPane>
           </ActionPane>
         </Selector>
