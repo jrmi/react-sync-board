@@ -47,14 +47,15 @@ const useAvailableActions = () => {
   const isMountedRef = React.useRef(false);
 
   const getItemListOrSelected = useRecoilCallback(
-    ({ snapshot }) => async (itemIds) => {
-      const currentItemMap = await snapshot.getPromise(ItemMapAtom);
-      if (itemIds) {
-        return [itemIds, itemIds.map((id) => currentItemMap[id])];
-      }
-      const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
-      return [selectedItems, selectedItems.map((id) => currentItemMap[id])];
-    },
+    ({ snapshot }) =>
+      async (itemIds) => {
+        const currentItemMap = await snapshot.getPromise(ItemMapAtom);
+        if (itemIds) {
+          return [itemIds, itemIds.map((id) => currentItemMap[id])];
+        }
+        const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
+        return [selectedItems, selectedItems.map((id) => currentItemMap[id])];
+      },
     []
   );
 

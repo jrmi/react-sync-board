@@ -1,7 +1,6 @@
 const path = require("path");
 
 const projectRootDir = path.resolve(__dirname);
-
 module.exports = {
   parser: "babel-eslint",
   extends: [
@@ -9,6 +8,7 @@ module.exports = {
     "plugin:react/recommended",
     "plugin:react-hooks/recommended",
     "prettier",
+    "plugin:storybook/recommended",
   ],
   root: true,
   env: {
@@ -33,6 +33,12 @@ module.exports = {
     ],
     "import/no-unresolved": "error",
     "prettier/prettier": ["error"],
+    "react-hooks/exhaustive-deps": [
+      "warn",
+      {
+        additionalHooks: "(useRecoilCallback|useRecoilTransaction_UNSTABLE)",
+      },
+    ],
   },
   settings: {
     "import/resolver": {

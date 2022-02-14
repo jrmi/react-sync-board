@@ -36,8 +36,49 @@ export const isPointInsideRect = (point, rect) =>
 export const isItemInsideElement = (itemElement, otherElem) => {
   const rect = otherElem.getBoundingClientRect();
   const fourElem = Array.from(itemElement.querySelectorAll(".corner"));
+
   return fourElem.every((corner) => {
     const { top: y, left: x } = corner.getBoundingClientRect();
     return isPointInsideRect({ x, y }, rect);
   });
+};
+
+export const getItemBoundingBox = (items, wrapper = document) => {
+  const result = items.reduce((prev, itemId) => {
+    const elems = wrapper.getElementsByClassName(`item ${itemId}`);
+    const elem = elems[0];
+
+    if (!elem) return null;
+
+    const { left, right, top, bottom } = elem.getBoundingClientRect();
+
+    let boundingBox;
+
+    if (!prev) {
+      boundingBox = {
+        left,
+        top,
+        right,
+        bottom,
+      };
+    } else {
+      boundingBox = prev;
+    }
+
+    boundingBox.left = Math.min(left, boundingBox.left);
+    boundingBox.top = Math.min(top, boundingBox.top);
+    boundingBox.right = Math.max(right, boundingBox.right);
+    boundingBox.bottom = Math.max(bottom, boundingBox.bottom);
+
+    return boundingBox;
+  }, null);
+
+  if (!result) {
+    return result;
+  }
+
+  result.width = result.right - result.left;
+  result.height = result.bottom - result.top;
+
+  return result;
 };

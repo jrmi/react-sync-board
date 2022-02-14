@@ -6,7 +6,7 @@ export {
   ItemMapAtom,
   AllItemsSelector,
   BoardStateAtom,
-  PanZoomRotateAtom,
+  BoardTransformAtom,
   ConfigurationAtom,
   SelectionBoxAtom,
 } from "./atoms";

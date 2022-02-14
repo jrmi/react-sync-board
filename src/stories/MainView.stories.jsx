@@ -13,7 +13,6 @@ import { BoardWrapper, RoomWrapper, useUsers, useItemActions, Board } from "@/";
 import { itemMap, ItemForm } from "./sample";
 
 import SelectedItemsPane from "./SelectedItemsPane";
-import useBoardConfig from "../board/useBoardConfig";
 
 const { STORYBOOK_SOCKET_URL } = process.env;
 const SOCKET_PATH = process.env.STORYBOOK_SOCKET_PATH || "/socket.io";
@@ -37,23 +36,31 @@ export default {
 
 const initialItems = [
   {
+    type: "cylinder",
+    x: 0,
+    y: 0,
+    id: "test00cyl",
+    color: "#345",
+    actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
+  },
+  {
     type: "cube",
-    x: 400,
-    y: 250,
+    x: 100,
+    y: 100,
     id: "test00",
     color: "#023456",
     actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
   },
   {
     type: "cube",
-    x: 450,
-    y: 250,
+    x: -100,
+    y: -100,
     id: "test01",
     color: "#727456",
     actions: ["rotate45", { name: "rotate", args: { angle: 20 } }, "remove"],
   },
-  { type: "round", x: 450, y: 450, id: "test", color: "#923456" },
-  { type: "token", x: 650, y: 450, id: "test2", color: "#0077AA" },
+  { type: "round", x: 100, y: -100, id: "test", color: "#923456" },
+  { type: "token", x: -100, y: 100, id: "test2", color: "#0077AA" },
 ];
 
 const AddItems = () => {
@@ -100,11 +107,9 @@ const UserList = () => {
 
 const Init = () => {
   const { setItemList } = useItemActions();
-  const [, setBoardConfig] = useBoardConfig();
   React.useEffect(() => {
     setItemList(initialItems);
-    setBoardConfig({ size: 1000 });
-  }, [setBoardConfig, setItemList]);
+  }, [setItemList]);
   return null;
 };
 
@@ -112,10 +117,7 @@ const Overlay = ({ children, hideMenu }) => (
   <div
     style={{
       position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
+      inset: 0,
       backgroundColor: "#eee",
     }}
   >
@@ -124,7 +126,7 @@ const Overlay = ({ children, hideMenu }) => (
       style={{
         position: "absolute",
         top: 0,
-        left: 0,
+        right: 0,
         backgroundColor: "#999999",
         padding: "0.5em",
       }}
@@ -145,7 +147,7 @@ const OneViewContent = ({ moveFirst, hideMenu, room, session }) => {
       <Overlay hideMenu={hideMenu}>
         <Board
           moveFirst={moveFirst}
-          style={{ backgroundColor: "#cca", borderRadius: "2em" }}
+          style={{ backgroundColor: "#cca" }}
           itemTemplates={itemMap}
         />
       </Overlay>
@@ -169,10 +171,35 @@ export const OneView = (props) => (
 );
 
 OneView.args = {
-  moveFirst: false,
+  moveFirst: true,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),
+};
+
+const style1 = {
+  background: `linear-gradient(63deg, #999 23%, transparent 23%) 7px 0,
+linear-gradient(63deg, transparent 74%, #999 78%),
+linear-gradient(63deg, transparent 34%, #999 38%, #999 58%, transparent 62%),
+#444`,
+  backgroundSize: "16px 48px",
+};
+
+const style = {
+  backgroundColor: "#555",
+  backgroundImage: `linear-gradient(white 2px, transparent 2px),
+linear-gradient(90deg, white 2px, transparent 2px),
+linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px),
+linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
+  backgroundSize: "100px 100px, 100px 100px, 20px 20px, 20px 20px",
+  backgroundPosition: "-2px -2px, -2px -2px, -1px -1px, -1px -1px",
+};
+
+const style3 = {
+  backgroundColor: "#eee",
+  backgroundImage: `linear-gradient(45deg, black 25%, transparent 25%, transparent 75%, black 75%, black), linear-gradient(45deg, black 25%, transparent 25%, transparent 75%, black 75%, black)`,
+  backgroundSize: "60px 60px",
+  backgroundPosition: "0 0, 30px 30px",
 };
 
 const OneViewWithRoomContent = ({ moveFirst, hideMenu, room, session }) => {
@@ -181,7 +208,7 @@ const OneViewWithRoomContent = ({ moveFirst, hideMenu, room, session }) => {
     <RoomWrapper room={room} socket={socket}>
       <BoardWrapper session={session} socket={socket}>
         <Overlay hideMenu={hideMenu}>
-          <Board moveFirst={moveFirst} itemTemplates={itemMap} />
+          <Board moveFirst={moveFirst} itemTemplates={itemMap} style={style} />
         </Overlay>
       </BoardWrapper>
     </RoomWrapper>
@@ -204,7 +231,7 @@ export const OneViewWithRoom = (props) => (
 );
 
 OneViewWithRoom.args = {
-  moveFirst: false,
+  moveFirst: true,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),

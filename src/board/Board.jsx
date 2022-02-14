@@ -1,56 +1,68 @@
 import React from "react";
-import { useSetRecoilState, useRecoilValue } from "recoil";
+import { useSetRecoilState } from "recoil";
 
 import { ItemList, SubscribeItemEvents } from "./Items";
 import Selector from "./Selector";
 import ActionPane from "./ActionPane";
 import CursorPane from "./Cursors/CursorPane";
-import PanZoomRotate from "./PanZoomRotate";
-import { BoardConfigAtom, ConfigurationAtom } from "./atoms";
+import PanZoom from "./PanZoom";
+import { ConfigurationAtom } from "./atoms";
 import Selection from "./Selection";
-import { useUsers } from "../users";
+import { DEFAULT_BOARD_MAX_SIZE } from "../settings";
+import useDim from "./useDim";
 
-export const Board = ({ moveFirst = true, style, itemTemplates = {} }) => {
-  const setSettings = useSetRecoilState(ConfigurationAtom);
-  const config = useRecoilValue(BoardConfigAtom);
-  const { currentUser, users } = useUsers();
+export const Board = ({
+  moveFirst = true,
+  style,
+  itemTemplates = {},
+  boardSize = DEFAULT_BOARD_MAX_SIZE,
+}) => {
+  const setConfiguration = useSetRecoilState(ConfigurationAtom);
+  const { updateItemExtent } = useDim();
 
   const boardStyle = React.useMemo(
     () => ({
       userSelect: "none",
-      width: `${config.size}px`,
-      height: `${config.size}px`,
+      width: `${boardSize}px`,
+      height: `${boardSize}px`,
       backgroundColor: "#333",
       ...style,
     }),
-    [config.size, style]
+    [boardSize, style]
   );
 
   React.useEffect(() => {
-    setSettings((prev) => ({
+    setConfiguration((prev) => ({
       ...prev,
       itemTemplates,
+      boardSize,
     }));
-  }, [itemTemplates, setSettings]);
+  }, [itemTemplates, setConfiguration, boardSize]);
 
-  if (!config.size) {
-    return null;
-  }
+  React.useEffect(() => {
+    updateItemExtent();
+  }, [updateItemExtent]);
 
   return (
     <>
       <SubscribeItemEvents />
-      <PanZoomRotate moveFirst={moveFirst}>
+      <PanZoom moveFirst={moveFirst}>
         <Selector moveFirst={moveFirst}>
           <ActionPane>
-            <CursorPane user={currentUser} users={users}>
-              <div style={boardStyle} className="board">
+            <CursorPane>
+              <div
+                onContextMenu={(e) => {
+                  e.preventDefault();
+                }}
+                style={boardStyle}
+                className="board"
+              >
                 <ItemList itemTemplates={itemTemplates} />
               </div>
             </CursorPane>
           </ActionPane>
         </Selector>
-      </PanZoomRotate>
+      </PanZoom>
       <Selection />
     </>
   );

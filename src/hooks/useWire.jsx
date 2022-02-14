@@ -71,7 +71,7 @@ export const WireProvider = ({
     });
 
     return () => {
-      roomRef.current.leave();
+      roomRef.current?.leave();
     };
   }, [channel, room, socket]);
 

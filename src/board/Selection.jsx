@@ -1,15 +1,16 @@
 import React from "react";
 import { useRecoilValue, useRecoilCallback, useRecoilState } from "recoil";
-import debounce from "lodash.debounce";
+import { useDebouncedCallback } from "@react-hookz/web/esm";
 
 import {
   SelectedItemsAtom,
-  PanZoomRotateAtom,
+  BoardTransformAtom,
   BoardStateAtom,
   ItemMapAtom,
   ConfigurationAtom,
   SelectionBoxAtom,
 } from "./atoms";
+import { getItemBoundingBox } from "../utils";
 
 const defaultZoneStyle = {
   position: "absolute",
@@ -17,106 +18,77 @@ const defaultZoneStyle = {
   left: 0,
   zIndex: 210,
   backgroundColor: "hsla(0, 40%, 50%, 0%)",
-  border: "1px dashed hsl(20, 55%, 40%)",
+  border: "2px dashed hsl(20, 55%, 40%)",
   pointerEvents: "none",
 };
 
 const BoundingBox = () => {
   const selectedItems = useRecoilValue(SelectedItemsAtom);
-  const [boundingBoxLast, setBoundingBoxLast] = useRecoilState(
-    SelectionBoxAtom
-  );
-  const panZoomRotate = useRecoilValue(PanZoomRotateAtom);
+  const [boundingBoxLast, setBoundingBoxLast] =
+    useRecoilState(SelectionBoxAtom);
+  const boardTransform = useRecoilValue(BoardTransformAtom);
   const itemMap = useRecoilValue(ItemMapAtom);
-  const { uid } = useRecoilValue(ConfigurationAtom);
 
   // Update selection bounding box
   const updateBox = useRecoilCallback(
-    ({ snapshot }) => async () => {
-      const currentSelectedItems = await snapshot.getPromise(SelectedItemsAtom);
+    ({ snapshot }) =>
+      async () => {
+        const currentSelectedItems = await snapshot.getPromise(
+          SelectedItemsAtom
+        );
+        const { boardWrapperRect, boardWrapper } = await snapshot.getPromise(
+          ConfigurationAtom
+        );
 
-      if (currentSelectedItems.length === 0) {
-        setBoundingBoxLast(null);
-        return;
-      }
+        if (currentSelectedItems.length === 0) {
+          setBoundingBoxLast(null);
+          return;
+        }
 
-      let boundingBox = null;
-
-      const container = document.getElementById(uid);
-      const origin = container.getBoundingClientRect();
-
-      currentSelectedItems.forEach((itemId) => {
-        const elem = document.getElementById(itemId);
-
-        if (!elem) return;
-
-        const itemRect = elem.getBoundingClientRect();
-
-        // From origin
-        const x = itemRect.left - origin.left;
-        const y = itemRect.top - origin.top;
-        const x2 = itemRect.right - origin.left;
-        const y2 = itemRect.bottom - origin.top;
+        const boundingBox = getItemBoundingBox(
+          currentSelectedItems,
+          boardWrapper
+        );
 
         if (!boundingBox) {
-          boundingBox = { x, y, x2, y2 };
-        } else {
-          if (x < boundingBox.x) {
-            boundingBox.x = x;
-          }
-          if (y < boundingBox.y) {
-            boundingBox.y = y;
-          }
-          if (x2 > boundingBox.x2) {
-            boundingBox.x2 = x2;
-          }
-          if (y2 > boundingBox.y2) {
-            boundingBox.y2 = y2;
-          }
+          setBoundingBoxLast(null);
+          return;
         }
-      });
 
-      if (!boundingBox) {
-        setBoundingBoxLast(null);
-        return;
-      }
+        const { left, top, width, height } = boundingBox;
 
-      const newBB = {
-        top: boundingBox.y,
-        left: boundingBox.x,
-        height: boundingBox.y2 - boundingBox.y,
-        width: boundingBox.x2 - boundingBox.x,
-      };
+        const newBB = {
+          left: left - boardWrapperRect.left,
+          top: top - boardWrapperRect.top,
+          height,
+          width,
+        };
 
-      setBoundingBoxLast((prevBB) => {
-        if (
-          !prevBB ||
-          prevBB.top !== newBB.top ||
-          prevBB.left !== newBB.left ||
-          prevBB.width !== newBB.width ||
-          prevBB.height !== newBB.height
-        ) {
-          return newBB;
-        }
-        return prevBB;
-      });
-    },
+        setBoundingBoxLast((prevBB) => {
+          if (
+            !prevBB ||
+            prevBB.top !== newBB.top ||
+            prevBB.left !== newBB.left ||
+            prevBB.width !== newBB.width ||
+            prevBB.height !== newBB.height
+          ) {
+            return newBB;
+          }
+          return prevBB;
+        });
+      },
     [setBoundingBoxLast]
   );
+
   // Debounced version of update box
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  const updateBoxDelay = React.useCallback(
-    debounce(() => {
-      updateBox();
-    }, 300),
-    [updateBox]
-  );
+  const updateBoxDelay = useDebouncedCallback(updateBox, [updateBox], 300);
 
   React.useEffect(() => {
     // Update selected elements bounding box
     updateBox();
     updateBoxDelay(); // Delay to update after board item animation like tap/untap.
-  }, [selectedItems, itemMap, panZoomRotate, updateBox, updateBoxDelay]);
+  }, [selectedItems, itemMap, boardTransform, updateBox, updateBoxDelay]);
 
   if (!boundingBoxLast || selectedItems.length < 2) return null;
 

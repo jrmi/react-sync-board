@@ -1,6 +1,6 @@
 import React from "react";
 import { useRecoilState } from "recoil";
-import debounce from "lodash.debounce";
+import { useDebouncedCallback } from "@react-hookz/web/esm";
 
 import useWire from "../hooks/useWire";
 import { BoardConfigAtom } from "./atoms";
@@ -9,12 +9,12 @@ const useBoardConfig = () => {
   const { wire } = useWire("board");
   const [boardConfig, setBoardConfig] = useRecoilState(BoardConfigAtom);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const debouncedPublishUpdate = React.useCallback(
-    debounce((newConfig) => {
+  const debouncedPublishUpdate = useDebouncedCallback(
+    (newConfig) => {
       wire.publish("updateBoardConfig", newConfig);
-    }, 1000),
-    [wire]
+    },
+    [wire],
+    1000
   );
 
   const setSyncBoardConfig = React.useCallback(

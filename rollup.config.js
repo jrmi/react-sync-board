@@ -7,7 +7,7 @@ import alias from "@rollup/plugin-alias";
 import path from "path";
 import css from "rollup-plugin-css-only";
 import pkg from "./package.json";
-// import analyze from "rollup-plugin-analyzer";
+import analyze from "rollup-plugin-analyzer";
 
 const projectRootDir = path.resolve(__dirname);
 
@@ -62,7 +62,7 @@ export default [
       }),
       css({ output: "bundle.css" }),
       image(),
-      // analyze({ summaryOnly: true }),
+      analyze({ summaryOnly: true }),
     ],
     output: [
       {

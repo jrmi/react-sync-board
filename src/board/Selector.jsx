@@ -1,15 +1,15 @@
 import React from "react";
-import throttle from "lodash.throttle";
-import { useRecoilValue, useSetRecoilState, useRecoilCallback } from "recoil";
+import { useThrottledEffect } from "@react-hookz/web/esm";
+import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import { insideClass, isItemInsideElement } from "../utils";
 
 import {
-  PanZoomRotateAtom,
-  BoardConfigAtom,
+  BoardTransformAtom,
   ItemMapAtom,
   BoardStateAtom,
   SelectedItemsAtom,
+  ConfigurationAtom,
 } from "./atoms";
 
 import Gesture from "./Gesture";
@@ -21,15 +21,17 @@ const defaultSelectorStyle = {
   border: "2px solid hsl(0, 55%, 40%)",
 };
 
-const findSelected = (itemMap) => {
-  const selector = document.body.querySelector(".selector");
-  if (!selector) {
+const findSelected = (itemMap, wrapper) => {
+  const selectors = wrapper.getElementsByClassName("selector");
+  if (!selectors.length) {
     return [];
   }
 
-  return Array.from(document.getElementsByClassName("item"))
+  const selector = selectors[0];
+
+  return Array.from(wrapper.getElementsByClassName("item"))
     .filter((elem) => {
-      const { id } = elem;
+      const { id } = elem.dataset;
       const item = itemMap[id];
       if (!item) {
         // Avoid to find item that are not yet removed from DOM
@@ -41,7 +43,7 @@ const findSelected = (itemMap) => {
       }
       return isItemInsideElement(elem, selector);
     })
-    .map((elem) => elem.id);
+    .map((elem) => elem.dataset.id);
 };
 
 const Selector = ({ children, moveFirst }) => {
@@ -49,26 +51,27 @@ const Selector = ({ children, moveFirst }) => {
   const setBoardState = useSetRecoilState(BoardStateAtom);
 
   const [selector, setSelector] = React.useState({});
-  const [emptySelection] = React.useState([]);
 
   const wrapperRef = React.useRef(null);
   const stateRef = React.useRef({
     moving: false,
   });
 
-  const config = useRecoilValue(BoardConfigAtom);
-
   // Reset selection on board loading
   React.useEffect(() => {
-    setSelected(emptySelection);
-  }, [config, emptySelection, setSelected]);
+    setSelected((prev) => (prev.length === 0 ? prev : []));
+    return () => {
+      setSelected((prev) => (prev.length === 0 ? prev : []));
+    };
+  }, [setSelected]);
 
-  const throttledSetSelected = useRecoilCallback(
+  const updateSelected = useRecoilCallback(
     ({ snapshot }) =>
-      throttle(async () => {
+      async () => {
         if (stateRef.current.moving) {
           const itemMap = await snapshot.getPromise(ItemMapAtom);
-          const selected = findSelected(itemMap);
+          const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
+          const selected = findSelected(itemMap, boardWrapper);
 
           setSelected((prevSelected) => {
             if (JSON.stringify(prevSelected) !== JSON.stringify(selected)) {
@@ -77,21 +80,11 @@ const Selector = ({ children, moveFirst }) => {
             return prevSelected;
           });
         }
-      }, 300),
+      },
     [setSelected]
   );
 
-  React.useEffect(() => {
-    throttledSetSelected();
-  }, [selector, throttledSetSelected]);
-
-  // Reset selected on unmount
-  React.useEffect(
-    () => () => {
-      setSelected(emptySelection);
-    },
-    [setSelected, emptySelection]
-  );
+  useThrottledEffect(updateSelected, [selector, updateSelected], 200);
 
   const onDragStart = ({ button, altKey, ctrlKey, metaKey, target }) => {
     const outsideItem =
@@ -111,36 +104,37 @@ const Selector = ({ children, moveFirst }) => {
   };
 
   const onDrag = useRecoilCallback(
-    ({ snapshot }) => async ({ distanceY, distanceX, startX, startY }) => {
-      if (stateRef.current.moving) {
-        const { top, left } = wrapperRef.current.getBoundingClientRect();
+    ({ snapshot }) =>
+      async ({ distanceY, distanceX, startX, startY }) => {
+        if (stateRef.current.moving) {
+          const { top, left } = wrapperRef.current.getBoundingClientRect();
 
-        const panZoomRotate = await snapshot.getPromise(PanZoomRotateAtom);
+          const { scale } = await snapshot.getPromise(BoardTransformAtom);
 
-        const displayX = (startX - left) / panZoomRotate.scale;
-        const displayY = (startY - top) / panZoomRotate.scale;
+          const displayX = (startX - left) / scale;
+          const displayY = (startY - top) / scale;
 
-        const displayDistanceX = distanceX / panZoomRotate.scale;
-        const displayDistanceY = distanceY / panZoomRotate.scale;
+          const displayDistanceX = distanceX / scale;
+          const displayDistanceY = distanceY / scale;
 
-        if (displayDistanceX > 0) {
-          stateRef.current.left = displayX;
-          stateRef.current.width = displayDistanceX;
-        } else {
-          stateRef.current.left = displayX + displayDistanceX;
-          stateRef.current.width = -displayDistanceX;
+          if (displayDistanceX > 0) {
+            stateRef.current.left = displayX;
+            stateRef.current.width = displayDistanceX;
+          } else {
+            stateRef.current.left = displayX + displayDistanceX;
+            stateRef.current.width = -displayDistanceX;
+          }
+          if (displayDistanceY > 0) {
+            stateRef.current.top = displayY;
+            stateRef.current.height = displayDistanceY;
+          } else {
+            stateRef.current.top = displayY + displayDistanceY;
+            stateRef.current.height = -displayDistanceY;
+          }
+
+          setSelector({ ...stateRef.current, moving: true });
         }
-        if (displayDistanceY > 0) {
-          stateRef.current.top = displayY;
-          stateRef.current.height = displayDistanceY;
-        } else {
-          stateRef.current.top = displayY + displayDistanceY;
-          stateRef.current.height = -displayDistanceY;
-        }
-
-        setSelector({ ...stateRef.current, moving: true });
-      }
-    },
+      },
     []
   );
 
@@ -157,32 +151,34 @@ const Selector = ({ children, moveFirst }) => {
     ({ target }) => {
       const foundElement = insideClass(target, "item");
       if (foundElement) {
-        setSelected([foundElement.id]);
+        setSelected([foundElement.dataset.id]);
       }
     },
     [setSelected]
   );
 
   const onTap = useRecoilCallback(
-    ({ snapshot }) => async ({ target, ctrlKey, metaKey }) => {
-      const foundItem = insideClass(target, "item");
-      if (
-        (!foundItem || insideClass(foundItem, "locked")) &&
-        insideClass(target, "board")
-      ) {
-        setSelected(emptySelection);
-      } else {
-        const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
-        if (foundItem && !selectedItems.includes(foundItem.id)) {
-          if (ctrlKey || metaKey) {
-            setSelected((prev) => [...prev, foundItem.id]);
-          } else {
-            setSelected([foundItem.id]);
+    ({ snapshot }) =>
+      async ({ target, ctrlKey, metaKey }) => {
+        const foundItem = insideClass(target, "item");
+        if (
+          (!foundItem || insideClass(foundItem, "locked")) &&
+          insideClass(target, "board")
+        ) {
+          setSelected([]);
+        } else {
+          const itemId = foundItem.dataset.id;
+          const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
+          if (foundItem && !selectedItems.includes(itemId)) {
+            if (ctrlKey || metaKey) {
+              setSelected((prev) => [...prev, itemId]);
+            } else {
+              setSelected([itemId]);
+            }
           }
         }
-      }
-    },
-    [emptySelection, setSelected]
+      },
+    [setSelected]
   );
 
   return (
