@@ -2,7 +2,7 @@ import React from "react";
 import { useThrottledEffect } from "@react-hookz/web/esm";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
-import { insideClass, isItemInsideElement } from "../utils";
+import { insideClass, isItemInsideElement, getIdFromElem } from "../utils";
 
 import {
   BoardTransformAtom,
@@ -31,19 +31,15 @@ const findSelected = (itemMap, wrapper) => {
 
   return Array.from(wrapper.getElementsByClassName("item"))
     .filter((elem) => {
-      const { id } = elem.dataset;
+      const id = getIdFromElem(elem);
+
       const item = itemMap[id];
-      if (!item) {
-        // Avoid to find item that are not yet removed from DOM
-        console.error(`Missing item ${id}`);
-        return false;
-      }
-      if (item.locked) {
+      if (!item || item.locked) {
         return false;
       }
       return isItemInsideElement(elem, selector);
     })
-    .map((elem) => elem.dataset.id);
+    .map((elem) => getIdFromElem(elem));
 };
 
 const Selector = ({ children, moveFirst }) => {
@@ -151,7 +147,8 @@ const Selector = ({ children, moveFirst }) => {
     ({ target }) => {
       const foundElement = insideClass(target, "item");
       if (foundElement) {
-        setSelected([foundElement.dataset.id]);
+        const id = getIdFromElem(foundElement);
+        setSelected([id]);
       }
     },
     [setSelected]
@@ -167,7 +164,14 @@ const Selector = ({ children, moveFirst }) => {
         ) {
           setSelected([]);
         } else {
-          const itemId = foundItem.dataset.id;
+          const itemId = getIdFromElem(foundItem);
+
+          // Being defensive here to avoid bug
+          if (!itemId) {
+            setSelected([]);
+            return;
+          }
+
           const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
           if (foundItem && !selectedItems.includes(itemId)) {
             if (ctrlKey || metaKey) {

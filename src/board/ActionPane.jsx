@@ -8,7 +8,7 @@ import {
   BoardConfigAtom,
 } from "./atoms";
 import { useItemActions } from "./Items";
-import { insideClass, hasClass } from "../utils";
+import { insideClass, hasClass, getIdFromElem } from "../utils";
 
 import Gesture from "./Gesture";
 
@@ -41,7 +41,7 @@ const ActionPane = ({ children }) => {
 
           selectedItemRef.current.items = selectedItems;
 
-          const itemId = foundElement.dataset.id;
+          const itemId = getIdFromElem(foundElement);
 
           if (!selectedItems.includes(itemId)) {
             if (ctrlKey || metaKey) {

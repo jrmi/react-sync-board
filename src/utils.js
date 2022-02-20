@@ -43,10 +43,33 @@ export const isItemInsideElement = (itemElement, otherElem) => {
   });
 };
 
+export const getItemElem = (wrapper, itemId) => {
+  const elems = wrapper.getElementsByClassName(`item ${itemId}`);
+  const elem = elems[0];
+  if (!elem) {
+    // eslint-disable-next-line no-console
+    console.error(`Missing item ${itemId}`);
+  }
+  return elem;
+};
+
+export const getIdFromElem = (elem) => {
+  const value = elem?.dataset?.id;
+  if (!value) {
+    // eslint-disable-next-line no-console
+    console.error(
+      "getIdFromElem call fails",
+      elem,
+      JSON.stringify(elem?.dataset),
+      elem?.dataset?.id
+    );
+  }
+  return value;
+};
+
 export const getItemBoundingBox = (items, wrapper = document) => {
   const result = items.reduce((prev, itemId) => {
-    const elems = wrapper.getElementsByClassName(`item ${itemId}`);
-    const elem = elems[0];
+    const elem = getItemElem(wrapper, itemId);
 
     if (!elem) return null;
 

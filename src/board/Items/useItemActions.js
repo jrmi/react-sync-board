@@ -10,7 +10,11 @@ import {
   AllItemsSelector,
 } from "../atoms";
 import useDim from "../useDim";
+
+import { getItemElem } from "../../utils";
+
 import useItemInteraction from "./useItemInteraction";
+import { ConfigurationAtom } from "..";
 
 const useItemActions = () => {
   const { wire } = useWire("board");
@@ -82,6 +86,10 @@ const useItemActions = () => {
         itemIds.forEach((id) => {
           const item = prevItemMap[id];
 
+          if (!item) {
+            return;
+          }
+
           result[id] = {
             ...item,
             x: (item.x || 0) + posDelta.x,
@@ -123,106 +131,115 @@ const useItemActions = () => {
     [setItemList, wire]
   );
 
-  const stickOnGrid = React.useCallback(
-    (itemIds, { type: globalType, size: globalSize } = {}, sync = true) => {
-      const updatedItems = {};
-      setItemMap((prevItemMap) => {
-        const result = { ...prevItemMap };
-        itemIds.forEach((id) => {
-          const item = prevItemMap[id];
-          const elems = document.getElementsByClassName(`item ${id}`);
-          const elem = elems[0];
+  const stickOnGrid = useRecoilCallback(
+    ({ snapshot }) =>
+      async (
+        itemIds,
+        { type: globalType, size: globalSize } = {},
+        sync = true
+      ) => {
+        const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
+        const updatedItems = {};
+        setItemMap((prevItemMap) => {
+          const result = { ...prevItemMap };
+          itemIds.forEach((id) => {
+            const item = prevItemMap[id];
+            const elem = getItemElem(boardWrapper, id);
 
-          const { type: itemType, size: itemSize } = item.grid || {};
-          let type = globalType;
-          let size = globalSize || 1;
-          // If item specific
-          if (itemType) {
-            type = itemType;
-            size = itemSize || 1;
-          }
+            if (!elem) {
+              return;
+            }
 
-          const [centerX, centerY] = [
-            item.x + elem.clientWidth / 2,
-            item.y + elem.clientHeight / 2,
-          ];
+            const { type: itemType, size: itemSize } = item.grid || {};
+            let type = globalType;
+            let size = globalSize || 1;
+            // If item specific
+            if (itemType) {
+              type = itemType;
+              size = itemSize || 1;
+            }
 
-          let newX;
-          let newY;
-          let sizeX;
-          let sizeY;
-          let px1;
-          let px2;
-          let py1;
-          let py2;
-          let diff1;
-          let diff2;
-          const h = size / 1.1547;
+            const [centerX, centerY] = [
+              item.x + elem.clientWidth / 2,
+              item.y + elem.clientHeight / 2,
+            ];
 
-          switch (type) {
-            case "grid":
-              newX = Math.round(centerX / size) * size;
-              newY = Math.round(centerY / size) * size;
-              break;
-            case "hexH":
-              sizeX = 2 * h;
-              sizeY = 3 * size;
-              px1 = Math.round(centerX / sizeX) * sizeX;
-              py1 = Math.round(centerY / sizeY) * sizeY;
+            let newX;
+            let newY;
+            let sizeX;
+            let sizeY;
+            let px1;
+            let px2;
+            let py1;
+            let py2;
+            let diff1;
+            let diff2;
+            const h = size / 1.1547;
 
-              px2 = px1 > centerX ? px1 - h : px1 + h;
-              py2 = py1 > centerY ? py1 - 1.5 * size : py1 + 1.5 * size;
+            switch (type) {
+              case "grid":
+                newX = Math.round(centerX / size) * size;
+                newY = Math.round(centerY / size) * size;
+                break;
+              case "hexH":
+                sizeX = 2 * h;
+                sizeY = 3 * size;
+                px1 = Math.round(centerX / sizeX) * sizeX;
+                py1 = Math.round(centerY / sizeY) * sizeY;
 
-              diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
-              diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
+                px2 = px1 > centerX ? px1 - h : px1 + h;
+                py2 = py1 > centerY ? py1 - 1.5 * size : py1 + 1.5 * size;
 
-              if (diff1 < diff2) {
-                newX = px1;
-                newY = py1;
-              } else {
-                newX = px2;
-                newY = py2;
-              }
-              break;
-            case "hexV":
-              sizeX = 3 * size;
-              sizeY = 2 * h;
-              px1 = Math.round(centerX / sizeX) * sizeX;
-              py1 = Math.round(centerY / sizeY) * sizeY;
+                diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
+                diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
 
-              px2 = px1 > centerX ? px1 - 1.5 * size : px1 + 1.5 * size;
-              py2 = py1 > centerY ? py1 - h : py1 + h;
+                if (diff1 < diff2) {
+                  newX = px1;
+                  newY = py1;
+                } else {
+                  newX = px2;
+                  newY = py2;
+                }
+                break;
+              case "hexV":
+                sizeX = 3 * size;
+                sizeY = 2 * h;
+                px1 = Math.round(centerX / sizeX) * sizeX;
+                py1 = Math.round(centerY / sizeY) * sizeY;
 
-              diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
-              diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
+                px2 = px1 > centerX ? px1 - 1.5 * size : px1 + 1.5 * size;
+                py2 = py1 > centerY ? py1 - h : py1 + h;
 
-              if (diff1 < diff2) {
-                newX = px1;
-                newY = py1;
-              } else {
-                newX = px2;
-                newY = py2;
-              }
-              break;
-            default:
-              newX = item.x + elem.clientWidth / 2;
-              newY = item.y + elem.clientHeight / 2;
-          }
+                diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
+                diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
 
-          result[id] = {
-            ...item,
-            x: newX - elem.clientWidth / 2,
-            y: newY - elem.clientHeight / 2,
-          };
-          updatedItems[id] = result[id];
+                if (diff1 < diff2) {
+                  newX = px1;
+                  newY = py1;
+                } else {
+                  newX = px2;
+                  newY = py2;
+                }
+                break;
+              default:
+                newX = item.x + elem.clientWidth / 2;
+                newY = item.y + elem.clientHeight / 2;
+            }
+
+            result[id] = {
+              ...item,
+              x: newX - elem.clientWidth / 2,
+              y: newY - elem.clientHeight / 2,
+            };
+            updatedItems[id] = result[id];
+          });
+          return result;
         });
-        return result;
-      });
 
-      if (sync) {
-        wire.publish("batchItemsUpdate", updatedItems);
-      }
-    },
+        if (sync) {
+          wire.publish("batchItemsUpdate", updatedItems);
+        }
+      },
     [wire, setItemMap]
   );
 

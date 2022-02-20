@@ -171,7 +171,7 @@ export const OneView = (props) => (
 );
 
 OneView.args = {
-  moveFirst: true,
+  moveFirst: false,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),
@@ -231,7 +231,7 @@ export const OneViewWithRoom = (props) => (
 );
 
 OneViewWithRoom.args = {
-  moveFirst: true,
+  moveFirst: false,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),

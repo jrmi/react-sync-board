@@ -9,6 +9,7 @@ const StyledCursor = styled.div`
   flex-direction: row;
   align-items: center;
   z-index: 210;
+  pointer-events: none;
 `;
 
 const CursorName = styled.div`
@@ -22,6 +23,7 @@ const CursorName = styled.div`
   margin-left: -0.5em;
   margin-top: 1.7em;
   whitespace: nowrap;
+  pointer-events: none;
   background-color: ${({ color }) => color};
 `;
 
@@ -70,6 +72,7 @@ const PositionnedCursor = ({ pos, ...rest }) => (
       left: 0,
       zIndex: 210,
       position: "fixed",
+      pointerEvents: "none",
     }}
   >
     <MemoizedCursor {...rest} />
