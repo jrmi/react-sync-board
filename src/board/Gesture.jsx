@@ -45,6 +45,17 @@ const computeDistance = ([x1, y1], [x2, y2]) => {
 
 const empty = () => {};
 
+const protect =
+  (fn) =>
+  async (...args) => {
+    try {
+      await fn(...args);
+    } catch (e) {
+      // eslint-disable-next-line no-console
+      console.error(e);
+    }
+  };
+
 const Gesture = ({
   children,
   onDrag = empty,
@@ -65,16 +76,16 @@ const Gesture = ({
   const queueRef = React.useRef([]);
 
   // Queue event to avoid async mess
-  const queue = React.useCallback((callback) => {
+  const queue = React.useCallback((callback, args) => {
     queueRef.current.push(async () => {
-      await callback();
+      await protect(callback)(args);
       queueRef.current.shift();
       if (queueRef.current.length !== 0) {
-        await queueRef.current[0]();
+        await protect(queueRef.current[0])();
       }
     });
     if (queueRef.current.length === 1) {
-      queueRef.current[0]();
+      protect(queueRef.current[0])();
     }
   }, []);
 
@@ -104,17 +115,15 @@ const Gesture = ({
       // If we are only moving the fingers in the same direction, a pan is needed.
       // Ref: https://medium.com/@auchenberg/detecting-multi-touch-trackpad-gestures-in-javascript-a2505babb10e
       if (isMacOS() && !ctrlKey) {
-        queue(() =>
-          onPan({
-            deltaX: -2 * deltaX,
-            deltaY: -2 * deltaY,
-            button: 1,
-            ctrlKey,
-            metaKey,
-            target,
-            event: e,
-          })
-        );
+        queue(onPan, {
+          deltaX: -2 * deltaX,
+          deltaY: -2 * deltaY,
+          button: 1,
+          ctrlKey,
+          metaKey,
+          target,
+          event: e,
+        });
       } else {
         // Quit if onZoom is not set
         if (onZoom === undefined || !deltaY) return;
@@ -135,7 +144,7 @@ const Gesture = ({
           scale *= 2;
         }
 
-        queue(() => onZoom({ scale, clientX, clientY, event: e }));
+        queue(onZoom, { scale, clientX, clientY, event: e });
       }
     },
     [onPan, onZoom, queue]
@@ -190,6 +199,7 @@ const Gesture = ({
               prevDistance: distance,
             });
           } catch (e) {
+            // eslint-disable-next-line no-console
             console.log("Error while getting other pointer. Ignoring", e);
             // eslint-disable-next-line no-unused-expressions
             stateRef.current.mainPointer === undefined;
@@ -216,22 +226,21 @@ const Gesture = ({
         timeStart: Date.now(),
         longTapTimeout: setTimeout(async () => {
           stateRef.current.noTap = true;
-          queue(() =>
-            onLongTap({
-              clientX,
-              clientY,
-              altKey,
-              ctrlKey,
-              metaKey,
-              target,
-            })
-          );
+          queue(onLongTap, {
+            clientX,
+            clientY,
+            altKey,
+            ctrlKey,
+            metaKey,
+            target,
+          });
         }, 750),
       });
 
       try {
         target.setPointerCapture(pointerId);
       } catch (e) {
+        // eslint-disable-next-line no-console
         console.log("Fail to capture pointer", e);
       }
     },
@@ -307,22 +316,20 @@ const Gesture = ({
             // Clear tap timeout
             clearTimeout(stateRef.current.longTapTimeout);
 
-            queue(() =>
-              onDragStart({
-                deltaX: 0,
-                deltaY: 0,
-                startX: stateRef.current.startX,
-                startY: stateRef.current.startY,
-                distanceX: 0,
-                distanceY: 0,
-                button: stateRef.current.currentButton,
-                altKey,
-                ctrlKey,
-                metaKey,
-                target: stateRef.current.target,
-                event: e,
-              })
-            );
+            queue(onDragStart, {
+              deltaX: 0,
+              deltaY: 0,
+              startX: stateRef.current.startX,
+              startY: stateRef.current.startY,
+              distanceX: 0,
+              distanceY: 0,
+              button: stateRef.current.currentButton,
+              altKey,
+              ctrlKey,
+              metaKey,
+              target: stateRef.current.target,
+              event: e,
+            });
           }
           // Create closure
           const deltaX = clientX - stateRef.current.prevX;
@@ -331,22 +338,20 @@ const Gesture = ({
           const distanceY = clientY - stateRef.current.startY;
 
           // Drag event
-          queue(() =>
-            onDrag({
-              deltaX,
-              deltaY,
-              startX: stateRef.current.startX,
-              startY: stateRef.current.startY,
-              distanceX,
-              distanceY,
-              button: stateRef.current.currentButton,
-              altKey,
-              ctrlKey,
-              metaKey,
-              target: stateRef.current.target,
-              event: e,
-            })
-          );
+          queue(onDrag, {
+            deltaX,
+            deltaY,
+            startX: stateRef.current.startX,
+            startY: stateRef.current.startY,
+            distanceX,
+            distanceY,
+            button: stateRef.current.currentButton,
+            altKey,
+            ctrlKey,
+            metaKey,
+            target: stateRef.current.target,
+            event: e,
+          });
         } else {
           if (!stateRef.current.gestureStart) {
             wrapperRef.current.style.cursor = "move";
@@ -361,18 +366,16 @@ const Gesture = ({
           const { target } = stateRef.current;
 
           // Pan event
-          queue(() =>
-            onPan({
-              deltaX,
-              deltaY,
-              button: stateRef.current.currentButton,
-              altKey,
-              ctrlKey,
-              metaKey,
-              target,
-              event: e,
-            })
-          );
+          queue(onPan, {
+            deltaX,
+            deltaY,
+            button: stateRef.current.currentButton,
+            altKey,
+            ctrlKey,
+            metaKey,
+            target,
+            event: e,
+          });
 
           if (
             twoFingers &&
@@ -382,14 +385,12 @@ const Gesture = ({
             const scale = stateRef.current.prevDistance - distance;
 
             if (Math.abs(scale) > 0) {
-              queue(() =>
-                onZoom({
-                  scale,
-                  clientX,
-                  clientY,
-                  event: e,
-                })
-              );
+              queue(onZoom, {
+                scale,
+                clientX,
+                clientY,
+                event: e,
+              });
               stateRef.current.prevDistance = distance;
             }
           }
@@ -432,6 +433,7 @@ const Gesture = ({
           );
           return;
         } catch (error) {
+          // eslint-disable-next-line no-console
           console.log("Fails to set pointer capture", error);
           stateRef.current.mainPointer = undefined;
           delete stateRef.current.pointers[
@@ -449,21 +451,19 @@ const Gesture = ({
       if (stateRef.current.moving) {
         // If we were moving, send drag end event
         stateRef.current.moving = false;
-        queue(() =>
-          onDragEnd({
-            deltaX: clientX - stateRef.current.prevX,
-            deltaY: clientY - stateRef.current.prevY,
-            startX: stateRef.current.startX,
-            startY: stateRef.current.startY,
-            distanceX: clientX - stateRef.current.startX,
-            distanceY: clientY - stateRef.current.startY,
-            button: stateRef.current.currentButton,
-            altKey,
-            ctrlKey,
-            metaKey,
-            event: e,
-          })
-        );
+        queue(onDragEnd, {
+          deltaX: clientX - stateRef.current.prevX,
+          deltaY: clientY - stateRef.current.prevY,
+          startX: stateRef.current.startX,
+          startY: stateRef.current.startY,
+          distanceX: clientX - stateRef.current.startX,
+          distanceY: clientY - stateRef.current.startY,
+          button: stateRef.current.currentButton,
+          altKey,
+          ctrlKey,
+          metaKey,
+          event: e,
+        });
         wrapperRef.current.style.cursor = "auto";
       } else {
         const now = Date.now();
@@ -473,16 +473,14 @@ const Gesture = ({
         }
         // Send tap event only if time less than 300ms
         else if (stateRef.current.timeStart - now < 300) {
-          queue(() =>
-            onTap({
-              clientX,
-              clientY,
-              altKey,
-              ctrlKey,
-              metaKey,
-              target,
-            })
-          );
+          queue(onTap, {
+            clientX,
+            clientY,
+            altKey,
+            ctrlKey,
+            metaKey,
+            target,
+          });
         }
       }
     },
@@ -491,9 +489,9 @@ const Gesture = ({
 
   const onDoubleTapHandler = React.useCallback(
     (event) => {
-      onDoubleTap(event);
+      queue(onDoubleTap, event);
     },
-    [onDoubleTap]
+    [onDoubleTap, queue]
   );
 
   return (
