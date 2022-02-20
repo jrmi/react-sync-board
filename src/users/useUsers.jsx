@@ -25,10 +25,11 @@ const useUsers = () => {
     [setCurrentUserState]
   );
 
-  const localUsers = React.useMemo(
-    () => users.filter(({ space }) => space === currentUser.space),
-    [currentUser.space, users]
-  );
+  const localUsers = React.useMemo(() => {
+    // eslint-disable-next-line no-console
+    console.debug(`Curent user is in space ${currentUser.space}`);
+    return users.filter(({ space }) => space === currentUser.space);
+  }, [currentUser.space, users]);
 
   return { currentUser, setCurrentUser, users, localUsers };
 };
