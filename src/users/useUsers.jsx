@@ -1,10 +1,11 @@
 import React from "react";
 import { useRecoilValue, useRecoilState } from "recoil";
-import { userAtom, usersAtom, persistUser } from "./atoms";
+import { userAtom, usersAtom, persistUser, localUsersAtom } from "./atoms";
 
 const useUsers = () => {
   const [currentUser, setCurrentUserState] = useRecoilState(userAtom);
   const users = useRecoilValue(usersAtom);
+  const localUsers = useRecoilValue(localUsersAtom);
 
   const setCurrentUser = React.useCallback(
     (callbackOrUser) => {
@@ -25,11 +26,10 @@ const useUsers = () => {
     [setCurrentUserState]
   );
 
-  const localUsers = React.useMemo(() => {
+  React.useEffect(() => {
     // eslint-disable-next-line no-console
     console.debug(`Curent user is in space ${currentUser.space}`);
-    return users.filter(({ space }) => space === currentUser.space);
-  }, [currentUser.space, users]);
+  }, [currentUser.space]);
 
   return { currentUser, setCurrentUser, users, localUsers };
 };

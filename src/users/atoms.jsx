@@ -1,5 +1,5 @@
 import { nanoid } from "nanoid";
-import { atom } from "recoil";
+import { atom, selector } from "recoil";
 
 export const persistUser = (user) => {
   localStorage.setItem("user", JSON.stringify(user));
@@ -72,4 +72,13 @@ export const userAtom = atom({
 export const usersAtom = atom({
   key: "users",
   default: [],
+});
+
+export const localUsersAtom = selector({
+  key: "localUsersAtom",
+  get: ({ get }) => {
+    const currentUser = get(userAtom);
+    const users = get(usersAtom);
+    return users.filter(({ space }) => space === currentUser.space);
+  },
 });
