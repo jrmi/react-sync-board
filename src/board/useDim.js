@@ -44,6 +44,14 @@ const useDim = () => {
   const setDim = useSetRecoilState(BoardTransformAtom);
   const scaleBoundariesRef = React.useRef([0.1, 8]);
   const { itemExtent: itemExtentGlobal } = useRecoilValue(ConfigurationAtom);
+
+  const getDim = useRecoilCallback(
+    ({ snapshot }) =>
+      () =>
+        snapshot.getPromise(BoardTransformAtom),
+    []
+  );
+
   const setDimSafe = useRecoilCallback(
     ({ snapshot }) =>
       async (fn) => {
@@ -250,6 +258,7 @@ const useDim = () => {
 
   return {
     setDim: setDimSafe,
+    getDim,
     zoomTo,
     getCenter: getCenterCoordinates,
     updateItemExtent: debouncedUpdateItemExtent,
