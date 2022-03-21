@@ -140,7 +140,7 @@ const Overlay = ({ children, hideMenu }) => (
   </div>
 );
 
-const OneViewContent = ({ moveFirst, hideMenu, room, session }) => {
+const OneViewContent = ({ moveFirst, hideMenu, room, session, children }) => {
   const socket = useSocket();
   return (
     <BoardWrapper room={room} session={session} socket={socket}>
@@ -149,7 +149,9 @@ const OneViewContent = ({ moveFirst, hideMenu, room, session }) => {
           moveFirst={moveFirst}
           style={{ backgroundColor: "#cca" }}
           itemTemplates={itemMap}
-        />
+        >
+          {children}
+        </Board>
       </Overlay>
     </BoardWrapper>
   );
@@ -280,4 +282,38 @@ export const TwoView = (props) => {
 TwoView.args = {
   moveFirst: false,
   hideMenu: false,
+};
+
+export const OneViewWithCustomBoardElements = (props) => (
+  <WithSocketIO>
+    <div
+      style={{
+        width: "100%",
+        height: "500px",
+        position: "relative",
+        border: "1px solid black",
+      }}
+    >
+      <OneViewContent {...props}>
+        <div
+          style={{
+            position: "absolute",
+            top: "25000px",
+            left: "25000px",
+            width: "1000px",
+            height: "1000px",
+            backgroundColor: "#DEF",
+            zIndex: 300,
+          }}
+        ></div>
+      </OneViewContent>
+    </div>
+  </WithSocketIO>
+);
+
+OneViewWithCustomBoardElements.args = {
+  moveFirst: false,
+  hideMenu: false,
+  room: nanoid(),
+  session: nanoid(),
 };

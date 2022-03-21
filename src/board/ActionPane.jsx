@@ -18,7 +18,6 @@ const ActionPane = ({ children }) => {
   const setSelectedItems = useSetRecoilState(SelectedItemsAtom);
   const setBoardState = useSetRecoilState(BoardStateAtom);
 
-  const wrapperRef = React.useRef(null);
   const actionRef = React.useRef({});
 
   // Use ref because pointer events are faster than react state management
@@ -180,7 +179,7 @@ const ActionPane = ({ children }) => {
 
   return (
     <Gesture onDragStart={onDragStart} onDrag={onDrag} onDragEnd={onDragEnd}>
-      <div ref={wrapperRef}>{children}</div>
+      {children}
     </Gesture>
   );
 };

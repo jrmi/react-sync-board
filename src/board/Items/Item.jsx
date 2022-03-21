@@ -88,7 +88,11 @@ class ItemErrorBoundary extends React.Component {
 
   componentDidCatch(error) {
     // eslint-disable-next-line no-console
-    console.log(`Error for item ${this.state.itemId}`, error, this.props.state);
+    console.error(
+      `Error for item ${this.state.itemId}`,
+      error,
+      this.props.state
+    );
   }
 
   onReload() {
@@ -104,6 +108,10 @@ class ItemErrorBoundary extends React.Component {
   }
 }
 
+const removeClass = (e) => {
+  e.target.className = "";
+};
+
 const Item = ({
   setState,
   state: { type, rotation = 0, id, locked, layer, ...rest } = {},
@@ -112,31 +120,19 @@ const Item = ({
   itemMap,
   unlocked,
 }) => {
-  const isMountedRef = React.useRef(false);
   const animateRef = React.useRef(null);
 
-  const Component = itemMap[type].component || null;
+  const Component = itemMap[type].component || (() => null);
 
   const updateState = React.useCallback(
     (callbackOrItem, sync = true) => setState(id, callbackOrItem, sync),
     [setState, id]
   );
 
-  // Update actual size when update
-  React.useEffect(() => {
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
   React.useEffect(() => {
     animateRef.current.className = animate;
   }, [animate]);
 
-  const removeClass = (e) => {
-    e.target.className = "";
-  };
   let className = `item ${id}`;
   if (locked) {
     className += " locked";
@@ -144,6 +140,7 @@ const Item = ({
   if (isSelected) {
     className += " selected";
   }
+
   return (
     <ItemWrapper
       rotation={rotation}
@@ -198,7 +195,7 @@ const MemoizedItem = memo(
     JSON.stringify(prevState) === JSON.stringify(nextState)
 );
 
-// Exclude positionning from memoization
+// Exclude positioning from memoization
 const PositionedItem = ({
   state: { x = 0, y = 0, layer, moving, ...stateRest } = {},
   boardSize,

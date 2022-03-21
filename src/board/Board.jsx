@@ -16,6 +16,7 @@ export const Board = ({
   style,
   itemTemplates = {},
   boardSize = DEFAULT_BOARD_MAX_SIZE,
+  children,
 }) => {
   const setConfiguration = useSetRecoilState(ConfigurationAtom);
   const { updateItemExtent } = useDim();
@@ -59,6 +60,7 @@ export const Board = ({
                 className="board"
               >
                 <ItemList itemTemplates={itemTemplates} />
+                {children}
               </div>
             </CursorPane>
           </ActionPane>
