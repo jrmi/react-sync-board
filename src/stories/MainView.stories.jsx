@@ -61,6 +61,25 @@ const initialItems = [
   },
   { type: "round", x: 100, y: -100, id: "test", color: "#923456" },
   { type: "token", x: -100, y: 100, id: "test2", color: "#0077AA" },
+  {
+    type: "rect",
+    x: -300,
+    y: 300,
+    id: "test3",
+    color: "#0077AA",
+    width: 300,
+    height: 300,
+  },
+  {
+    type: "zone",
+    x: -300,
+    y: -300,
+    id: "test4",
+    color: "#7700AA",
+    width: 300,
+    height: 300,
+    layer: 2,
+  },
 ];
 
 const AddItems = () => {

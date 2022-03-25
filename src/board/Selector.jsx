@@ -13,6 +13,7 @@ import {
 } from "./atoms";
 
 import Gesture from "./Gesture";
+import { useItemActions } from "./Items";
 
 const defaultSelectorStyle = {
   zIndex: 210,
@@ -45,6 +46,7 @@ const findSelected = (itemMap, wrapper) => {
 const Selector = ({ children, moveFirst }) => {
   const setSelected = useSetRecoilState(SelectedItemsAtom);
   const setBoardState = useSetRecoilState(BoardStateAtom);
+  const { findElementUnderPointer } = useItemActions();
 
   const [selector, setSelector] = React.useState({});
 
@@ -82,9 +84,9 @@ const Selector = ({ children, moveFirst }) => {
 
   useThrottledEffect(updateSelected, [selector, updateSelected], 200);
 
-  const onDragStart = ({ button, altKey, ctrlKey, metaKey, target }) => {
-    const outsideItem =
-      !insideClass(target, "item") || insideClass(target, "locked");
+  const onDragStart = async (event) => {
+    const { button, altKey, ctrlKey, metaKey } = event;
+    const foundElement = await findElementUnderPointer(event);
 
     const metaKeyPressed = altKey || ctrlKey || metaKey;
 
@@ -92,7 +94,7 @@ const Selector = ({ children, moveFirst }) => {
       ? button === 1 || (button === 0 && metaKeyPressed)
       : button === 0 && !metaKeyPressed;
 
-    if (goodButton && (outsideItem || moveFirst)) {
+    if (goodButton && (!foundElement || moveFirst)) {
       stateRef.current.moving = true;
       setBoardState((prev) => ({ ...prev, selecting: true }));
       wrapperRef.current.style.cursor = "crosshair";
@@ -156,15 +158,15 @@ const Selector = ({ children, moveFirst }) => {
 
   const onTap = useRecoilCallback(
     ({ snapshot }) =>
-      async ({ target, ctrlKey, metaKey }) => {
-        const foundItem = insideClass(target, "item");
-        if (
-          (!foundItem || insideClass(foundItem, "locked")) &&
-          insideClass(target, "board")
-        ) {
+      async (event) => {
+        const { target, ctrlKey, metaKey } = event;
+
+        const foundElement = await findElementUnderPointer(event);
+
+        if (!foundElement && insideClass(target, "board")) {
           setSelected([]);
         } else {
-          const itemId = getIdFromElem(foundItem);
+          const itemId = getIdFromElem(foundElement);
 
           // Being defensive here to avoid bug
           if (!itemId) {
@@ -173,7 +175,7 @@ const Selector = ({ children, moveFirst }) => {
           }
 
           const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
-          if (foundItem && !selectedItems.includes(itemId)) {
+          if (foundElement && !selectedItems.includes(itemId)) {
             if (ctrlKey || metaKey) {
               setSelected((prev) => [...prev, itemId]);
             } else {
@@ -182,7 +184,7 @@ const Selector = ({ children, moveFirst }) => {
           }
         }
       },
-    [setSelected]
+    [findElementUnderPointer, setSelected]
   );
 
   return (

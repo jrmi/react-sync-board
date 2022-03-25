@@ -8,12 +8,12 @@ import {
   BoardConfigAtom,
 } from "./atoms";
 import { useItemActions } from "./Items";
-import { insideClass, hasClass, getIdFromElem } from "../utils";
+import { getIdFromElem } from "../utils";
 
 import Gesture from "./Gesture";
 
 const ActionPane = ({ children }) => {
-  const { moveItems, placeItems } = useItemActions();
+  const { moveItems, placeItems, findElementUnderPointer } = useItemActions();
 
   const setSelectedItems = useSetRecoilState(SelectedItemsAtom);
   const setBoardState = useSetRecoilState(BoardStateAtom);
@@ -27,14 +27,12 @@ const ActionPane = ({ children }) => {
 
   const onDragStart = useRecoilCallback(
     ({ snapshot }) =>
-      async ({ target, ctrlKey, metaKey, event }) => {
-        // Allow text selection instead of moving
-        if (["INPUT", "TEXTAREA"].includes(target.tagName)) return;
+      async (event) => {
+        const { ctrlKey, metaKey, event: originalEvent } = event;
+        const foundElement = await findElementUnderPointer(event);
 
-        const foundElement = insideClass(target, "item");
-
-        if (foundElement && !hasClass(foundElement, "locked")) {
-          event.stopPropagation();
+        if (foundElement) {
+          originalEvent.stopPropagation();
 
           const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
 
@@ -59,7 +57,7 @@ const ActionPane = ({ children }) => {
           });
         }
       },
-    [setSelectedItems]
+    [findElementUnderPointer, setSelectedItems]
   );
 
   const onDrag = useRecoilCallback(

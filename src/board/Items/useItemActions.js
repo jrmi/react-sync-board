@@ -11,7 +11,12 @@ import {
 } from "../atoms";
 import useDim from "../useDim";
 
-import { getItemElem } from "../../utils";
+import {
+  getItemElem,
+  isPointInsideRect,
+  insideClass,
+  hasClass,
+} from "../../utils";
 
 import useItemInteraction from "./useItemInteraction";
 import { ConfigurationAtom } from "..";
@@ -446,6 +451,54 @@ const useItemActions = () => {
     []
   );
 
+  const findElementUnderPointer = useRecoilCallback(
+    ({ snapshot }) =>
+      async ({ target, clientX, clientY }) => {
+        // Allow text selection instead of moving
+        if (["INPUT", "TEXTAREA"].includes(target.tagName)) return null;
+
+        const foundElement = insideClass(target, "item");
+
+        if (foundElement) {
+          // Is it a passthrough or locked element?
+          const isPassthrough =
+            (hasClass(target, "passthrough") ||
+              hasClass(foundElement, "locked")) &&
+            !hasClass(foundElement, "selected");
+
+          if (isPassthrough) {
+            // Get atoms value
+            const itemList = await snapshot.getPromise(ItemListAtom);
+            const { boardWrapper } = await snapshot.getPromise(
+              ConfigurationAtom
+            );
+
+            // Found element under the cursor
+            const elems = itemList.reduce((prev, itemId) => {
+              const elem = getItemElem(boardWrapper, itemId);
+              const itemRect = elem.getBoundingClientRect();
+              if (isPointInsideRect({ x: clientX, y: clientY }, itemRect)) {
+                prev.unshift(elem);
+              }
+              return prev;
+            }, []);
+
+            // Figure out if one can be returned
+            for (let i = 0; i < elems.length; i += 1) {
+              const elem = elems[i];
+              if (elem !== foundElement && !hasClass(elem, "locked")) {
+                return elem;
+              }
+            }
+            // Here there is not available elements
+            return null;
+          }
+        }
+        return foundElement;
+      },
+    []
+  );
+
   return {
     putItemsOnTop,
     batchUpdateItems,
@@ -460,6 +513,7 @@ const useItemActions = () => {
     pushItems,
     removeItems,
     getItemList,
+    findElementUnderPointer,
     getItems,
   };
 };

@@ -11,6 +11,7 @@ import RoundFormFields from "./forms/RoundFormFields";
 import TokenFormFields from "./forms/TokenFormFields";
 import CylinderFormFields from "./forms/CylinderFormFields";
 import ErrorItem from "./ErrorItem";
+import Zone from "./Zone";
 
 const i18n = {
   t: (i) => i,
@@ -31,6 +32,22 @@ const itemTemplates = {
     ],
     form: RectFormFields,
     name: i18n.t("Rectangle"),
+    template: {},
+  },
+  zone: {
+    component: Zone,
+    defaultActions: ["lock", "remove"],
+    availableActions: [
+      "stack",
+      "alignAsLine",
+      "alignAsSquare",
+      "shuffle",
+      "clone",
+      "lock",
+      "remove",
+    ],
+    form: RectFormFields,
+    name: i18n.t("Zone"),
     template: {},
   },
   cube: {
