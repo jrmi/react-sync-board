@@ -2,7 +2,6 @@ import React from "react";
 import styled from "styled-components";
 import useTranslation from "@/hooks/useTranslation";
 
-import { insideClass, hasClass } from "@/utils";
 import SidePanel from "./ui/SidePanel";
 import ItemFormFactory from "./ItemFormFactory";
 import {
@@ -12,6 +11,7 @@ import {
   useBoardState,
 } from "@/";
 import useActions from "./sample/useActions";
+import { useItemActions } from "../board/Items";
 
 const ActionPane = styled.div.attrs(({ top, left, height }) => {
   if (top < 120) {
@@ -81,6 +81,7 @@ const CardContent = styled.div.attrs(() => ({ className: "content" }))`
 const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
   const actionMap = useActions();
 
+  const { findElementUnderPointer } = useItemActions();
   const { availableActions } = useAvailableActions();
   const [showEdit, setShowEdit] = React.useState(false);
 
@@ -126,30 +127,26 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
   }, [actionMap, availableActions, selectedItems, showEdit]);
 
   const onDblClick = React.useCallback(
-    (e) => {
-      const foundElement = insideClass(e.target, "item");
+    async (e) => {
+      const foundElement = await findElementUnderPointer(e);
 
       // We dblclick outside of an element
       if (!foundElement) return;
 
-      if (hasClass(foundElement, "locked")) {
-        return;
-      }
-
       const filteredActions = availableActions.filter(
-        (action) => !actionMap[action].disableDblclick
+        (action) => !actionMap[action.name].disableDblclick
       );
 
       if (e.ctrlKey && filteredActions.length > 1) {
         // Use second action
         // here
-        actionMap[filteredActions[1]].action(selectedItems);
+        actionMap[filteredActions[1].name].action(selectedItems);
       } else if (filteredActions.length > 0) {
         // here
-        actionMap[filteredActions[0]].action(selectedItems);
+        actionMap[filteredActions[0].name].action(selectedItems);
       }
     },
-    [actionMap, availableActions, selectedItems]
+    [actionMap, availableActions, findElementUnderPointer, selectedItems]
   );
 
   React.useEffect(() => {

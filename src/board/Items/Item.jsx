@@ -151,6 +151,7 @@ const Item = ({
       className={className}
     >
       <div
+        style={{ display: "flex" }}
         ref={animateRef}
         onAnimationEnd={removeClass}
         onKeyDown={(e) => e.stopPropagation()}
@@ -164,10 +165,10 @@ const Item = ({
         >
           <Component {...rest} id={id} setState={updateState} />
         </ItemErrorBoundary>
-        <div className="corner top-left"></div>
-        <div className="corner top-right"></div>
-        <div className="corner bottom-left"></div>
-        <div className="corner bottom-right"></div>
+        <div className="corner top-left" />
+        <div className="corner top-right" />
+        <div className="corner bottom-left" />
+        <div className="corner bottom-right" />
       </div>
     </ItemWrapper>
   );
