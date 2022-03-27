@@ -45,7 +45,7 @@ const CursorPane = ({ children }) => {
   };
 
   return (
-    <div onMouseMove={onMouseMove} onMouseLeave={onLeave}>
+    <div onPointerMove={onMouseMove} onPointerLeave={onLeave}>
       {children}
       <Cursors users={users} />
     </div>

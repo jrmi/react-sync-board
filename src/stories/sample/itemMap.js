@@ -4,14 +4,16 @@ import Cube from "./Cube";
 import Round from "./Round";
 import Token from "./Token";
 import Cylinder from "./Cylinder";
+import Zone from "./Zone";
+import Screen from "./Screen";
 
+import ErrorItem from "./ErrorItem";
 import RectFormFields from "./forms/RectFormFields";
+import ScreenFormFields from "./forms/ScreenFormFields";
 import CubeFormFields from "./forms/CubeFormFields";
 import RoundFormFields from "./forms/RoundFormFields";
 import TokenFormFields from "./forms/TokenFormFields";
 import CylinderFormFields from "./forms/CylinderFormFields";
-import ErrorItem from "./ErrorItem";
-import Zone from "./Zone";
 
 const i18n = {
   t: (i) => i,
@@ -49,6 +51,28 @@ const itemTemplates = {
     form: RectFormFields,
     name: i18n.t("Zone"),
     template: {},
+  },
+  screen: {
+    component: Screen,
+    defaultActions: ["lock", "remove"],
+    availableActions: [
+      "stack",
+      "alignAsLine",
+      "alignAsSquare",
+      "shuffle",
+      "clone",
+      "lock",
+      "remove",
+    ],
+    form: ScreenFormFields,
+    name: i18n.t("Screen"),
+    template: { layer: -2 },
+    stateHook: (state, { currentUser }) => {
+      if (state.claimedBy && state.claimedBy !== currentUser.uid) {
+        return { ...state, layer: 3.6 };
+      }
+      return state;
+    },
   },
   cube: {
     component: Cube,

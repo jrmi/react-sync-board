@@ -453,14 +453,21 @@ const useItemActions = () => {
 
   const findElementUnderPointer = useRecoilCallback(
     ({ snapshot }) =>
-      async ({ target, clientX, clientY }, returnLocked = false) => {
+      async (
+        { target, clientX, clientY },
+        { returnLocked = false, passLocked = false } = {}
+      ) => {
         // Allow text selection instead of moving
         if (["INPUT", "TEXTAREA"].includes(target.tagName)) return null;
 
         const foundElement = insideClass(target, "item");
 
         if (foundElement) {
-          // Is it a passthrough or locked element?
+          if (!passLocked && hasClass(foundElement, "locked")) {
+            return null;
+          }
+
+          // Is it a passthrough  element?
           const isPassthrough =
             (hasClass(target, "passthrough") ||
               (!returnLocked && hasClass(foundElement, "locked"))) &&

@@ -197,24 +197,32 @@ const MemoizedItem = memo(
 );
 
 // Exclude positioning from memoization
-const PositionedItem = ({
-  state: { x = 0, y = 0, layer, moving, ...stateRest } = {},
-  boardSize,
-  ...rest
-}) => (
-  <div
-    style={{
-      transform: `translate(${x}px, ${y}px)`,
-      display: "inline-block",
-      zIndex: ((layer || 0) + 4) * 10 + 100 + (moving ? 5 : 0), // Items z-index between 100 and 200
-      position: "absolute",
-      top: `${boardSize / 2}px`,
-      left: `${boardSize / 2}px`,
-    }}
-  >
-    <MemoizedItem {...rest} state={stateRest} />
-  </div>
-);
+const PositionedItem = ({ state = {}, boardSize, currentUser, ...rest }) => {
+  const stateTrans = rest.itemMap[state.type]?.stateHook || ((st) => st);
+
+  const {
+    x = 0,
+    y = 0,
+    layer = 0,
+    moving,
+    ...stateRest
+  } = stateTrans(state, { currentUser });
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: `${boardSize / 2}px`,
+        left: `${boardSize / 2}px`,
+        display: "inline-block",
+        transform: `translate(${x}px, ${y}px)`,
+        zIndex: (layer + 4) * 10 + 100 + (moving ? 5 : 0), // Items z-index between 100 and 200
+      }}
+    >
+      <MemoizedItem {...rest} state={stateRest} />
+    </div>
+  );
+};
 
 const MemoizedPositionedItem = memo(PositionedItem);
 
