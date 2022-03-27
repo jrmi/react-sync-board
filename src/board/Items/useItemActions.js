@@ -463,7 +463,11 @@ const useItemActions = () => {
         const foundElement = insideClass(target, "item");
 
         if (foundElement) {
-          if (!passLocked && hasClass(foundElement, "locked")) {
+          if (
+            !passLocked &&
+            hasClass(foundElement, "locked") &&
+            !hasClass(foundElement, "selected")
+          ) {
             return null;
           }
 
