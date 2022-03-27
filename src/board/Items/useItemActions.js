@@ -463,21 +463,20 @@ const useItemActions = () => {
         const foundElement = insideClass(target, "item");
 
         if (foundElement) {
+          if (hasClass(foundElement, "selected")) {
+            return foundElement;
+          }
+
           if (
             !passLocked &&
             hasClass(foundElement, "locked") &&
-            !hasClass(foundElement, "selected")
+            !hasClass(target, "passthrough")
           ) {
-            return null;
+            return returnLocked ? foundElement : null;
           }
 
           // Is it a passthrough  element?
-          const isPassthrough =
-            (hasClass(target, "passthrough") ||
-              (!returnLocked && hasClass(foundElement, "locked"))) &&
-            !hasClass(foundElement, "selected");
-
-          if (isPassthrough) {
+          if (hasClass(target, "passthrough")) {
             // Get atoms value
             const itemList = await snapshot.getPromise(ItemListAtom);
             const { boardWrapper } = await snapshot.getPromise(
@@ -499,7 +498,7 @@ const useItemActions = () => {
               const elem = elems[i];
               if (
                 elem !== foundElement &&
-                (returnLocked || !hasClass(elem, "locked"))
+                (passLocked || !hasClass(elem, "locked"))
               ) {
                 return elem;
               }
