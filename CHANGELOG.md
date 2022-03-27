@@ -1,4 +1,12 @@
 
+0.5.0 / 2022-03-27
+==================
+
+  * Add item state hooks
+  * Improve transparent finding
+  * Allow to click through bypass items
+  * Allow to add children to board
+
 0.4.5 / 2022-03-16
 ==================
 
