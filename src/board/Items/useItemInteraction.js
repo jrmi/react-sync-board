@@ -9,12 +9,10 @@ const useItemInteraction = (interaction) => {
   const register = React.useCallback(
     (callback) => {
       setInteractions((prev) => {
-        if (!prev[interaction]) {
-          // eslint-disable-next-line no-param-reassign
-          prev[interaction] = [];
-        }
-        const newInter = [...prev[interaction]];
-        newInter.push(callback);
+        const newInter = Array.isArray(prev[interaction])
+          ? [...prev[interaction], callback]
+          : [callback];
+
         return {
           ...prev,
           [interaction]: newInter,
