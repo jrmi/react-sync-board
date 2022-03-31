@@ -155,7 +155,11 @@ const useItemActions = () => {
               return;
             }
 
-            const { type: itemType, size: itemSize } = item.grid || {};
+            const {
+              type: itemType,
+              size: itemSize,
+              offset: { x: offsetX = 0, y: offsetY = 0 } = {},
+            } = item.grid || {};
             let type = globalType;
             let size = globalSize || 1;
             // If item specific
@@ -233,8 +237,8 @@ const useItemActions = () => {
 
             result[id] = {
               ...item,
-              x: newX - elem.clientWidth / 2,
-              y: newY - elem.clientHeight / 2,
+              x: newX + offsetX - elem.clientWidth / 2,
+              y: newY + offsetY - elem.clientHeight / 2,
             };
             updatedItems[id] = result[id];
           });
