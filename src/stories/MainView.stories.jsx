@@ -80,6 +80,26 @@ const initialItems = [
     height: 300,
     layer: 2,
   },
+  {
+    type: "rect",
+    x: 200,
+    y: -200,
+    id: "test-grid",
+    color: "#3327AA",
+    width: 100,
+    height: 100,
+    grid: { type: "hexV", size: 20, offset: { x: 5, y: 5 } },
+  },
+  {
+    type: "rect",
+    x: 220,
+    y: -220,
+    id: "test-grid2",
+    color: "#3327AA",
+    width: 100,
+    height: 100,
+    grid: { type: "hexV", size: 20 },
+  },
 ];
 
 const AddItems = () => {
