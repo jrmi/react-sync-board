@@ -97,8 +97,8 @@ const BoundingBox = () => {
       style={{
         ...defaultZoneStyle,
         transform: `translate(${boundingBoxLast.left}px, ${boundingBoxLast.top}px)`,
-        height: `${boundingBoxLast.height}px`,
-        width: `${boundingBoxLast.width}px`,
+        height: `${boundingBoxLast.height - 2}px`,
+        width: `${boundingBoxLast.width - 2}px`,
       }}
       className="selection"
     />

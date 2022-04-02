@@ -7,7 +7,7 @@ const ItemWrapper = styled.div`
   display: inline-block;
   transition: transform 150ms;
   user-select: none;
-  padding: 4px;
+  padding: 2px;
   transform: rotate(${({ rotation }) => rotation}deg);
 
   & .corner {
@@ -35,7 +35,7 @@ const ItemWrapper = styled.div`
 
   &.selected {
     border: 2px dashed #db5034;
-    padding: 2px;
+    padding: 0px;
     cursor: pointer;
   }
 

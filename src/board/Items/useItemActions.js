@@ -169,8 +169,8 @@ const useItemActions = () => {
             }
 
             const [centerX, centerY] = [
-              item.x + elem.clientWidth / 2,
-              item.y + elem.clientHeight / 2,
+              item.x + elem.clientWidth / 2 - offsetX,
+              item.y + elem.clientHeight / 2 - offsetY,
             ];
 
             let newX;
