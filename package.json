@@ -72,8 +72,8 @@
     "wire.io": "^3.1.2"
   },
   "peerDependencies": {
-    "react": ">= 17",
-    "react-dom": ">= 17",
+    "react": ">= 16",
+    "react-dom": ">= 16",
     "recoil": "^0.5.2"
   },
   "dependencies": {
