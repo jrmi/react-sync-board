@@ -179,14 +179,24 @@ const Overlay = ({ children, hideMenu }) => (
   </div>
 );
 
-const OneViewContent = ({ moveFirst, hideMenu, room, session, children }) => {
+const OneViewContent = ({
+  moveFirst,
+  showResizeHandle,
+  hideMenu,
+  room,
+  session,
+  children,
+}) => {
   const socket = useSocket();
   return (
     <BoardWrapper room={room} session={session} socket={socket}>
       <Overlay hideMenu={hideMenu}>
         <Board
           moveFirst={moveFirst}
-          style={{ backgroundColor: "#cca" }}
+          showResizeHandle={showResizeHandle}
+          style={{
+            backgroundColor: "#EEE",
+          }}
           itemTemplates={itemMap}
         >
           {children}
@@ -213,17 +223,10 @@ export const OneView = (props) => (
 
 OneView.args = {
   moveFirst: false,
+  showResizeHandle: false,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),
-};
-
-const style1 = {
-  background: `linear-gradient(63deg, #999 23%, transparent 23%) 7px 0,
-linear-gradient(63deg, transparent 74%, #999 78%),
-linear-gradient(63deg, transparent 34%, #999 38%, #999 58%, transparent 62%),
-#444`,
-  backgroundSize: "16px 48px",
 };
 
 const style = {
@@ -235,21 +238,24 @@ linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
   backgroundSize: "100px 100px, 100px 100px, 20px 20px, 20px 20px",
   backgroundPosition: "-2px -2px, -2px -2px, -1px -1px, -1px -1px",
 };
-
-const style3 = {
-  backgroundColor: "#eee",
-  backgroundImage: `linear-gradient(45deg, black 25%, transparent 25%, transparent 75%, black 75%, black), linear-gradient(45deg, black 25%, transparent 25%, transparent 75%, black 75%, black)`,
-  backgroundSize: "60px 60px",
-  backgroundPosition: "0 0, 30px 30px",
-};
-
-const OneViewWithRoomContent = ({ moveFirst, hideMenu, room, session }) => {
+const OneViewWithRoomContent = ({
+  moveFirst,
+  showResizeHandle,
+  hideMenu,
+  room,
+  session,
+}) => {
   const socket = useSocket();
   return (
     <RoomWrapper room={room} socket={socket}>
       <BoardWrapper session={session} socket={socket}>
         <Overlay hideMenu={hideMenu}>
-          <Board moveFirst={moveFirst} itemTemplates={itemMap} style={style} />
+          <Board
+            moveFirst={moveFirst}
+            itemTemplates={itemMap}
+            style={style}
+            showResizeHandle={showResizeHandle}
+          />
         </Overlay>
       </BoardWrapper>
     </RoomWrapper>
@@ -273,6 +279,7 @@ export const OneViewWithRoom = (props) => (
 
 OneViewWithRoom.args = {
   moveFirst: false,
+  showResizeHandle: false,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),
@@ -320,6 +327,7 @@ export const TwoView = (props) => {
 
 TwoView.args = {
   moveFirst: false,
+  showResizeHandle: false,
   hideMenu: false,
 };
 
@@ -352,6 +360,7 @@ export const OneViewWithCustomBoardElements = (props) => (
 
 OneViewWithCustomBoardElements.args = {
   moveFirst: false,
+  showResizeHandle: false,
   hideMenu: false,
   room: nanoid(),
   session: nanoid(),
