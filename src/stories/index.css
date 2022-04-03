@@ -104,3 +104,11 @@ textarea[type="text"] {
   background-color: var(--color-lightGrey);
   color: var(--bg-secondary-color);
 }
+
+body {
+  box-sizing: border-box;
+}
+
+* {
+  box-sizing: inherit;
+}

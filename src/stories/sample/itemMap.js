@@ -19,6 +19,19 @@ const i18n = {
   t: (i) => i,
 };
 
+const sizeResize = ({ width, actualWidth, prevState }) => {
+  let { size: currentSize } = prevState;
+  currentSize = parseFloat(currentSize);
+  if (!currentSize || Number.isNaN(Number(currentSize))) {
+    currentSize = actualWidth;
+  }
+
+  return {
+    ...prevState,
+    size: (currentSize + width).toFixed(2),
+  };
+};
+
 const itemTemplates = {
   rect: {
     component: Rect,
@@ -92,6 +105,8 @@ const itemTemplates = {
     form: CubeFormFields,
     name: i18n.t("Cube"),
     template: {},
+    resize: sizeResize,
+    resizeDirections: { b: true },
   },
   cylinder: {
     component: Cylinder,
@@ -108,6 +123,8 @@ const itemTemplates = {
     form: CylinderFormFields,
     name: i18n.t("Cylinder"),
     template: {},
+    resize: sizeResize,
+    resizeDirections: { b: true },
   },
   round: {
     component: Round,
@@ -124,6 +141,8 @@ const itemTemplates = {
     form: RoundFormFields,
     name: i18n.t("Round"),
     template: {},
+    resize: sizeResize,
+    resizeDirections: { b: true },
   },
   token: {
     component: Token,
@@ -140,6 +159,8 @@ const itemTemplates = {
     form: TokenFormFields,
     name: i18n.t("Token"),
     template: {},
+    resize: sizeResize,
+    resizeDirections: { b: true },
   },
   error: {
     component: ErrorItem,

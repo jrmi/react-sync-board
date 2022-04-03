@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 
 import styled from "@emotion/styled";
+import ResizeHandler from "./ResizeHandler";
 import lockIcon from "../../images/lock.svg";
 
 const ItemWrapper = styled.div`
@@ -8,6 +9,7 @@ const ItemWrapper = styled.div`
   transition: transform 150ms;
   user-select: none;
   padding: 2px;
+  box-sizing: border-box;
   transform: rotate(${({ rotation }) => rotation}deg);
 
   & .corner {
@@ -55,7 +57,35 @@ const ItemWrapper = styled.div`
   &.locked:hover::after {
     opacity: 0.3;
   }
+
+  & .resize {
+    position: absolute;
+
+    width: 10px;
+    height: 10px;
+    border: 2px solid #db5034;
+    background-color: #db5034;
+    cursor: move;
+
+    &.resize-width {
+      cursor: ew-resize;
+      right: -6px;
+      top: calc(50% - 5px);
+    }
+    &.resize-height {
+      cursor: ns-resize;
+      bottom: -6px;
+      left: calc(50% - 5px);
+    }
+    &.resize-ratio {
+      cursor: nwse-resize;
+      bottom: -6px;
+      right: -6px;
+    }
+  }
 `;
+
+const identity = (x) => x;
 
 const DefaultErrorComponent = ({ onReload }) => (
   <div
@@ -112,17 +142,65 @@ const removeClass = (e) => {
   e.target.className = "";
 };
 
+const defaultResize = ({
+  width,
+  height,
+  actualWidth,
+  actualHeight,
+  prevState,
+  keepRatio,
+}) => {
+  let { width: currentWidth, height: currentHeight } = prevState;
+
+  // Parse text values if any
+  [currentWidth, currentHeight] = [
+    parseFloat(currentWidth),
+    parseFloat(currentHeight),
+  ];
+  if (!currentWidth || Number.isNaN(Number(currentWidth))) {
+    currentWidth = actualWidth;
+  }
+  if (!currentHeight || Number.isNaN(Number(currentHeight))) {
+    currentHeight = actualHeight;
+  }
+
+  if (keepRatio) {
+    const ratio = currentWidth / currentHeight;
+    return {
+      ...prevState,
+      width: (currentWidth + width).toFixed(1),
+      height: (currentHeight + height / ratio).toFixed(1),
+    };
+  }
+
+  return {
+    ...prevState,
+    width: (currentWidth + width).toFixed(1),
+    height: (currentHeight + height).toFixed(1),
+  };
+};
+
+const defaultResizeDirection = {
+  w: true,
+  h: true,
+  b: true,
+};
+
 const Item = ({
   setState,
   state: { type, rotation = 0, id, locked, layer, ...rest } = {},
   animate = "hvr-pop",
   isSelected,
   itemMap,
-  unlocked,
+  showResizeHandle = false,
 }) => {
-  const animateRef = React.useRef(null);
+  const itemWrapperRef = React.useRef(null);
 
-  const Component = itemMap[type].component || (() => null);
+  const {
+    component: Component = () => null,
+    resizeDirections = defaultResizeDirection,
+    resize = defaultResize,
+  } = itemMap[type];
 
   const updateState = React.useCallback(
     (callbackOrItem, sync = true) => setState(id, callbackOrItem, sync),
@@ -130,7 +208,7 @@ const Item = ({
   );
 
   React.useEffect(() => {
-    animateRef.current.className = animate;
+    itemWrapperRef.current.className = animate;
   }, [animate]);
 
   let className = `item ${id}`;
@@ -141,10 +219,48 @@ const Item = ({
     className += " selected";
   }
 
+  const onResize = React.useCallback(
+    ({ width = 0, height = 0, keepRatio }) => {
+      updateState((prev) => {
+        const { offsetWidth, offsetHeight } = itemWrapperRef.current;
+        return resize({
+          prevState: prev,
+          width,
+          height,
+          actualHeight: offsetHeight,
+          actualWidth: offsetWidth,
+          keepRatio,
+        });
+      });
+    },
+    [resize, updateState]
+  );
+
+  const onResizeWidth = React.useCallback(
+    ({ width }) => {
+      onResize({ width });
+    },
+    [onResize]
+  );
+
+  const onResizeHeight = React.useCallback(
+    ({ height }) => {
+      onResize({ height });
+    },
+    [onResize]
+  );
+
+  const onResizeRatio = React.useCallback(
+    ({ width }) => {
+      onResize({ height: width, width, keepRatio: true });
+    },
+    [onResize]
+  );
+
   return (
     <ItemWrapper
       rotation={rotation}
-      locked={locked && !unlocked}
+      locked={locked}
       selected={isSelected}
       layer={layer}
       data-id={id}
@@ -152,7 +268,7 @@ const Item = ({
     >
       <div
         style={{ display: "flex" }}
-        ref={animateRef}
+        ref={itemWrapperRef}
         onAnimationEnd={removeClass}
         onKeyDown={(e) => e.stopPropagation()}
         onKeyUp={(e) => e.stopPropagation()}
@@ -169,6 +285,30 @@ const Item = ({
         <div className="corner top-right" />
         <div className="corner bottom-left" />
         <div className="corner bottom-right" />
+        {isSelected && showResizeHandle && (
+          <>
+            {resizeDirections.b && (
+              <ResizeHandler
+                className="resize resize-ratio"
+                onResize={onResizeRatio}
+              />
+            )}
+
+            {resizeDirections.h && (
+              <ResizeHandler
+                className="resize resize-height"
+                onResize={onResizeHeight}
+              />
+            )}
+
+            {resizeDirections.w && (
+              <ResizeHandler
+                className="resize resize-width"
+                onResize={onResizeWidth}
+              />
+            )}
+          </>
+        )}
       </div>
     </ItemWrapper>
   );
@@ -181,24 +321,30 @@ const MemoizedItem = memo(
       state: prevState,
       setState: prevSetState,
       isSelected: prevIsSelected,
-      unlocked: prevUnlocked,
+      showResizeHandle: prevShowResizeHandle,
     },
     {
       state: nextState,
       setState: nextSetState,
       isSelected: nextIsSelected,
-      unlocked: nextUnlocked,
+      showResizeHandle: nextShowResizeHandle,
     }
   ) =>
     prevIsSelected === nextIsSelected &&
-    prevUnlocked === nextUnlocked &&
+    prevShowResizeHandle === nextShowResizeHandle &&
     prevSetState === nextSetState &&
     JSON.stringify(prevState) === JSON.stringify(nextState)
 );
 
 // Exclude positioning from memoization
 const PositionedItem = ({ state = {}, boardSize, currentUser, ...rest }) => {
-  const stateTrans = rest.itemMap[state.type]?.stateHook || ((st) => st);
+  if (!rest.itemMap[state.type]) {
+    // eslint-disable-next-line no-console
+    console.warn(`Item type ${state.type} not recognized!`);
+    return null;
+  }
+
+  const { stateHook = identity } = rest.itemMap[state.type];
 
   const {
     x = 0,
@@ -206,7 +352,7 @@ const PositionedItem = ({ state = {}, boardSize, currentUser, ...rest }) => {
     layer = 0,
     moving,
     ...stateRest
-  } = stateTrans(state, { currentUser });
+  } = stateHook(state, { currentUser });
 
   return (
     <div
@@ -219,7 +365,12 @@ const PositionedItem = ({ state = {}, boardSize, currentUser, ...rest }) => {
         zIndex: (layer + 4) * 10 + 100 + (moving ? 5 : 0), // Items z-index between 100 and 200
       }}
     >
-      <MemoizedItem {...rest} state={stateRest} />
+      <MemoizedItem
+        {...rest}
+        // Helps to prevent render
+        showResizeHandle={rest.isSelected && rest.showResizeHandle}
+        state={stateRest}
+      />
     </div>
   );
 };

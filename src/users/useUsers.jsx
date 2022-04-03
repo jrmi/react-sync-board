@@ -26,11 +26,6 @@ const useUsers = () => {
     [setCurrentUserState]
   );
 
-  React.useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.debug(`Curent user is in space ${currentUser.space}`);
-  }, [currentUser.space]);
-
   return { currentUser, setCurrentUser, users, localUsers };
 };
 

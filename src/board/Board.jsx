@@ -17,6 +17,7 @@ export const Board = ({
   itemTemplates = {},
   boardSize = DEFAULT_BOARD_MAX_SIZE,
   children,
+  showResizeHandle = false,
 }) => {
   const setConfiguration = useSetRecoilState(ConfigurationAtom);
   const { updateItemExtent } = useDim();
@@ -37,8 +38,9 @@ export const Board = ({
       ...prev,
       itemTemplates,
       boardSize,
+      showResizeHandle,
     }));
-  }, [itemTemplates, setConfiguration, boardSize]);
+  }, [itemTemplates, setConfiguration, boardSize, showResizeHandle]);
 
   React.useEffect(() => {
     updateItemExtent();
@@ -59,7 +61,7 @@ export const Board = ({
                 style={boardStyle}
                 className="board"
               >
-                <ItemList itemTemplates={itemTemplates} />
+                <ItemList />
                 {children}
               </div>
             </CursorPane>

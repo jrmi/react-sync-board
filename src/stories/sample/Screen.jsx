@@ -1,5 +1,4 @@
 import React, { memo, useCallback } from "react";
-import { useSetRecoilState } from "recoil";
 import styled, { css } from "styled-components";
 import { useUsers } from "../../users";
 
