@@ -36,7 +36,7 @@
     "@rollup/plugin-commonjs": "^19.0.0",
     "@rollup/plugin-image": "^2.0.6",
     "@rollup/plugin-node-resolve": "^13.0.0",
-    "@scripters/use-socket.io": "git+https://github.com/jrmi/use-socket.io.git#updated",
+    "@scripters/use-socket.io": "git+https://github.com/jrmi/use-socket.io.git#updated-v2",
     "@storybook/addon-actions": "^6.4.17",
     "@storybook/addon-essentials": "^6.4.17",
     "@storybook/addon-links": "^6.4.17",
