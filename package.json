@@ -77,8 +77,8 @@
     "recoil": ">= 0.5.2"
   },
   "dependencies": {
-    "@emotion/react": "^11.4.0",
-    "@emotion/styled": "^11.3.0",
+    "@emotion/react": "^11.9.0",
+    "@emotion/styled": "^11.8.1",
     "@react-hookz/web": "^13.2.1",
     "color2k": "^2.0.0",
     "dayjs": "^1.11.0",
