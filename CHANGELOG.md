@@ -1,4 +1,19 @@
 
+0.6.0 / 2022-04-11
+==================
+
+  * Update react->17
+  * Update storybook
+  * Update emotion
+  * Update react-hookz
+  * Update color2k
+  * Update dayjs
+  * Update nanoid
+  * Update recoil
+  * Fix react versions
+  * Change corner order
+  * update deps
+
 0.5.6 / 2022-04-04
 ==================
 
