@@ -24,7 +24,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "https://github.com/jrmi/react-sync-board"
   },
   "homepage": "",
   "devDependencies": {
