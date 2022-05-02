@@ -1,6 +1,7 @@
 export { default as useWire } from "./hooks/useWire";
 
 export { default as useItems } from "./board/Items/useItems";
+export { default as useDebouncedItems } from "./board/Items/useDebouncedItems";
 export { default as useSelectedItems } from "./board/Items/useSelectedItems";
 export { default as useItemActions } from "./board/Items/useItemActions";
 export { default as useItemInteraction } from "./board/Items/useItemInteraction";

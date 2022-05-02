@@ -1,6 +1,8 @@
-import React from "react";
+import React, { useCallback } from "react";
 import deepEqual from "fast-deep-equal/es6";
 import { useRecoilValue, useRecoilCallback } from "recoil";
+
+import { useDebouncedEffect } from "@react-hookz/web/esm";
 
 import { SelectedItemsAtom, ItemMapAtom } from "..";
 import { ConfigurationAtom } from "../atoms";
@@ -41,10 +43,19 @@ const getActionsFromItem = (item, itemMap) => {
 };
 
 const useAvailableActions = () => {
-  const { itemTemplates: itemMap } = useRecoilValue(ConfigurationAtom);
+  const itemMap = useRecoilValue(ItemMapAtom);
+  const { itemTemplates } = useRecoilValue(ConfigurationAtom);
   const selected = useRecoilValue(SelectedItemsAtom);
   const [availableActions, setAvailableActions] = React.useState([]);
   const isMountedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    // Mounted guard
+    isMountedRef.current = true;
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const getItemListOrSelected = useRecoilCallback(
     ({ snapshot }) =>
@@ -59,42 +70,39 @@ const useAvailableActions = () => {
     []
   );
 
-  React.useEffect(() => {
-    // Mounted guard
-    isMountedRef.current = true;
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, []);
-
   /**
    * Returns available actions for selected items. An action is kept only if all
    * items have this exact same action with same parameters.
    */
-  const updateAvailableActions = React.useCallback(async () => {
+  const updateAvailableActions = useCallback(async () => {
     const [selectedItemIds, selectedItemList] = await getItemListOrSelected();
     if (selectedItemIds.length > 0) {
       // Prevent set state on unmounted component
       if (!isMountedRef.current) return;
 
       const allActions = selectedItemList.reduce((acc, item) => {
-        const itemActions = getActionsFromItem(item, itemMap);
+        const itemActions = getActionsFromItem(item, itemTemplates);
 
         return acc.filter((value) =>
           itemActions.some((itemAction) => deepEqual(value, itemAction))
         );
-      }, getActionsFromItem(selectedItemList[0], itemMap));
+      }, getActionsFromItem(selectedItemList[0], itemTemplates));
 
       setAvailableActions(allActions);
     } else {
       setAvailableActions([]);
     }
-  }, [getItemListOrSelected, itemMap]);
+  }, [getItemListOrSelected, itemTemplates]);
 
   // Update available actions when selection change
-  React.useEffect(() => {
-    updateAvailableActions();
-  }, [updateAvailableActions, selected]);
+  React.useEffect(updateAvailableActions, [updateAvailableActions, selected]);
+
+  // Debounced update available actions when items change
+  useDebouncedEffect(
+    updateAvailableActions,
+    [itemMap, updateAvailableActions],
+    300
+  );
 
   return {
     availableActions,
