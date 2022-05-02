@@ -74,12 +74,15 @@ const SyncBoard = ({ children, style }) => {
     }));
   }, [setConfiguration, uid]);
 
-  useResizeObserver(boardWrapperRef, () =>
+  useResizeObserver(boardWrapperRef, () => {
+    if (!boardWrapperRef.current) {
+      return;
+    }
     setConfiguration((prev) => ({
       ...prev,
       boardWrapperRect: boardWrapperRef.current.getBoundingClientRect(),
-    }))
-  );
+    }));
+  });
 
   return (
     <StyledBoardView

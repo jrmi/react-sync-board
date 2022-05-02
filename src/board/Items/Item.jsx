@@ -339,8 +339,6 @@ const MemoizedItem = memo(
 // Exclude positioning from memoization
 const PositionedItem = ({ state = {}, boardSize, currentUser, ...rest }) => {
   if (!rest.itemMap[state.type]) {
-    // eslint-disable-next-line no-console
-    console.warn(`Item type ${state.type} not recognized!`);
     return null;
   }
 
