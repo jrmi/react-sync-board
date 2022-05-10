@@ -35,6 +35,14 @@ const ItemWrapper = styled.div`
     right: 0;
   }
 
+  & .center {
+    position: absolute;
+    width: 0px;
+    height: 0px;
+    top: 50%;
+    left: 50%;
+  }
+
   &.selected {
     border: 2px dashed #db5034;
     padding: 0px;
@@ -285,6 +293,7 @@ const Item = ({
         <div className="corner top-right" />
         <div className="corner bottom-right" />
         <div className="corner bottom-left" />
+        <div className="center" />
         {isSelected && showResizeHandle && (
           <>
             {resizeDirections.b && (
