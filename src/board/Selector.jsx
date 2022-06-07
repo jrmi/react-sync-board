@@ -84,22 +84,18 @@ const Selector = ({ children, moveFirst }) => {
 
   useThrottledEffect(updateSelected, [selector, updateSelected], 200);
 
-  const onDragStart = async (event) => {
-    const { button, altKey, ctrlKey, metaKey } = event;
-    const foundElement = await findElementUnderPointer(event);
+  const onDragStart = React.useCallback(
+    async (event) => {
+      const foundElement = await findElementUnderPointer(event);
 
-    const metaKeyPressed = altKey || ctrlKey || metaKey;
-
-    const goodButton = moveFirst
-      ? button === 1 || (button === 0 && metaKeyPressed)
-      : button === 0 && !metaKeyPressed;
-
-    if (goodButton && (!foundElement || moveFirst)) {
-      stateRef.current.moving = true;
-      setBoardState((prev) => ({ ...prev, selecting: true }));
-      wrapperRef.current.style.cursor = "crosshair";
-    }
-  };
+      if (!foundElement) {
+        stateRef.current.moving = true;
+        setBoardState((prev) => ({ ...prev, selecting: true }));
+        wrapperRef.current.style.cursor = "crosshair";
+      }
+    },
+    [findElementUnderPointer, setBoardState]
+  );
 
   const onDrag = useRecoilCallback(
     ({ snapshot }) =>
@@ -136,14 +132,14 @@ const Selector = ({ children, moveFirst }) => {
     []
   );
 
-  const onDragEnd = () => {
+  const onDragEnd = React.useCallback(() => {
     if (stateRef.current.moving) {
       setBoardState((prev) => ({ ...prev, selecting: false }));
       stateRef.current.moving = false;
       setSelector({ moving: false });
       wrapperRef.current.style.cursor = "auto";
     }
-  };
+  }, [setBoardState]);
 
   const onLongTap = React.useCallback(
     ({ target }) => {
@@ -194,6 +190,7 @@ const Selector = ({ children, moveFirst }) => {
       onDragEnd={onDragEnd}
       onTap={onTap}
       onLongTap={onLongTap}
+      mainAction={moveFirst ? "pan" : "drag"}
     >
       <div ref={wrapperRef}>
         {selector.moving && (

@@ -66,6 +66,7 @@ const Gesture = ({
   onLongTap = empty,
   onDoubleTap = empty,
   onZoom,
+  mainAction = "drag",
 }) => {
   const wrapperRef = React.useRef(null);
   const stateRef = React.useRef({
@@ -257,6 +258,7 @@ const Gesture = ({
           altKey,
           ctrlKey,
           metaKey,
+          buttons,
           pointerType,
         } = e;
 
@@ -299,14 +301,17 @@ const Gesture = ({
 
         // We drag if
         // On non touch device
-        //   - Button is 0
-        //   - Alt key is no pressed
+        //   - Only button is pressed (1)
+        //   - any special key is no pressed
         // or on touch devices
         //   - We use only one finger
-        const shouldDrag =
-          pointerType !== "touch"
-            ? stateRef.current.currentButton === 0 && !altKey
-            : !twoFingers;
+        let altAction = altKey || ctrlKey || metaKey || buttons !== 1;
+        if (mainAction !== "drag") {
+          altAction = !altAction;
+        }
+
+        const shouldDrag = pointerType !== "touch" ? !altAction : !twoFingers;
+        const shouldPan = pointerType !== "touch" ? altAction : twoFingers;
 
         if (shouldDrag) {
           // Send drag start on first move
@@ -356,7 +361,9 @@ const Gesture = ({
             target: stateRef.current.target,
             event: e,
           });
-        } else {
+        }
+
+        if (shouldPan) {
           if (!stateRef.current.gestureStart) {
             wrapperRef.current.style.cursor = "move";
             stateRef.current.gestureStart = true;
@@ -404,7 +411,7 @@ const Gesture = ({
         stateRef.current.prevY = clientY;
       }
     },
-    [onDrag, onDragStart, onPan, onZoom, queue]
+    [mainAction, onDrag, onDragStart, onPan, onZoom, queue]
   );
 
   const onPointerUp = React.useCallback(

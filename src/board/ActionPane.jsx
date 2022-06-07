@@ -12,7 +12,7 @@ import { getIdFromElem } from "../utils";
 
 import Gesture from "./Gesture";
 
-const ActionPane = ({ children }) => {
+const ActionPane = ({ children, moveFirst = false }) => {
   const { moveItems, placeItems, findElementUnderPointer } = useItemActions();
 
   const setSelectedItems = useSetRecoilState(SelectedItemsAtom);

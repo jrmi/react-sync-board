@@ -8,6 +8,7 @@ import { BoardTransformAtom, ConfigurationAtom } from "./atoms";
 
 const TOLERANCE = 100;
 const MIN_SIZE = 1000;
+const SCALE_TOLERANCE = 0.8;
 
 const translateBoundaries = ({
   x,
@@ -98,7 +99,7 @@ const useDim = () => {
     [setDim]
   );
 
-  const zoomTo = useRecoilCallback(
+  const zoomToCenter = useRecoilCallback(
     ({ snapshot }) =>
       async (factor, zoomCenter) => {
         const { itemExtent, boardWrapperRect, boardSize } =
@@ -148,6 +149,35 @@ const useDim = () => {
             translateY: newY,
           };
         });
+      },
+    [setDim]
+  );
+
+  const zoomToExtent = useRecoilCallback(
+    ({ snapshot }) =>
+      async ({ left, top, width, height }) => {
+        const { boardWrapperRect } = await snapshot.getPromise(
+          ConfigurationAtom
+        );
+
+        const scaleX = boardWrapperRect.width / width;
+        const scaleY = boardWrapperRect.height / height;
+
+        const newScale = Math.min(scaleX, scaleY);
+
+        const scaleWithTolerance = newScale * SCALE_TOLERANCE;
+
+        const centerX =
+          boardWrapperRect.width / 2 - (left + width / 2) * scaleWithTolerance;
+        const centerY =
+          boardWrapperRect.height / 2 - (top + height / 2) * scaleWithTolerance;
+
+        setDim((prev) => ({
+          ...prev,
+          translateX: centerX,
+          translateY: centerY,
+          scale: scaleWithTolerance,
+        }));
       },
     [setDim]
   );
@@ -259,7 +289,9 @@ const useDim = () => {
   return {
     setDim: setDimSafe,
     getDim,
-    zoomTo,
+    zoomTo: zoomToCenter,
+    zoomToCenter,
+    zoomToExtent,
     getCenter: getCenterCoordinates,
     updateItemExtent: debouncedUpdateItemExtent,
   };

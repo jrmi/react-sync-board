@@ -14,12 +14,10 @@ import useDim from "./useDim";
 import useMousePosition from "./useMousePosition";
 import usePositionNavigator from "./usePositionNavigator";
 
-const SCALE_TOLERANCE = 0.8;
-
 const PanZoom = ({ children, moveFirst = false }) => {
   const wrappedRef = React.useRef(null);
   const dim = useRecoilValue(BoardTransformAtom);
-  const { setDim, zoomTo } = useDim();
+  const { setDim, zoomToCenter, zoomToExtent } = useDim();
   const { itemExtent: itemExtentGlobal } = useRecoilValue(ConfigurationAtom);
   const [centered, setCentered] = React.useState(false);
   const setBoardState = useSetRecoilState(BoardStateAtom);
@@ -31,34 +29,16 @@ const PanZoom = ({ children, moveFirst = false }) => {
   // Hooks to save/restore position
   usePositionNavigator();
 
+  /**
+   * Center board on startup
+   */
   const centerBoard = useRecoilCallback(
     ({ snapshot }) =>
       async () => {
-        const {
-          itemExtent: { left, top, width, height },
-          boardWrapperRect,
-        } = await snapshot.getPromise(ConfigurationAtom);
-
-        const scaleX = boardWrapperRect.width / width;
-        const scaleY = boardWrapperRect.height / height;
-
-        const newScale = Math.min(scaleX, scaleY);
-
-        const scaleWithTolerance = newScale * SCALE_TOLERANCE;
-
-        const centerX =
-          boardWrapperRect.width / 2 - (left + width / 2) * scaleWithTolerance;
-        const centerY =
-          boardWrapperRect.height / 2 - (top + height / 2) * scaleWithTolerance;
-
-        setDim((prev) => ({
-          ...prev,
-          translateX: centerX,
-          translateY: centerY,
-          scale: scaleWithTolerance,
-        }));
+        const { itemExtent } = await snapshot.getPromise(ConfigurationAtom);
+        zoomToExtent(itemExtent);
       },
-    [setDim]
+    [zoomToExtent]
   );
 
   React.useEffect(() => {
@@ -71,7 +51,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
 
   const onZoom = React.useCallback(
     ({ clientX, clientY, scale }) => {
-      zoomTo(1 - scale / 500, { x: clientX, y: clientY });
+      zoomToCenter(1 - scale / 500, { x: clientX, y: clientY });
 
       // Update the board zooming state
       clearTimeout(timeoutRef.current.zoom);
@@ -84,11 +64,16 @@ const PanZoom = ({ children, moveFirst = false }) => {
         !prev.zooming ? { ...prev, zooming: true } : prev
       );
     },
-    [setBoardState, zoomTo]
+    [setBoardState, zoomToCenter]
   );
 
   const onPan = React.useCallback(
-    async ({ deltaX, deltaY }) => {
+    async ({ deltaX, deltaY, target }) => {
+      const insideItem =
+        insideClass(target, "item") && !insideClass(target, "locked");
+
+      if (insideItem && moveFirst) return;
+
       setDim((prev) => ({
         ...prev,
         translateX: prev.translateX + deltaX,
@@ -106,21 +91,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
         !prev.panning ? { ...prev, panning: true } : prev
       );
     },
-    [setBoardState, setDim]
-  );
-
-  const onDrag = React.useCallback(
-    (state) => {
-      const { target } = state;
-
-      const outsideItem =
-        !insideClass(target, "item") || insideClass(target, "locked");
-
-      if (moveFirst && outsideItem) {
-        onPan(state);
-      }
-    },
-    [moveFirst, onPan]
+    [moveFirst, setBoardState, setDim]
   );
 
   const onKeyDown = useRecoilCallback(
@@ -173,18 +144,18 @@ const PanZoom = ({ children, moveFirst = false }) => {
             translateX: prev.translateX + moveX,
           }));
 
-          zoomTo(zoom);
+          zoomToCenter(zoom);
 
           e.preventDefault();
         }
         // Temporary zoom
         if (e.key === " " && !e.repeat) {
           if (getMouseInfo().hover) {
-            zoomTo(3, getMouseInfo());
+            zoomToCenter(3, getMouseInfo());
           }
         }
       },
-    [setDim, zoomTo, getMouseInfo]
+    [setDim, zoomToCenter, getMouseInfo]
   );
 
   const onKeyUp = React.useCallback(
@@ -194,10 +165,10 @@ const PanZoom = ({ children, moveFirst = false }) => {
 
       // Zoom out on release
       if (e.key === " " && getMouseInfo().hover) {
-        zoomTo(1 / 3, getMouseInfo());
+        zoomToCenter(1 / 3, getMouseInfo());
       }
     },
-    [getMouseInfo, zoomTo]
+    [getMouseInfo, zoomToCenter]
   );
 
   React.useEffect(() => {
@@ -210,7 +181,11 @@ const PanZoom = ({ children, moveFirst = false }) => {
   }, [onKeyDown, onKeyUp]);
 
   return (
-    <Gesture onPan={onPan} onZoom={onZoom} onDrag={onDrag}>
+    <Gesture
+      onPan={onPan}
+      onZoom={onZoom}
+      mainAction={moveFirst ? "pan" : "drag"}
+    >
       <div
         style={{
           display: "inline-block",

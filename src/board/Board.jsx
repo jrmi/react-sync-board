@@ -52,7 +52,7 @@ export const Board = ({
       <SubscribeItemEvents />
       <PanZoom moveFirst={moveFirst}>
         <Selector moveFirst={moveFirst}>
-          <ActionPane>
+          <ActionPane moveFirst={moveFirst}>
             <CursorPane>
               <div
                 onContextMenu={(e) => {
