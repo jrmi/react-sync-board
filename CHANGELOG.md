@@ -1,4 +1,9 @@
 
+0.7.0 / 2022-06-07
+==================
+
+  * Add new zoomToExtent action and fix mouse behaviour
+
 0.6.2 / 2022-05-10
 ==================
 
