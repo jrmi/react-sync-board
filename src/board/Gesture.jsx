@@ -45,6 +45,14 @@ const computeDistance = ([x1, y1], [x2, y2]) => {
 
 const empty = () => {};
 
+const stopPropagation = (fn) => (arg) => {
+  const { event } = arg;
+  if (!event.isPropagationStopped()) {
+    return fn(arg);
+  }
+  return null;
+};
+
 const protect =
   (fn) =>
   async (...args) => {
@@ -55,6 +63,21 @@ const protect =
       console.error(e);
     }
   };
+
+class PromiseQueue {
+  lastPromise = Promise.resolve(true);
+
+  add(operation, ...args) {
+    return new Promise((resolve, reject) => {
+      this.lastPromise = this.lastPromise
+        .then(() => stopPropagation(protect(operation))(...args))
+        .then(resolve)
+        .catch(reject);
+    });
+  }
+}
+
+const promiseQueue = new PromiseQueue();
 
 const Gesture = ({
   children,
@@ -74,24 +97,9 @@ const Gesture = ({
     pointers: {},
     mainPointer: undefined,
   });
-  const queueRef = React.useRef([]);
-
-  // Queue event to avoid async mess
-  const queue = React.useCallback((callback, args) => {
-    queueRef.current.push(async () => {
-      await protect(callback)(args);
-      queueRef.current.shift();
-      if (queueRef.current.length !== 0) {
-        await protect(queueRef.current[0])();
-      }
-    });
-    if (queueRef.current.length === 1) {
-      protect(queueRef.current[0])();
-    }
-  }, []);
 
   const onWheel = React.useCallback(
-    (e) => {
+    (event) => {
       const {
         deltaX,
         deltaY,
@@ -102,7 +110,7 @@ const Gesture = ({
         altKey,
         metaKey,
         target,
-      } = e;
+      } = event;
 
       // On a MacOs trackpad, the pinch gesture sets the ctrlKey to true.
       // In that situation, we want to use the custom scaling, not the browser default zoom.
@@ -116,14 +124,14 @@ const Gesture = ({
       // If we are only moving the fingers in the same direction, a pan is needed.
       // Ref: https://medium.com/@auchenberg/detecting-multi-touch-trackpad-gestures-in-javascript-a2505babb10e
       if (isMacOS() && !ctrlKey) {
-        queue(onPan, {
+        promiseQueue.add(onPan, {
           deltaX: -2 * deltaX,
           deltaY: -2 * deltaY,
           button: 1,
           ctrlKey,
           metaKey,
           target,
-          event: e,
+          event,
         });
       } else {
         // Quit if onZoom is not set
@@ -145,24 +153,26 @@ const Gesture = ({
           scale *= 2;
         }
 
-        queue(onZoom, { scale, clientX, clientY, event: e });
+        promiseQueue.add(onZoom, { scale, clientX, clientY, event });
       }
     },
-    [onPan, onZoom, queue]
+    [onPan, onZoom]
   );
 
   const onPointerDown = React.useCallback(
-    ({
-      target,
-      button,
-      clientX,
-      clientY,
-      pointerId,
-      altKey,
-      ctrlKey,
-      metaKey,
-      isPrimary,
-    }) => {
+    (event) => {
+      const {
+        target,
+        button,
+        clientX,
+        clientY,
+        pointerId,
+        altKey,
+        ctrlKey,
+        metaKey,
+        isPrimary,
+      } = event;
+
       // Add pointer to map
       stateRef.current.pointers[pointerId] = { clientX, clientY };
 
@@ -227,13 +237,14 @@ const Gesture = ({
         timeStart: Date.now(),
         longTapTimeout: setTimeout(async () => {
           stateRef.current.noTap = true;
-          queue(onLongTap, {
+          promiseQueue.add(onLongTap, {
             clientX,
             clientY,
             altKey,
             ctrlKey,
             metaKey,
             target,
+            event,
           });
         }, 750),
       });
@@ -245,11 +256,11 @@ const Gesture = ({
         console.log("Fail to capture pointer", e);
       }
     },
-    [onLongTap, queue]
+    [onLongTap]
   );
 
   const onPointerMove = React.useCallback(
-    (e) => {
+    (event) => {
       if (stateRef.current.pressed) {
         const {
           pointerId,
@@ -260,7 +271,7 @@ const Gesture = ({
           metaKey,
           buttons,
           pointerType,
-        } = e;
+        } = event;
 
         if (stateRef.current.mainPointer !== pointerId) {
           // Event from other pointer
@@ -321,7 +332,7 @@ const Gesture = ({
             // Clear tap timeout
             clearTimeout(stateRef.current.longTapTimeout);
 
-            queue(onDragStart, {
+            promiseQueue.add(onDragStart, {
               deltaX: 0,
               deltaY: 0,
               startX: stateRef.current.startX,
@@ -335,17 +346,17 @@ const Gesture = ({
               ctrlKey,
               metaKey,
               target: stateRef.current.target,
-              event: e,
+              event,
             });
           }
-          // Create closure
+
           const deltaX = clientX - stateRef.current.prevX;
           const deltaY = clientY - stateRef.current.prevY;
           const distanceX = clientX - stateRef.current.startX;
           const distanceY = clientY - stateRef.current.startY;
 
           // Drag event
-          queue(onDrag, {
+          promiseQueue.add(onDrag, {
             deltaX,
             deltaY,
             startX: stateRef.current.startX,
@@ -359,7 +370,7 @@ const Gesture = ({
             ctrlKey,
             metaKey,
             target: stateRef.current.target,
-            event: e,
+            event,
           });
         }
 
@@ -377,7 +388,7 @@ const Gesture = ({
           const { target } = stateRef.current;
 
           // Pan event
-          queue(onPan, {
+          promiseQueue.add(onPan, {
             deltaX,
             deltaY,
             button: stateRef.current.currentButton,
@@ -385,7 +396,7 @@ const Gesture = ({
             ctrlKey,
             metaKey,
             target,
-            event: e,
+            event,
           });
 
           if (
@@ -396,11 +407,11 @@ const Gesture = ({
             const scale = stateRef.current.prevDistance - distance;
 
             if (Math.abs(scale) > 0) {
-              queue(onZoom, {
+              promiseQueue.add(onZoom, {
                 scale,
                 clientX,
                 clientY,
-                event: e,
+                event,
               });
               stateRef.current.prevDistance = distance;
             }
@@ -411,13 +422,13 @@ const Gesture = ({
         stateRef.current.prevY = clientY;
       }
     },
-    [mainAction, onDrag, onDragStart, onPan, onZoom, queue]
+    [mainAction, onDrag, onDragStart, onPan, onZoom]
   );
 
   const onPointerUp = React.useCallback(
-    (e) => {
+    (event) => {
       const { clientX, clientY, altKey, ctrlKey, metaKey, target, pointerId } =
-        e;
+        event;
 
       if (!stateRef.current.pointers[pointerId]) {
         // Pointer already gone previously with another event
@@ -462,7 +473,7 @@ const Gesture = ({
       if (stateRef.current.moving) {
         // If we were moving, send drag end event
         stateRef.current.moving = false;
-        queue(onDragEnd, {
+        promiseQueue.add(onDragEnd, {
           deltaX: clientX - stateRef.current.prevX,
           deltaY: clientY - stateRef.current.prevY,
           startX: stateRef.current.startX,
@@ -475,7 +486,7 @@ const Gesture = ({
           altKey,
           ctrlKey,
           metaKey,
-          event: e,
+          event,
         });
         wrapperRef.current.style.cursor = "auto";
       } else {
@@ -486,25 +497,35 @@ const Gesture = ({
         }
         // Send tap event only if time less than 300ms
         else if (stateRef.current.timeStart - now < 300) {
-          queue(onTap, {
+          promiseQueue.add(onTap, {
             clientX,
             clientY,
             altKey,
             ctrlKey,
             metaKey,
             target,
+            event,
           });
         }
       }
     },
-    [onDragEnd, onTap, queue]
+    [onDragEnd, onTap]
   );
 
   const onDoubleTapHandler = React.useCallback(
     (event) => {
-      queue(onDoubleTap, event);
+      const { clientX, clientY, altKey, ctrlKey, metaKey, target } = event;
+      promiseQueue.add(onDoubleTap, {
+        clientX,
+        clientY,
+        altKey,
+        ctrlKey,
+        metaKey,
+        target,
+        event,
+      });
     },
-    [onDoubleTap, queue]
+    [onDoubleTap]
   );
 
   return (

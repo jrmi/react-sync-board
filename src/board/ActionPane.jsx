@@ -12,7 +12,7 @@ import { getIdFromElem } from "../utils";
 
 import Gesture from "./Gesture";
 
-const ActionPane = ({ children, moveFirst = false }) => {
+const ActionPane = ({ children }) => {
   const { moveItems, placeItems, findElementUnderPointer } = useItemActions();
 
   const setSelectedItems = useSetRecoilState(SelectedItemsAtom);
@@ -33,7 +33,6 @@ const ActionPane = ({ children, moveFirst = false }) => {
 
         if (foundElement) {
           originalEvent.stopPropagation();
-
           const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
 
           selectedItemRef.current.items = selectedItems;
@@ -62,8 +61,9 @@ const ActionPane = ({ children, moveFirst = false }) => {
 
   const onDrag = useRecoilCallback(
     ({ snapshot }) =>
-      async ({ deltaX, deltaY }) => {
+      async ({ deltaX, deltaY, event: originalEvent }) => {
         if (actionRef.current.moving) {
+          originalEvent.stopPropagation();
           const { scale } = await snapshot.getPromise(BoardTransformAtom);
           const moveX = actionRef.current.remainX + deltaX / scale;
           const moveY = actionRef.current.remainY + deltaY / scale;

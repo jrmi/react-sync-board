@@ -1,7 +1,6 @@
 import React from "react";
 
 import { useRecoilValue, useSetRecoilState, useRecoilCallback } from "recoil";
-import { insideClass } from "../utils";
 import {
   BoardTransformAtom,
   ConfigurationAtom,
@@ -68,12 +67,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
   );
 
   const onPan = React.useCallback(
-    async ({ deltaX, deltaY, target }) => {
-      const insideItem =
-        insideClass(target, "item") && !insideClass(target, "locked");
-
-      if (insideItem && moveFirst) return;
-
+    async ({ deltaX, deltaY }) => {
       setDim((prev) => ({
         ...prev,
         translateX: prev.translateX + deltaX,
@@ -91,7 +85,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
         !prev.panning ? { ...prev, panning: true } : prev
       );
     },
-    [moveFirst, setBoardState, setDim]
+    [setBoardState, setDim]
   );
 
   const onKeyDown = useRecoilCallback(
