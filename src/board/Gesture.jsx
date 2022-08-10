@@ -197,7 +197,7 @@ const Gesture = ({
               [clientX, clientY]
             );
 
-            // We update previous position as the new position is the center beetween both finger
+            // We update previous position as the new position is the center between both fingers
             Object.assign(stateRef.current, {
               pressed: true,
               moving: false,
@@ -233,6 +233,7 @@ const Gesture = ({
         prevX: clientX,
         prevY: clientY,
         currentButton: button,
+        pointerDownEvent: event,
         target,
         timeStart: Date.now(),
         longTapTimeout: setTimeout(async () => {
@@ -346,7 +347,7 @@ const Gesture = ({
               ctrlKey,
               metaKey,
               target: stateRef.current.target,
-              event,
+              event: stateRef.current.pointerDownEvent,
             });
           }
 
