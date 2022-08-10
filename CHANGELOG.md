@@ -1,4 +1,9 @@
 
+0.7.2 / 2022-08-10
+==================
+
+  * Fix missing first event if stopPropagation is called
+
 0.7.1 / 2022-08-07
 ==================
 
