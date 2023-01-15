@@ -274,25 +274,22 @@ const Gesture = ({
           pointerType,
         } = event;
 
-        if (stateRef.current.mainPointer !== pointerId) {
-          // Event from other pointer
-          stateRef.current.pointers[pointerId] = {
-            clientX: eventClientX,
-            clientY: eventClientY,
-          };
-          return;
-        }
+        // Update pointer coordinates in the map
+        stateRef.current.pointers[pointerId] = {
+          clientX: eventClientX,
+          clientY: eventClientY,
+        };
 
         stateRef.current.moving = true;
 
-        // Do we have two fingers ?
-        const twoFingers = Object.keys(stateRef.current.pointers).length === 2;
+        // Do we have two pointers ?
+        const twoPointers = Object.keys(stateRef.current.pointers).length === 2;
 
         let clientX;
         let clientY;
-        let distance;
+        let distanceBetweenTwoPointers;
 
-        if (twoFingers) {
+        if (twoPointers) {
           // Find other pointerId
           const { clientX: clientX2, clientY: clientY2 } = otherPointer(
             stateRef.current.pointers,
@@ -302,7 +299,7 @@ const Gesture = ({
           // Update client X with the center of each touch
           clientX = (clientX2 + eventClientX) / 2;
           clientY = (clientY2 + eventClientY) / 2;
-          distance = computeDistance(
+          distanceBetweenTwoPointers = computeDistance(
             [clientX2, clientY2],
             [eventClientX, eventClientY]
           );
@@ -322,8 +319,8 @@ const Gesture = ({
           altAction = !altAction;
         }
 
-        const shouldDrag = pointerType !== "touch" ? !altAction : !twoFingers;
-        const shouldPan = pointerType !== "touch" ? altAction : twoFingers;
+        const shouldDrag = pointerType !== "touch" ? !altAction : !twoPointers;
+        const shouldPan = pointerType !== "touch" ? altAction : twoPointers;
 
         if (shouldDrag) {
           // Send drag start on first move
@@ -401,20 +398,20 @@ const Gesture = ({
           });
 
           if (
-            twoFingers &&
-            distance !== stateRef.current.prevDistance &&
+            distanceBetweenTwoPointers !== stateRef.current.prevDistance &&
             onZoom
           ) {
-            const scale = stateRef.current.prevDistance - distance;
+            const scale =
+              stateRef.current.prevDistance - distanceBetweenTwoPointers;
 
             if (Math.abs(scale) > 0) {
               promiseQueue.add(onZoom, {
-                scale,
+                scale: scale * 3,
                 clientX,
                 clientY,
                 event,
               });
-              stateRef.current.prevDistance = distance;
+              stateRef.current.prevDistance = distanceBetweenTwoPointers;
             }
           }
         }

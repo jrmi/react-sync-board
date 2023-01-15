@@ -64,7 +64,7 @@ const Cursor = ({ color = "#666", size = 40, text }) => {
 
 const MemoizedCursor = React.memo(Cursor);
 
-const PositionnedCursor = ({ pos, ...rest }) => (
+const PositionedCursor = ({ pos, ...rest }) => (
   <div
     style={{
       transform: `translate(${pos.x - 5}px, ${pos.y - 3}px)`,
@@ -79,4 +79,4 @@ const PositionnedCursor = ({ pos, ...rest }) => (
   </div>
 );
 
-export default PositionnedCursor;
+export default PositionedCursor;
