@@ -1,5 +1,5 @@
 import React from "react";
-import { useThrottledEffect } from "@react-hookz/web/esm";
+import { useThrottledCallback } from "@react-hookz/web/esm";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import { insideClass, isItemInsideElement, getIdFromElem } from "../utils";
@@ -82,7 +82,13 @@ const Selector = ({ children, moveFirst }) => {
     [setSelected]
   );
 
-  useThrottledEffect(updateSelected, [selector, updateSelected], 200);
+  const throttledUpdateSelected = useThrottledCallback(
+    () => {
+      updateSelected();
+    },
+    [selector, updateSelected],
+    200
+  );
 
   const onDragStart = React.useCallback(
     async (event) => {
@@ -127,9 +133,10 @@ const Selector = ({ children, moveFirst }) => {
           }
 
           setSelector({ ...stateRef.current, moving: true });
+          throttledUpdateSelected();
         }
       },
-    []
+    [throttledUpdateSelected]
   );
 
   const onDragEnd = React.useCallback(() => {

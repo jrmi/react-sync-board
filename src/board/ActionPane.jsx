@@ -12,6 +12,9 @@ import { getIdFromElem } from "../utils";
 
 import Gesture from "./Gesture";
 
+/**
+ * This component handles the move of items when dragging them or with the keyboard.
+ */
 const ActionPane = ({ children }) => {
   const { moveItems, placeItems, findElementUnderPointer } = useItemActions();
 

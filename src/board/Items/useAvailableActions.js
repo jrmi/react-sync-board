@@ -95,7 +95,9 @@ const useAvailableActions = () => {
   }, [getItemListOrSelected, itemTemplates]);
 
   // Update available actions when selection change
-  React.useEffect(updateAvailableActions, [updateAvailableActions, selected]);
+  React.useEffect(() => {
+    updateAvailableActions();
+  }, [updateAvailableActions, selected]);
 
   // Debounced update available actions when items change
   useDebouncedEffect(
