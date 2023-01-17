@@ -8,12 +8,12 @@ const projectRootDir = resolve(__dirname);
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: [{ find: "@", replacement: resolve(projectRootDir, "src") }],
+    alias: [{ find: "@", replacement: resolve(projectRootDir, "src/lib") }],
   },
   build: {
     lib: {
       // Could also be a dictionary or array of multiple entry points
-      entry: resolve(__dirname, "src/index.js"),
+      entry: resolve(__dirname, "src/lib/index.js"),
       name: "React-sync-board",
       // the proper extensions will be added
       fileName: "react-sync-board",

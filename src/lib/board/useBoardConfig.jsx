@@ -2,7 +2,7 @@ import React from "react";
 import { useRecoilState } from "recoil";
 import { useDebouncedCallback } from "@react-hookz/web/esm";
 
-import useWire from "../hooks/useWire";
+import useWire from "@/hooks/useWire";
 import { BoardConfigAtom } from "./atoms";
 
 const useBoardConfig = () => {

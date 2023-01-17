@@ -10,7 +10,7 @@ import {
   ConfigurationAtom,
   SelectionBoxAtom,
 } from "./atoms";
-import { getItemBoundingBox } from "../utils";
+import { getItemBoundingBox } from "@/utils";
 
 const defaultZoneStyle = {
   position: "absolute",

@@ -5,7 +5,7 @@ import useItemActions from "./useItemActions";
 
 import { ItemListAtom, ItemMapAtom, SelectedItemsAtom } from "../atoms";
 import { ConfigurationAtom } from "..";
-import { useUsers } from "../../users";
+import { useUsers } from "@/users";
 
 const ItemList = () => {
   const { updateItem } = useItemActions();

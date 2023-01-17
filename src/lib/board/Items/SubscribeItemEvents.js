@@ -1,7 +1,7 @@
 import React from "react";
 import { useSetRecoilState } from "recoil";
 
-import useWire from "../../hooks/useWire";
+import useWire from "@/hooks/useWire";
 import useItemActions from "./useItemActions";
 
 import { ItemMapAtom } from "../atoms";

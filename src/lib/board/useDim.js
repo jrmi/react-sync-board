@@ -1,9 +1,9 @@
-import { useDebouncedCallback } from "@react-hookz/web/esm";
 import React from "react";
+import { useDebouncedCallback } from "@react-hookz/web/esm";
 
 import { useSetRecoilState, useRecoilCallback, useRecoilValue } from "recoil";
 import { ItemListAtom } from ".";
-import { getItemBoundingBox } from "../utils";
+import { getItemBoundingBox } from "@/utils";
 import { BoardTransformAtom, ConfigurationAtom } from "./atoms";
 
 const TOLERANCE = 100;

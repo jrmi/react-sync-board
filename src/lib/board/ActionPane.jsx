@@ -8,7 +8,7 @@ import {
   BoardConfigAtom,
 } from "./atoms";
 import { useItemActions } from "./Items";
-import { getIdFromElem } from "../utils";
+import { getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
 

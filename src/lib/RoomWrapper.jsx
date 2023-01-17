@@ -4,7 +4,7 @@ import { nanoid } from "nanoid";
 
 import { WireProvider } from "@/hooks/useWire";
 
-import { SubscribeUserEvents } from "./users";
+import { SubscribeUserEvents } from "@/users";
 
 const ConnectedSyncRoom = ({ socket, room: givenRoom, children }) => {
   const [room] = React.useState(() => givenRoom || nanoid());

@@ -1,6 +1,6 @@
 import React, { memo, useCallback } from "react";
 import styled, { css } from "styled-components";
-import { useUsers } from "../../users";
+import { useUsers } from "@/users";
 
 const StyledShape = styled.div`
   ${({ width, height, color }) => css`

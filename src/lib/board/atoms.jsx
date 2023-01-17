@@ -1,5 +1,5 @@
 import { atom, selector } from "recoil";
-import { DEFAULT_BOARD_MAX_SIZE } from "../settings";
+import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 
 export const ConfigurationAtom = atom({
   key: "configuration",

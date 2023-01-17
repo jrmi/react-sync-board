@@ -1,7 +1,7 @@
 import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
-import useWire from "../../hooks/useWire";
+import useWire from "@/hooks/useWire";
 
 import {
   ItemListAtom,
@@ -11,12 +11,7 @@ import {
 } from "../atoms";
 import useDim from "../useDim";
 
-import {
-  getItemElem,
-  isPointInsideRect,
-  insideClass,
-  hasClass,
-} from "../../utils";
+import { getItemElem, isPointInsideRect, insideClass, hasClass } from "@/utils";
 
 import useItemInteraction from "./useItemInteraction";
 import { ConfigurationAtom } from "..";

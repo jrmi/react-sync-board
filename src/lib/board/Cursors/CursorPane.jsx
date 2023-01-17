@@ -2,9 +2,9 @@ import React from "react";
 import { useRecoilCallback } from "recoil";
 
 import Cursors from "./Cursors";
-import useWire from "../../hooks/useWire";
+import useWire from "@/hooks/useWire";
 import { BoardTransformAtom, ConfigurationAtom } from "../atoms";
-import { useUsers } from "../../users";
+import { useUsers } from "@/users";
 
 const CursorPane = ({ children }) => {
   const { wire } = useWire("board");

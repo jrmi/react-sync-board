@@ -2,7 +2,7 @@ import React from "react";
 import { useThrottledCallback } from "@react-hookz/web/esm";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
-import { insideClass, isItemInsideElement, getIdFromElem } from "../utils";
+import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 
 import {
   BoardTransformAtom,

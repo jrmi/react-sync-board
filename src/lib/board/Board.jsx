@@ -8,10 +8,10 @@ import CursorPane from "./Cursors/CursorPane";
 import PanZoom from "./PanZoom";
 import { ConfigurationAtom } from "./atoms";
 import Selection from "./Selection";
-import { DEFAULT_BOARD_MAX_SIZE } from "../settings";
+import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 import useDim from "./useDim";
 
-export const Board = ({
+const Board = ({
   moveFirst = true,
   style,
   itemTemplates = {},

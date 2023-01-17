@@ -6,13 +6,13 @@ import { useResizeObserver } from "@react-hookz/web/esm";
 
 import useWire, { WireProvider } from "@/hooks/useWire";
 
-import { ConfigurationAtom } from "./board";
+import { ConfigurationAtom } from "@/board";
 
-import { userAtom } from "./users/atoms";
+import { userAtom } from "@/users/atoms";
 
-import { SubscribeUserEvents } from "./users";
+import { SubscribeUserEvents } from "@/users";
 
-import { insideClass } from "./utils";
+import { insideClass } from "@/utils";
 
 const StyledBoardView = styled.div`
   overflow: hidden;

@@ -11,7 +11,7 @@ import {
   useBoardState,
 } from "@/";
 import useActions from "./sample/useActions";
-import { useItemActions } from "../board/Items";
+import { useItemActions } from "@/board/Items";
 
 const ActionPane = styled.div.attrs(({ top, left, height }) => {
   if (top < 120) {

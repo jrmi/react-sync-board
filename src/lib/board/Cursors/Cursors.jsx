@@ -1,6 +1,6 @@
 import React from "react";
 
-import useWire from "../../hooks/useWire";
+import useWire from "@/hooks/useWire";
 import Cursor from "./Cursor";
 
 const Cursors = ({ users }) => {

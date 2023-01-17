@@ -1,12 +1,12 @@
-import { useState } from 'react';
-import { OneView } from './stories/Main.jsx';
-import { nanoid } from 'nanoid';
+import { useState } from "react";
+import { OneView } from "./example/Main.jsx";
+import { nanoid } from "nanoid";
 
 function App() {
   const [room] = useState(nanoid());
   const [session] = useState(nanoid());
   return (
-    <div className='App'>
+    <div className="App">
       <OneView
         moveFirst={false}
         showResizeHandle={false}

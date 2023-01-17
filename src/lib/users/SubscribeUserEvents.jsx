@@ -3,7 +3,7 @@ import { useDebouncedCallback } from "@react-hookz/web/esm";
 import { useSetRecoilState, useRecoilState } from "recoil";
 
 import { userAtom, usersAtom } from "./atoms";
-import useWire from "../hooks/useWire";
+import useWire from "@/hooks/useWire";
 
 const SubscribeUserEvents = () => {
   const usersRef = React.useRef([]);

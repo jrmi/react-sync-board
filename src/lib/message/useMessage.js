@@ -4,8 +4,8 @@ import { atom, useRecoilState, useRecoilCallback } from "recoil";
 
 import dayjs from "dayjs";
 
-import { useUsers } from "../users";
-import useWire from "../hooks/useWire";
+import { useUsers } from "@/users";
+import useWire from "@/hooks/useWire";
 
 export const MessagesAtom = atom({
   key: "messages",
