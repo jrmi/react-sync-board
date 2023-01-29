@@ -3,8 +3,10 @@ import { OneView } from "./example/Main.jsx";
 import { nanoid } from "nanoid";
 
 function App() {
-  const [room] = useState(nanoid());
-  const [session] = useState(nanoid());
+  //const [room] = useState(nanoid());
+  //const [session] = useState(nanoid());
+  const [room] = useState("test_room");
+  const [session] = useState("test_session");
   return (
     <div className="App">
       <OneView

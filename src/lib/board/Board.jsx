@@ -49,7 +49,7 @@ const Board = ({
 
   return (
     <>
-      <SubscribeItemEvents />
+      {/*<SubscribeItemEvents />*/}
       <PanZoom moveFirst={moveFirst}>
         <Selector moveFirst={moveFirst}>
           <ActionPane moveFirst={moveFirst}>

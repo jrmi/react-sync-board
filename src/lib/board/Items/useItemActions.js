@@ -1,75 +1,96 @@
 import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
+import { useSyncedItems } from "@/board/Store/items";
 
-import useWire from "@/hooks/useWire";
+import { SelectedItemsAtom, ConfigurationAtom } from "../atoms";
 
-import {
-  ItemListAtom,
-  SelectedItemsAtom,
-  ItemMapAtom,
-  AllItemsSelector,
-} from "../atoms";
 import useDim from "../useDim";
 
-import { getItemElem, isPointInsideRect, insideClass, hasClass } from "@/utils";
+import {
+  getItemElem,
+  isPointInsideRect,
+  insideClass,
+  hasClass,
+  snapToGrid,
+} from "@/utils";
 
 import useItemInteraction from "./useItemInteraction";
-import { ConfigurationAtom } from "..";
 
 const useItemActions = () => {
-  const { wire } = useWire("board");
   const { call: callPlaceInteractions } = useItemInteraction("place");
   const { getCenter, updateItemExtent } = useDim();
 
-  const setItemList = useSetRecoilState(ItemListAtom);
-  const setItemMap = useSetRecoilState(ItemMapAtom);
+  const {
+    getItems: getStoreItems,
+    getItemIds,
+    setItemIds,
+    updateItems,
+    moveItems: moveStoreItems,
+    removeItemsById,
+    getItemList,
+    insertItems,
+    setItemList,
+  } = useSyncedItems(
+    ({
+      getItems,
+      getItemIds,
+      setItemIds,
+      updateItems,
+      moveItems,
+      removeItemsById,
+      getItemList,
+      insertItems,
+      setItemList,
+    }) => ({
+      getItems,
+      getItemIds,
+      setItemIds,
+      updateItems,
+      moveItems,
+      removeItemsById,
+      getItemList,
+      insertItems,
+      setItemList,
+    })
+  );
+
   const setSelectItems = useSetRecoilState(SelectedItemsAtom);
 
-  const batchUpdateItems = useRecoilCallback(
-    ({ snapshot }) =>
-      async (itemIds, callbackOrItem, sync = true) => {
-        let callback = callbackOrItem;
-        if (typeof callbackOrItem === "object") {
-          callback = () => callbackOrItem;
-        }
-        const itemList = await snapshot.getPromise(ItemListAtom);
+  const batchUpdateItems = React.useCallback(
+    async (itemIds, callbackOrItem) => {
+      let callback = callbackOrItem;
+      if (typeof callbackOrItem === "object") {
+        callback = () => callbackOrItem;
+      }
 
-        const orderedItemIds = itemList.filter((id) => itemIds.includes(id));
+      const orderedItemIds = (await getItemIds()).filter((id) =>
+        itemIds.includes(id)
+      );
 
-        setItemMap((prevItemMap) => {
-          const result = { ...prevItemMap };
-          const updatedItems = {};
-          orderedItemIds.forEach((id) => {
-            const newItem = { ...callback(prevItemMap[id]) };
-            result[id] = newItem;
-            updatedItems[id] = newItem;
-          });
-          if (sync) {
-            wire.publish("batchItemsUpdate", updatedItems);
-          }
-          return result;
-        });
-        updateItemExtent();
-      },
-    [setItemMap, updateItemExtent, wire]
+      const prevMap = await getStoreItems();
+
+      const toUpdate = Object.fromEntries(
+        orderedItemIds.map((id) => {
+          return [id, callback({ ...prevMap[id] })];
+        })
+      );
+
+      updateItems(toUpdate);
+
+      updateItemExtent();
+    },
+    [getItemIds, getStoreItems, updateItemExtent, updateItems]
   );
 
   const setItemListFull = React.useCallback(
-    (items) => {
-      setItemMap(
-        items.reduce((acc, item) => {
-          if (item && item.id) {
-            acc[item.id] = item;
-          }
-          return acc;
-        }, {})
-      );
-      setItemList(items.map(({ id }) => id));
+    (itemList) => {
+      setItemList(itemList);
+
       // Reset item selection as we are changing all items
       setSelectItems([]);
       updateItemExtent();
     },
-    [setItemList, setItemMap, setSelectItems, updateItemExtent]
+    [setItemList, setSelectItems, updateItemExtent]
   );
 
   const updateItem = React.useCallback(
@@ -80,188 +101,164 @@ const useItemActions = () => {
   );
 
   const moveItems = React.useCallback(
-    (itemIds, posDelta, sync = true) => {
-      setItemMap((prevItemMap) => {
-        const result = { ...prevItemMap };
-        itemIds.forEach((id) => {
-          const item = prevItemMap[id];
-
-          if (!item) {
-            return;
-          }
-
-          result[id] = {
-            ...item,
-            x: (item.x || 0) + posDelta.x,
-            y: (item.y || 0) + posDelta.y,
-            moving: true,
-          };
-        });
-        return result;
-      });
-
-      if (sync) {
-        wire.publish("selectedItemsMove", {
-          itemIds,
-          posDelta,
-        });
-      }
-
+    (itemIds, posDelta) => {
+      moveStoreItems(itemIds, posDelta);
       updateItemExtent();
     },
-    [setItemMap, updateItemExtent, wire]
+    [moveStoreItems, updateItemExtent]
   );
 
   const putItemsOnTop = React.useCallback(
-    (itemIdsToMove, sync = true) => {
-      setItemList((prevItemList) => {
-        const filtered = prevItemList.filter(
-          (id) => !itemIdsToMove.includes(id)
-        );
-        const toBePutOnTop = prevItemList.filter((id) =>
-          itemIdsToMove.includes(id)
-        );
-        const result = [...filtered, ...toBePutOnTop];
-        if (sync) {
-          wire.publish("updateItemListOrder", result);
-        }
-        return result;
-      });
+    async (itemIdsToMove) => {
+      const prevItemIds = await getItemIds();
+      const filtered = prevItemIds.filter((id) => !itemIdsToMove.includes(id));
+      const toBePutOnTop = prevItemIds.filter((id) =>
+        itemIdsToMove.includes(id)
+      );
+
+      setItemIds([...filtered, ...toBePutOnTop]);
     },
-    [setItemList, wire]
+    [getItemIds, setItemIds]
   );
 
   const stickOnGrid = useRecoilCallback(
     ({ snapshot }) =>
-      async (
-        itemIds,
-        { type: globalType, size: globalSize } = {},
-        sync = true
-      ) => {
+      async (itemIds, { type: globalType, size: globalSize } = {}) => {
         const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
         const updatedItems = {};
-        setItemMap((prevItemMap) => {
-          const result = { ...prevItemMap };
-          itemIds.forEach((id) => {
-            const item = prevItemMap[id];
-            const elem = getItemElem(boardWrapper, id);
 
-            if (!elem) {
-              return;
-            }
+        const prevItemMap = await getStoreItems();
+        itemIds.forEach((id) => {
+          const item = prevItemMap[id];
+          const elem = getItemElem(boardWrapper, id);
 
-            const {
-              type: itemType,
-              size: itemSize,
-              offset: { x: offsetX = 0, y: offsetY = 0 } = {},
-            } = item.grid || {};
-            let type = globalType;
-            let size = globalSize || 1;
-            // If item specific
-            if (itemType) {
-              type = itemType;
-              size = itemSize || 1;
-            }
+          if (!elem) {
+            return;
+          }
 
-            const [centerX, centerY] = [
-              item.x + elem.clientWidth / 2 - offsetX,
-              item.y + elem.clientHeight / 2 - offsetY,
-            ];
+          /*const {
+            type: itemType,
+            size: itemSize,
+            offset: { x: offsetX = 0, y: offsetY = 0 } = {},
+          } = item.grid || {};
 
-            let newX;
-            let newY;
-            let sizeX;
-            let sizeY;
-            let px1;
-            let px2;
-            let py1;
-            let py2;
-            let diff1;
-            let diff2;
-            const h = size / 1.1547;
+          let type = globalType;
+          let size = globalSize || 1;
+          // If item specific
+          if (itemType) {
+            type = itemType;
+            size = itemSize || 1;
+          }*/
 
-            switch (type) {
-              case "grid":
-                newX = Math.round(centerX / size) * size;
-                newY = Math.round(centerY / size) * size;
-                break;
-              case "hexH":
-                sizeX = 2 * h;
-                sizeY = 3 * size;
-                px1 = Math.round(centerX / sizeX) * sizeX;
-                py1 = Math.round(centerY / sizeY) * sizeY;
+          const gridConfig = {
+            type: globalType || "grid",
+            size: globalSize || 1,
+            offset: { x: 0, y: 0 },
+            ...item.grid,
+          };
 
-                px2 = px1 > centerX ? px1 - h : px1 + h;
-                py2 = py1 > centerY ? py1 - 1.5 * size : py1 + 1.5 * size;
+          const newPos = snapToGrid(
+            {
+              x: item.x,
+              y: item.y,
+              width: elem.clientWidth,
+              height: elem.clientHeight,
+            },
+            gridConfig
+          );
 
-                diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
-                diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
+          /*const [centerX, centerY] = [
+            item.x + elem.clientWidth / 2 - offsetX,
+            item.y + elem.clientHeight / 2 - offsetY,
+          ];
 
-                if (diff1 < diff2) {
-                  newX = px1;
-                  newY = py1;
-                } else {
-                  newX = px2;
-                  newY = py2;
-                }
-                break;
-              case "hexV":
-                sizeX = 3 * size;
-                sizeY = 2 * h;
-                px1 = Math.round(centerX / sizeX) * sizeX;
-                py1 = Math.round(centerY / sizeY) * sizeY;
+          let newX;
+          let newY;
+          let sizeX;
+          let sizeY;
+          let px1;
+          let px2;
+          let py1;
+          let py2;
+          let diff1;
+          let diff2;
+          const h = size / 1.1547;
 
-                px2 = px1 > centerX ? px1 - 1.5 * size : px1 + 1.5 * size;
-                py2 = py1 > centerY ? py1 - h : py1 + h;
+          switch (type) {
+            case "grid":
+              newX = Math.round(centerX / size) * size;
+              newY = Math.round(centerY / size) * size;
+              break;
+            case "hexH":
+              sizeX = 2 * h;
+              sizeY = 3 * size;
+              px1 = Math.round(centerX / sizeX) * sizeX;
+              py1 = Math.round(centerY / sizeY) * sizeY;
 
-                diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
-                diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
+              px2 = px1 > centerX ? px1 - h : px1 + h;
+              py2 = py1 > centerY ? py1 - 1.5 * size : py1 + 1.5 * size;
 
-                if (diff1 < diff2) {
-                  newX = px1;
-                  newY = py1;
-                } else {
-                  newX = px2;
-                  newY = py2;
-                }
-                break;
-              default:
-                newX = item.x + elem.clientWidth / 2;
-                newY = item.y + elem.clientHeight / 2;
-            }
+              diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
+              diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
 
-            result[id] = {
-              ...item,
-              x: newX + offsetX - elem.clientWidth / 2,
-              y: newY + offsetY - elem.clientHeight / 2,
-            };
-            updatedItems[id] = result[id];
-          });
-          return result;
+              if (diff1 < diff2) {
+                newX = px1;
+                newY = py1;
+              } else {
+                newX = px2;
+                newY = py2;
+              }
+              break;
+            case "hexV":
+              sizeX = 3 * size;
+              sizeY = 2 * h;
+              px1 = Math.round(centerX / sizeX) * sizeX;
+              py1 = Math.round(centerY / sizeY) * sizeY;
+
+              px2 = px1 > centerX ? px1 - 1.5 * size : px1 + 1.5 * size;
+              py2 = py1 > centerY ? py1 - h : py1 + h;
+
+              diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
+              diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
+
+              if (diff1 < diff2) {
+                newX = px1;
+                newY = py1;
+              } else {
+                newX = px2;
+                newY = py2;
+              }
+              break;
+            default:
+              newX = item.x + elem.clientWidth / 2;
+              newY = item.y + elem.clientHeight / 2;
+          }
+
+          result[id] = {
+            ...item,
+            x: newX + offsetX - elem.clientWidth / 2,
+            y: newY + offsetY - elem.clientHeight / 2,
+          };*/
+
+          updatedItems[id] = { ...item, ...newPos };
         });
 
-        if (sync) {
-          wire.publish("batchItemsUpdate", updatedItems);
-        }
+        updateItems(updatedItems);
       },
-    [wire, setItemMap]
+    [getStoreItems, updateItems]
   );
 
   const placeItems = React.useCallback(
-    async (itemIds, gridConfig, sync = true) => {
+    async (itemIds, gridConfig) => {
       // Put moved items on top
-      putItemsOnTop(itemIds, sync);
+      putItemsOnTop(itemIds);
       // Remove moving state
-      batchUpdateItems(
-        itemIds,
-        (item) => {
-          const newItem = { ...item };
-          delete newItem.moving;
-          return newItem;
-        },
-        sync
-      );
-      stickOnGrid(itemIds, gridConfig, sync);
+      batchUpdateItems(itemIds, (item) => {
+        const newItem = { ...item };
+        delete newItem.moving;
+        return newItem;
+      });
+      stickOnGrid(itemIds, gridConfig);
       callPlaceInteractions(itemIds);
 
       updateItemExtent();
@@ -276,32 +273,28 @@ const useItemActions = () => {
   );
 
   const updateItemOrder = React.useCallback(
-    (newOrder, sync = true) => {
-      setItemList(newOrder);
-      if (sync) {
-        wire.publish("updateItemListOrder", newOrder);
-      }
+    (newOrder) => {
+      setItemIds(newOrder);
     },
-    [wire, setItemList]
+    [setItemIds]
   );
 
   const reverseItemsOrder = React.useCallback(
-    (itemIdsToReverse, sync = true) => {
-      setItemList((prevItemList) => {
-        const toBeReversed = prevItemList.filter((id) =>
-          itemIdsToReverse.includes(id)
-        );
-        const result = prevItemList.map((itemId) => {
-          if (itemIdsToReverse.includes(itemId)) {
-            return toBeReversed.pop();
-          }
-          return itemId;
-        });
-        if (sync) {
-          wire.publish("updateItemListOrder", result);
+    async (itemIdsToReverse) => {
+      const prevItemIds = await getItemIds();
+
+      const toBeReversed = prevItemIds.filter((id) =>
+        itemIdsToReverse.includes(id)
+      );
+      const newOrder = prevItemIds.map((itemId) => {
+        if (itemIdsToReverse.includes(itemId)) {
+          return toBeReversed.pop();
         }
-        return result;
+        return itemId;
       });
+
+      setItemIds(newOrder);
+
       // Also reverse selected items
       setSelectItems((prev) => {
         const reversed = [...prev];
@@ -309,96 +302,69 @@ const useItemActions = () => {
         return reversed;
       });
     },
-    [setItemList, wire, setSelectItems]
+    [getItemIds, setItemIds, setSelectItems]
   );
 
-  const swapItems = useRecoilCallback(
-    ({ snapshot }) =>
-      async (fromIds, toIds, sync = true) => {
-        const itemMap = await snapshot.getPromise(ItemMapAtom);
-        const fromItems = fromIds.map((id) => itemMap[id]);
-        const toItems = toIds.map((id) => itemMap[id]);
+  // TODO
+  const swapItems = React.useCallback(
+    async (fromIds, toIds) => {
+      const prevItemMap = await getStoreItems();
+      const fromItems = fromIds.map((id) => prevItemMap[id]);
+      const toItems = toIds.map((id) => prevItemMap[id]);
 
-        const replaceMapItems = toIds.reduce((theMap, id) => {
-          // eslint-disable-next-line no-param-reassign
-          theMap[id] = fromItems.shift();
-          return theMap;
-        }, {});
+      const replaceMapItems = toIds.reduce((theMap, id) => {
+        // eslint-disable-next-line no-param-reassign
+        theMap[id] = fromItems.shift();
+        return theMap;
+      }, {});
 
-        setItemMap((prevItemMap) => {
-          const updatedItems = toItems.reduce((prev, toItem) => {
-            const replaceBy = replaceMapItems[toItem.id];
-            const newItem = {
-              ...toItem,
-              x: replaceBy.x,
-              y: replaceBy.y,
-            };
-            // eslint-disable-next-line no-param-reassign
-            prev[toItem.id] = newItem;
-            return prev;
-          }, {});
-          if (sync) {
-            wire.publish("batchItemsUpdate", updatedItems);
-          }
-          return { ...prevItemMap, ...updatedItems };
-        });
+      const updatedItems = toItems.reduce((acc, toItem) => {
+        const replaceBy = replaceMapItems[toItem.id];
+        const newItem = {
+          ...toItem,
+          x: replaceBy.x,
+          y: replaceBy.y,
+        };
+        // eslint-disable-next-line no-param-reassign
+        acc[toItem.id] = newItem;
+        return acc;
+      }, {});
 
-        const replaceMap = fromIds.reduce((theMap, id) => {
-          // eslint-disable-next-line no-param-reassign
-          theMap[id] = toIds.shift();
-          return theMap;
-        }, {});
+      updateItems(updatedItems);
 
-        setItemList((prevItemList) => {
-          const result = prevItemList.map((itemId) => {
-            if (fromIds.includes(itemId)) {
-              return replaceMap[itemId];
-            }
-            return itemId;
-          });
+      const replaceMap = fromIds.reduce((theMap, id) => {
+        // eslint-disable-next-line no-param-reassign
+        theMap[id] = toIds.shift();
+        return theMap;
+      }, {});
 
-          if (sync) {
-            wire.publish("updateItemListOrder", result);
-          }
-          return result;
-        });
-      },
-    [wire, setItemList, setItemMap]
+      const prevItemIds = await getItemIds();
+
+      const newItemIds = prevItemIds.map((itemId) => {
+        if (fromIds.includes(itemId)) {
+          return replaceMap[itemId];
+        }
+        return itemId;
+      });
+
+      setItemIds(newItemIds);
+    },
+    [getStoreItems, updateItems, getItemIds, setItemIds]
   );
 
   const pushItems = React.useCallback(
-    async (itemsToInsert, beforeId, sync = true) => {
-      itemsToInsert.forEach(async (item, index) => {
-        const center = await getCenter();
-        const newItem = { ...item };
-        if (!newItem.x || !newItem.y) {
-          newItem.x = center.x + 2 * index;
-          newItem.y = center.y + 2 * index;
-        }
+    async (itemsToInsert, beforeId) => {
+      const center = await getCenter();
 
-        setItemMap((prevItemMap) => ({
-          ...prevItemMap,
-          [newItem.id]: newItem,
-        }));
-
-        setItemList((prevItemList) => {
-          if (beforeId) {
-            const insertAt = prevItemList.findIndex((id) => id === beforeId);
-
-            const newItemList = [...prevItemList];
-            newItemList.splice(insertAt, 0, newItem.id);
-            return newItemList;
-          }
-          return [...prevItemList, newItem.id];
-        });
-        if (sync) {
-          wire.publish("insertItemBefore", [newItem, beforeId]);
-        }
+      const itemsWithPosition = itemsToInsert.map((item, index) => {
+        return { ...item, x: center.x + 2 * index, y: center.y + 2 * index };
       });
+
+      insertItems(itemsWithPosition, beforeId);
 
       updateItemExtent();
     },
-    [updateItemExtent, getCenter, setItemMap, setItemList, wire]
+    [getCenter, insertItems, updateItemExtent]
   );
 
   const pushItem = React.useCallback(
@@ -409,45 +375,23 @@ const useItemActions = () => {
   );
 
   const removeItems = React.useCallback(
-    (itemsIdToRemove, sync = true) => {
+    (itemsIdToRemove) => {
       // Remove from selected items first
       setSelectItems((prevList) =>
         prevList.filter((id) => !itemsIdToRemove.includes(id))
       );
 
-      setItemList((prevItemList) =>
-        prevItemList.filter((itemId) => !itemsIdToRemove.includes(itemId))
-      );
-
-      setItemMap((prevItemMap) => {
-        const result = { ...prevItemMap };
-        itemsIdToRemove.forEach((id) => {
-          delete result[id];
-        });
-        return result;
-      });
-
-      if (sync) {
-        wire.publish("removeItems", itemsIdToRemove);
-      }
+      removeItemsById(itemsIdToRemove);
     },
-    [wire, setItemList, setItemMap, setSelectItems]
+    [setSelectItems, removeItemsById]
   );
 
-  const getItemList = useRecoilCallback(
-    ({ snapshot }) =>
-      () =>
-        snapshot.getPromise(AllItemsSelector),
-    []
-  );
-
-  const getItems = useRecoilCallback(
-    ({ snapshot }) =>
-      async (itemIds) => {
-        const itemMap = await snapshot.getPromise(ItemMapAtom);
-        return itemIds.map((id) => itemMap[id]);
-      },
-    []
+  const getItems = React.useCallback(
+    async (itemIds) => {
+      const itemMap = await getStoreItems();
+      return itemIds.map((id) => itemMap[id]);
+    },
+    [getStoreItems]
   );
 
   const findElementUnderPointer = useRecoilCallback(
@@ -476,8 +420,8 @@ const useItemActions = () => {
 
           // Is it a passthrough  element?
           if (hasClass(target, "passthrough")) {
-            // Get atoms value
-            const itemList = await snapshot.getPromise(ItemListAtom);
+            // Get current value
+            const itemList = await getItemIds();
             const { boardWrapper } = await snapshot.getPromise(
               ConfigurationAtom
             );
@@ -508,7 +452,7 @@ const useItemActions = () => {
         }
         return foundElement;
       },
-    []
+    [getItemIds]
   );
 
   return {

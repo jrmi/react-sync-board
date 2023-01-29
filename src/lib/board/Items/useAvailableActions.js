@@ -6,6 +6,7 @@ import { useDebouncedEffect } from "@react-hookz/web/esm";
 
 import { SelectedItemsAtom, ItemMapAtom } from "..";
 import { ConfigurationAtom } from "../atoms";
+import { useSyncedItems } from "../Store/items";
 
 /**
  * Returns the default actions of an item
@@ -43,7 +44,11 @@ const getActionsFromItem = (item, itemMap) => {
 };
 
 const useAvailableActions = () => {
-  const itemMap = useRecoilValue(ItemMapAtom);
+  //const itemMap = useRecoilValue(ItemMapAtom);
+  const [items, getItems] = useSyncedItems((state) => [
+    state.items,
+    state.getItems,
+  ]);
   const { itemTemplates } = useRecoilValue(ConfigurationAtom);
   const selected = useRecoilValue(SelectedItemsAtom);
   const [availableActions, setAvailableActions] = React.useState([]);
@@ -60,14 +65,14 @@ const useAvailableActions = () => {
   const getItemListOrSelected = useRecoilCallback(
     ({ snapshot }) =>
       async (itemIds) => {
-        const currentItemMap = await snapshot.getPromise(ItemMapAtom);
+        const currentItemMap = await getItems();
         if (itemIds) {
           return [itemIds, itemIds.map((id) => currentItemMap[id])];
         }
         const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
         return [selectedItems, selectedItems.map((id) => currentItemMap[id])];
       },
-    []
+    [getItems]
   );
 
   /**
@@ -102,7 +107,7 @@ const useAvailableActions = () => {
   // Debounced update available actions when items change
   useDebouncedEffect(
     updateAvailableActions,
-    [itemMap, updateAvailableActions],
+    [items, updateAvailableActions],
     300
   );
 

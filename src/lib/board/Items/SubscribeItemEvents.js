@@ -5,20 +5,22 @@ import useWire from "@/hooks/useWire";
 import useItemActions from "./useItemActions";
 
 import { ItemMapAtom } from "../atoms";
+import { useSyncedItems } from "../Store/items";
 
 export const SubcribeItemEvents = () => {
   const { wire } = useWire("board");
 
-  const setItemMap = useSetRecoilState(ItemMapAtom);
+  //const setItemMap = useSetRecoilState(ItemMapAtom);
+  const setItems = useSyncedItems((state) => state.setItems);
 
   const { updateItemOrder, moveItems, removeItems, pushItem } =
     useItemActions();
 
   const batchUpdate = React.useCallback(
     (updatedItems) => {
-      setItemMap((prevItemMap) => ({ ...prevItemMap, ...updatedItems }));
+      setItems((prevItemMap) => ({ ...prevItemMap, ...updatedItems }));
     },
-    [setItemMap]
+    [setItems]
   );
 
   React.useEffect(() => {

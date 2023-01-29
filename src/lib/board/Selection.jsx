@@ -11,6 +11,7 @@ import {
   SelectionBoxAtom,
 } from "./atoms";
 import { getItemBoundingBox } from "@/utils";
+import { useSyncedItems } from "./Store/items";
 
 const defaultZoneStyle = {
   position: "absolute",
@@ -27,7 +28,8 @@ const BoundingBox = () => {
   const [boundingBoxLast, setBoundingBoxLast] =
     useRecoilState(SelectionBoxAtom);
   const boardTransform = useRecoilValue(BoardTransformAtom);
-  const itemMap = useRecoilValue(ItemMapAtom);
+  const items = useSyncedItems((state) => state.items);
+  //const itemMap = useRecoilValue(ItemMapAtom);
 
   // Update selection bounding box
   const updateBox = useRecoilCallback(
@@ -88,7 +90,7 @@ const BoundingBox = () => {
     // Update selected elements bounding box
     updateBox();
     updateBoxDelay(); // Delay to update after board item animation like tap/untap.
-  }, [selectedItems, itemMap, boardTransform, updateBox, updateBoxDelay]);
+  }, [selectedItems, items, boardTransform, updateBox, updateBoxDelay]);
 
   if (!boundingBoxLast || selectedItems.length < 2) return null;
 

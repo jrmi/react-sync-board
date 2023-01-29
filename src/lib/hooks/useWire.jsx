@@ -17,6 +17,7 @@ export const WireProvider = ({
   const roomRef = React.useRef(null);
   const mountedRef = React.useRef(false);
   const existingC2C = useContext(Context);
+  const connectingRef = React.useRef(false);
 
   React.useEffect(() => {
     mountedRef.current = true;
@@ -51,24 +52,27 @@ export const WireProvider = ({
     if (!socket.connected) {
       socket.connect();
     }
-    console.log(`Try to connect to wire ${room} on channel ${channel}`);
-    joinWire({
-      socket,
-      room,
-      onMaster: () => {
-        console.log(`Is now master on channel ${channel}…`);
-        if (!mountedRef.current) return;
-        setIsMaster(true);
-      },
-      onJoined: (newRoom) => {
-        console.log(`Connected on channel ${channel}…`);
-        roomRef.current = newRoom;
+    //console.log(`Try to connect to wire ${room} on channel ${channel}`);
+    if (!connectingRef.current) {
+      connectingRef.current = true;
+      joinWire({
+        socket,
+        room,
+        onMaster: () => {
+          //console.log(`Is now master on channel ${channel}…`);
+          if (!mountedRef.current) return;
+          setIsMaster(true);
+        },
+        onJoined: (newRoom) => {
+          //console.log(`Connected on channel ${channel}…`);
+          roomRef.current = newRoom;
 
-        if (!mountedRef.current) return;
-        setWire(newRoom);
-        setJoined(true);
-      },
-    });
+          if (!mountedRef.current) return;
+          setWire(newRoom);
+          setJoined(true);
+        },
+      });
+    }
 
     return () => {
       roomRef.current?.leave();

@@ -1,29 +1,31 @@
-/* eslint-disable import/no-extraneous-dependencies */
-import React from 'react';
+import React from "react";
 import {
   Provider as SocketIOProvider,
   useSocket,
-} from '@scripters/use-socket.io';
-import { nanoid } from 'nanoid';
+} from "@scripters/use-socket.io";
+import { nanoid } from "nanoid";
 
-import './index.css';
+import "./index.css";
 
-import { BoardWrapper, RoomWrapper, useUsers, useItemActions, Board } from '@/';
+import { BoardWrapper, RoomWrapper, useUsers, useItemActions, Board } from "@/";
 
-import { itemMap, ItemForm } from './sample';
+import { itemMap, ItemForm } from "./sample";
 
-import SelectedItemsPane from './SelectedItemsPane';
+import SelectedItemsPane from "./SelectedItemsPane";
 
 //STORYBOOK_SOCKET_URL=https://public.jeremiez.net
 //STORYBOOK_SOCKET_PATH=/wamp/socket.io
 
-const STORYBOOK_SOCKET_URL = 'https://public.jeremiez.net';
-const SOCKET_PATH = '/wamp/socket.io';
+//const STORYBOOK_SOCKET_URL = "https://public.jeremiez.net";
+//const SOCKET_PATH = "/wamp/socket.io";
+
+const STORYBOOK_SOCKET_URL = "localhost:4000";
+const SOCKET_PATH = "/socket.io";
 
 const SOCKET_OPTIONS = {
   forceNew: true,
   path: SOCKET_PATH,
-  transports: ['websocket'],
+  transports: ["websocket"],
 };
 
 const WithSocketIO = ({ children }) => (
@@ -34,74 +36,74 @@ const WithSocketIO = ({ children }) => (
 
 export default {
   component: BoardWrapper,
-  title: 'SyncBoard/Main',
+  title: "SyncBoard/Main",
 };
 
 const initialItems = [
   {
-    type: 'cylinder',
+    type: "cylinder",
     x: 0,
     y: 0,
-    id: 'test00cyl',
-    color: '#345',
-    actions: ['rotate45', { name: 'rotate', args: { angle: 10 } }, 'remove'],
+    id: "test00cyl",
+    color: "#345",
+    actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
   },
   {
-    type: 'cube',
+    type: "cube",
     x: 100,
     y: 100,
-    id: 'test00',
-    color: '#023456',
-    actions: ['rotate45', { name: 'rotate', args: { angle: 10 } }, 'remove'],
+    id: "test00",
+    color: "#023456",
+    actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
   },
   {
-    type: 'cube',
+    type: "cube",
     x: -100,
     y: -100,
-    id: 'test01',
-    color: '#727456',
-    actions: ['rotate45', { name: 'rotate', args: { angle: 20 } }, 'remove'],
+    id: "test01",
+    color: "#727456",
+    actions: ["rotate45", { name: "rotate", args: { angle: 20 } }, "remove"],
   },
-  { type: 'round', x: 100, y: -100, id: 'test', color: '#923456' },
-  { type: 'token', x: -100, y: 100, id: 'test2', color: '#0077AA' },
+  { type: "round", x: 100, y: -100, id: "test", color: "#923456" },
+  { type: "token", x: -100, y: 100, id: "test2", color: "#0077AA" },
   {
-    type: 'rect',
+    type: "rect",
     x: -300,
     y: 300,
-    id: 'test3',
-    color: '#0077AA',
+    id: "test3",
+    color: "#0077AA",
     width: 300,
     height: 300,
   },
   {
-    type: 'zone',
+    type: "zone",
     x: -300,
     y: -300,
-    id: 'test4',
-    color: '#7700AA',
+    id: "test4",
+    color: "#7700AA",
     width: 300,
     height: 300,
     layer: 2,
   },
   {
-    type: 'round',
+    type: "round",
     x: 200,
     y: -200,
-    id: 'test-grid',
-    color: '#3327AA',
+    id: "test-grid",
+    color: "#3327AA",
     width: 100,
     height: 100,
-    grid: { type: 'hexH', size: 50, offset: { x: 10, y: 10 } },
+    grid: { type: "hexH", size: 50, offset: { x: 10, y: 10 } },
   },
   {
-    type: 'round',
+    type: "round",
     x: 220,
     y: -220,
-    id: 'test-grid2',
-    color: '#aa2722',
+    id: "test-grid2",
+    color: "#aa2722",
     width: 100,
     height: 100,
-    grid: { type: 'hexH', size: 50 },
+    grid: { type: "hexH", size: 50 },
   },
 ];
 
@@ -114,11 +116,11 @@ const AddItems = () => {
 
   return (
     <div
-      style={{ display: 'flex', flexDirection: 'column', alignItems: 'start' }}
+      style={{ display: "flex", flexDirection: "column", alignItems: "start" }}
     >
       {Object.entries(itemMap).map(
         ([key, itemTpl]) =>
-          key !== 'error' && (
+          key !== "error" && (
             <div key={key}>
               <button onClick={() => addItem(key, itemTpl.template)}>
                 Add {key}
@@ -138,7 +140,7 @@ const UserList = () => {
       <ul>
         {localUsers.map((user) => (
           <li key={user.id}>
-            {currentUser.id === user.id ? 'You: ' : ''}
+            {currentUser.id === user.id ? "You: " : ""}
             {user.name}
           </li>
         ))}
@@ -158,19 +160,20 @@ const Init = () => {
 const Overlay = ({ children, hideMenu }) => (
   <div
     style={{
-      position: 'absolute',
+      position: "absolute",
       inset: 0,
-      backgroundColor: '#eee',
+      backgroundColor: "#eee",
     }}
   >
     {children}
     <div
       style={{
-        position: 'absolute',
+        position: "absolute",
         top: 0,
-        right: 0,
-        backgroundColor: '#999999',
-        padding: '0.5em',
+        left: 0,
+        bottom: 0,
+        backgroundColor: "#999999",
+        padding: "0.5em",
       }}
     >
       <Init />
@@ -198,7 +201,7 @@ const OneViewContent = ({
           moveFirst={moveFirst}
           showResizeHandle={showResizeHandle}
           style={{
-            backgroundColor: '#EEE',
+            backgroundColor: "#EEE",
           }}
           itemTemplates={itemMap}
         >
@@ -213,10 +216,10 @@ export const OneView = (props) => (
   <WithSocketIO>
     <div
       style={{
-        width: '100%',
-        height: '500px',
-        position: 'relative',
-        border: '1px solid black',
+        width: "100vw",
+        height: "100vh",
+        position: "relative",
+        border: "1px solid black",
       }}
     >
       <OneViewContent {...props} />
@@ -233,13 +236,13 @@ OneView.args = {
 };
 
 const style = {
-  backgroundColor: '#555',
+  backgroundColor: "#555",
   backgroundImage: `linear-gradient(white 2px, transparent 2px),
 linear-gradient(90deg, white 2px, transparent 2px),
 linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px),
 linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
-  backgroundSize: '100px 100px, 100px 100px, 20px 20px, 20px 20px',
-  backgroundPosition: '-2px -2px, -2px -2px, -1px -1px, -1px -1px',
+  backgroundSize: "100px 100px, 100px 100px, 20px 20px, 20px 20px",
+  backgroundPosition: "-2px -2px, -2px -2px, -1px -1px, -1px -1px",
 };
 const OneViewWithRoomContent = ({
   moveFirst,
@@ -269,10 +272,10 @@ export const OneViewWithRoom = (props) => (
   <WithSocketIO>
     <div
       style={{
-        width: '100%',
-        height: '500px',
-        position: 'relative',
-        border: '1px solid black',
+        width: "100vw",
+        height: "100vh",
+        position: "relative",
+        border: "1px solid black",
       }}
     >
       <OneViewWithRoomContent {...props} />
@@ -287,18 +290,18 @@ export const TwoView = (props) => {
   return (
     <div
       style={{
-        width: '100%',
-        height: '500px',
-        display: 'flex',
+        width: "100%",
+        height: "500px",
+        display: "flex",
       }}
     >
       <WithSocketIO>
         <div
           style={{
-            position: 'relative',
-            height: '100%',
+            position: "relative",
+            height: "100%",
             flex: 1,
-            border: '1px solid grey',
+            border: "1px solid grey",
           }}
         >
           <OneViewContent room={room} session={session} {...props} />
@@ -307,10 +310,10 @@ export const TwoView = (props) => {
       <WithSocketIO>
         <div
           style={{
-            position: 'relative',
-            height: '100%',
+            position: "relative",
+            height: "100%",
             flex: 1,
-            border: '1px solid grey',
+            border: "1px solid grey",
           }}
         >
           <OneViewContent room={room} session={session} {...props} />
@@ -324,21 +327,21 @@ export const OneViewWithCustomBoardElements = (props) => (
   <WithSocketIO>
     <div
       style={{
-        width: '100%',
-        height: '500px',
-        position: 'relative',
-        border: '1px solid black',
+        width: "100%",
+        height: "500px",
+        position: "relative",
+        border: "1px solid black",
       }}
     >
       <OneViewContent {...props}>
         <div
           style={{
-            position: 'absolute',
-            top: '25000px',
-            left: '25000px',
-            width: '1000px',
-            height: '1000px',
-            backgroundColor: '#DEF',
+            position: "absolute",
+            top: "25000px",
+            left: "25000px",
+            width: "1000px",
+            height: "1000px",
+            backgroundColor: "#DEF",
             zIndex: 300,
           }}
         ></div>

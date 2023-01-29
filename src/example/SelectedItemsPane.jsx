@@ -4,31 +4,13 @@ import useTranslation from "@/hooks/useTranslation";
 
 import SidePanel from "./ui/SidePanel";
 import ItemFormFactory from "./ItemFormFactory";
-import {
-  useAvailableActions,
-  useSelectionBox,
-  useSelectedItems,
-  useBoardState,
-} from "@/";
+import { useAvailableActions, useSelectedItems, useBoardState } from "@/";
 import useActions from "./sample/useActions";
 import { useItemActions } from "@/board/Items";
 
-const ActionPane = styled.div.attrs(({ top, left, height }) => {
-  if (top < 120) {
-    return {
-      style: {
-        transform: `translate(${left}px, ${top + height + 5}px)`,
-      },
-    };
-  }
-  return {
-    style: {
-      transform: `translate(${left}px, ${top - 60}px)`,
-    },
-  };
-})`
-  top: 0;
-  left: 0;
+const ActionPane = styled.div`
+  top: ${({ top }) => top};
+  left: ${({ left }) => left};
   user-select: none;
   touch-action: none;
   position: absolute;
@@ -89,8 +71,6 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
 
   const selectedItems = useSelectedItems();
   const boardState = useBoardState();
-
-  const selectionBox = useSelectionBox();
 
   const parsedAvailableActions = availableActions.map((action) => {
     if (typeof action === "string") {
@@ -185,7 +165,8 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
       </SidePanel>
       {selectedItems.length && !hideMenu && (
         <ActionPane
-          {...selectionBox}
+          left="50%"
+          top="5px"
           hide={
             boardState.zooming || boardState.panning || boardState.movingItems
           }

@@ -10,6 +10,9 @@ export default defineConfig({
   resolve: {
     alias: [{ find: "@", replacement: resolve(projectRootDir, "src/lib") }],
   },
+  optimizeDeps: {
+    exclude: ["wire.io"],
+  },
   build: {
     lib: {
       // Could also be a dictionary or array of multiple entry points

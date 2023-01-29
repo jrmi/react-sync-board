@@ -14,6 +14,7 @@ import {
 
 import Gesture from "./Gesture";
 import { useItemActions } from "./Items";
+import { useSyncedItems } from "./Store/items";
 
 const defaultSelectorStyle = {
   zIndex: 210,
@@ -47,6 +48,7 @@ const Selector = ({ children, moveFirst }) => {
   const setSelected = useSetRecoilState(SelectedItemsAtom);
   const setBoardState = useSetRecoilState(BoardStateAtom);
   const { findElementUnderPointer } = useItemActions();
+  const getItems = useSyncedItems((state) => state.getItems);
 
   const [selector, setSelector] = React.useState({});
 
@@ -67,7 +69,7 @@ const Selector = ({ children, moveFirst }) => {
     ({ snapshot }) =>
       async () => {
         if (stateRef.current.moving) {
-          const itemMap = await snapshot.getPromise(ItemMapAtom);
+          const itemMap = await getItems();
           const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
           const selected = findSelected(itemMap, boardWrapper);
 
@@ -79,7 +81,7 @@ const Selector = ({ children, moveFirst }) => {
           });
         }
       },
-    [setSelected]
+    [getItems, setSelected]
   );
 
   const throttledUpdateSelected = useThrottledCallback(
