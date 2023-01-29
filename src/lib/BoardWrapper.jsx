@@ -6,7 +6,7 @@ import { useResizeObserver } from "@react-hookz/web/esm";
 
 import useWire, { WireProvider } from "@/hooks/useWire";
 
-import { ItemStoreProvider } from "@/board/store/items";
+import { SyncedStoreProvider } from "@/board/store/synced";
 
 import { userAtom } from "@/users/atoms";
 
@@ -110,9 +110,9 @@ const ConnectedSyncBoard = ({ socket, room, session, ...props }) => {
         <WireProvider room={stableRoom} channel="room" socket={socket}>
           <SubscribeUserEvents />
           <WireProvider room={stableSession} channel="board" socket={socket}>
-            <ItemStoreProvider storeName={`${stableSession}_item`}>
+            <SyncedStoreProvider storeName={`${stableSession}_item`}>
               <SyncBoard {...props} />
-            </ItemStoreProvider>
+            </SyncedStoreProvider>
           </WireProvider>
         </WireProvider>
       </RecoilRoot>
@@ -120,9 +120,9 @@ const ConnectedSyncBoard = ({ socket, room, session, ...props }) => {
   }
   return (
     <WireProvider room={stableSession} channel="board" socket={socket}>
-      <ItemStoreProvider storeName={`${stableSession}_item`}>
+      <SyncedStoreProvider storeName={`${stableSession}_item`}>
         <SyncBoard {...props} />
-      </ItemStoreProvider>
+      </SyncedStoreProvider>
     </WireProvider>
   );
 };

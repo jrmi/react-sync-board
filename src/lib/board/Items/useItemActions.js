@@ -1,5 +1,5 @@
 import React from "react";
-import { useSyncedItems } from "@/board/store/items";
+import { useSyncedStore } from "@/board/store/synced";
 
 import useDim from "../useDim";
 
@@ -30,7 +30,7 @@ const useItemActions = () => {
     getItemList,
     insertItems,
     setItemList,
-  } = useSyncedItems(
+  } = useSyncedStore(
     ({
       getItems,
       getItemIds,

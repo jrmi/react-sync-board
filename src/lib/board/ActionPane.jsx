@@ -1,13 +1,12 @@
 import React from "react";
-import { useRecoilCallback } from "recoil";
 
-import { BoardConfigAtom } from "./atoms";
 import { useItemActions } from "./Items";
 import { getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
 import useSelection from "./store/selection";
 import useMainStore from "./store/main";
+import { useSyncedStore } from "@/board/store/synced";
 
 /**
  * This component handles the move of items when dragging them or with the keyboard.
@@ -24,6 +23,7 @@ const ActionPane = ({ children }) => {
     state.getBoardState,
     state.updateBoardState,
   ]);
+  const getBoardConfig = useSyncedStore((state) => state.getBoardConfig);
 
   const actionRef = React.useRef({});
 
@@ -90,87 +90,78 @@ const ActionPane = ({ children }) => {
     [getBoardState, moveItems, updateBoardState]
   );
 
-  const onDragEnd = useRecoilCallback(
-    ({ snapshot }) =>
-      async () => {
-        if (actionRef.current.moving) {
-          const { gridSize: boardGridSize = 1 } = await snapshot.getPromise(
-            BoardConfigAtom
+  const onDragEnd = React.useCallback(() => {
+    if (actionRef.current.moving) {
+      const { gridSize: boardGridSize = 1 } = getBoardConfig();
+      const gridSize = boardGridSize || 1; // avoid 0 grid size
+
+      actionRef.current = { moving: false };
+      placeItems(selectedItemRef.current.items, {
+        type: "grid",
+        size: gridSize,
+      });
+      updateBoardState({ movingItems: false });
+    }
+  }, [getBoardConfig, placeItems, updateBoardState]);
+
+  const onKeyDown = React.useCallback(
+    (e) => {
+      // Block shortcut if we are typing in a textarea or input
+      if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+
+      const selectedItems = getSelection();
+
+      if (selectedItems.length) {
+        const { gridSize: boardGridSize = 1 } = getBoardConfig();
+        let moveX = 0;
+        let moveY = 0;
+        switch (e.key) {
+          case "ArrowLeft":
+            // Left pressed
+            moveX = -10;
+            break;
+          case "ArrowRight":
+            moveX = 10;
+            // Right pressed
+            break;
+          case "ArrowUp":
+            // Up pressed
+            moveY = -10;
+            break;
+          case "ArrowDown":
+            // Down pressed
+            moveY = 10;
+            break;
+          default:
+        }
+        if (moveX || moveY) {
+          if (e.shiftKey) {
+            moveX *= 5;
+            moveY *= 5;
+          }
+          if (e.ctrlKey || e.altKey || e.metaKey) {
+            moveX /= 10;
+            moveY /= 10;
+          }
+          moveItems(
+            selectedItems,
+            {
+              x: moveX,
+              y: moveY,
+            },
+            true
           );
           const gridSize = boardGridSize || 1; // avoid 0 grid size
 
-          actionRef.current = { moving: false };
-          placeItems(selectedItemRef.current.items, {
+          placeItems(selectedItems, {
             type: "grid",
             size: gridSize,
           });
-          updateBoardState({ movingItems: false });
+          e.preventDefault();
         }
-      },
-    [placeItems, updateBoardState]
-  );
-
-  const onKeyDown = useRecoilCallback(
-    ({ snapshot }) =>
-      async (e) => {
-        // Block shortcut if we are typing in a textarea or input
-        if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
-
-        const selectedItems = getSelection();
-
-        if (selectedItems.length) {
-          const { gridSize: boardGridSize = 1 } = await snapshot.getPromise(
-            BoardConfigAtom
-          );
-          let moveX = 0;
-          let moveY = 0;
-          switch (e.key) {
-            case "ArrowLeft":
-              // Left pressed
-              moveX = -10;
-              break;
-            case "ArrowRight":
-              moveX = 10;
-              // Right pressed
-              break;
-            case "ArrowUp":
-              // Up pressed
-              moveY = -10;
-              break;
-            case "ArrowDown":
-              // Down pressed
-              moveY = 10;
-              break;
-            default:
-          }
-          if (moveX || moveY) {
-            if (e.shiftKey) {
-              moveX *= 5;
-              moveY *= 5;
-            }
-            if (e.ctrlKey || e.altKey || e.metaKey) {
-              moveX /= 10;
-              moveY /= 10;
-            }
-            moveItems(
-              selectedItems,
-              {
-                x: moveX,
-                y: moveY,
-              },
-              true
-            );
-            const gridSize = boardGridSize || 1; // avoid 0 grid size
-
-            placeItems(selectedItems, {
-              type: "grid",
-              size: gridSize,
-            });
-            e.preventDefault();
-          }
-        }
-      },
-    [getSelection, moveItems, placeItems]
+      }
+    },
+    [getBoardConfig, getSelection, moveItems, placeItems]
   );
 
   React.useEffect(() => {

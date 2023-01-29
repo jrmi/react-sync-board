@@ -1,37 +1,23 @@
 import React from "react";
-import { useRecoilState } from "recoil";
-import { useDebouncedCallback } from "@react-hookz/web/esm";
-
-import useWire from "@/hooks/useWire";
-import { BoardConfigAtom } from "./atoms";
+import { useSyncedStore } from "@/board/store/synced";
 
 const useBoardConfig = () => {
-  const { wire } = useWire("board");
-  const [boardConfig, setBoardConfig] = useRecoilState(BoardConfigAtom);
-
-  const debouncedPublishUpdate = useDebouncedCallback(
-    (newConfig) => {
-      wire.publish("updateBoardConfig", newConfig);
-    },
-    [wire],
-    1000
+  const [boardConfig, getBoardConfig, setBoardConfig] = useSyncedStore(
+    (state) => [state.boardConfig, state.getBoardConfig, state.setBoardConfig]
   );
 
   const setSyncBoardConfig = React.useCallback(
-    (callbackOrConfig, sync = true) => {
+    (callbackOrConfig) => {
       let callback = callbackOrConfig;
       if (typeof callbackOrConfig === "object") {
         callback = () => callbackOrConfig;
       }
-      setBoardConfig((prev) => {
-        const newConfig = callback(prev);
-        if (sync) {
-          debouncedPublishUpdate(newConfig);
-        }
-        return newConfig;
-      });
+
+      const currentConfig = getBoardConfig();
+      const newConfig = callback(currentConfig);
+      setBoardConfig(newConfig);
     },
-    [setBoardConfig, debouncedPublishUpdate]
+    [getBoardConfig, setBoardConfig]
   );
 
   return [boardConfig, setSyncBoardConfig];

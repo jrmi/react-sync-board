@@ -5,7 +5,7 @@ import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
 import { useItemActions } from "./Items";
-import { useSyncedItems } from "./store/items";
+import { useSyncedStore } from "@/board/store/synced";
 import useSelection from "./store/selection";
 import useMainStore from "./store/main";
 
@@ -52,7 +52,7 @@ const Selector = ({ children, moveFirst }) => {
     state.updateBoardState,
   ]);
   const { findElementUnderPointer } = useItemActions();
-  const getItems = useSyncedItems((state) => state.getItems);
+  const getItems = useSyncedStore((state) => state.getItems);
 
   const [selector, setSelector] = React.useState({});
 

@@ -1,9 +1,9 @@
 import React from "react";
 import { useDebouncedEffect } from "@react-hookz/web/esm";
-import { useSyncedItems } from "../store/items";
+import { useSyncedStore } from "@/board/store/synced";
 
 const useDebouncedItems = () => {
-  const [items, getItemList] = useSyncedItems((state) => [
+  const [items, getItemList] = useSyncedStore((state) => [
     state.getItemList(),
     getItemList,
   ]);

@@ -1,7 +1,7 @@
-import { useSyncedItems } from "../store/items";
+import { useSyncedStore } from ".@/board/store/synced";
 
 const useItems = () => {
-  const items = useSyncedItems((state) => state.getItemList());
+  const items = useSyncedStore((state) => state.getItemList());
   return items;
 };
 

@@ -1,7 +1,7 @@
 import React from "react";
 import { useDebouncedCallback } from "@react-hookz/web/esm";
 
-import { useSyncedItems } from "@/board/store/items";
+import { useSyncedStore } from "@/board/store/synced";
 import { getItemBoundingBox } from "@/utils";
 import useMainStore from "./store/main";
 
@@ -52,7 +52,7 @@ const useDim = () => {
       state.getConfiguration,
       state.updateConfiguration,
     ]);
-  const getItemIds = useSyncedItems((state) => state.getItemIds);
+  const getItemIds = useSyncedStore((state) => state.getItemIds);
 
   const getDim = React.useCallback(() => {
     const { translateX, translateY, scale } = getBoardState();

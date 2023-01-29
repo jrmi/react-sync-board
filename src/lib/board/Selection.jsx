@@ -2,7 +2,7 @@ import React from "react";
 import { useDebouncedCallback } from "@react-hookz/web/esm";
 
 import { getItemBoundingBox } from "@/utils";
-import { useSyncedItems } from "./store/items";
+import { useSyncedStore } from "@/board/store/synced";
 import useSelection from "./store/selection";
 import useMainStore from "./store/main";
 
@@ -32,7 +32,7 @@ const BoundingBox = () => {
     translateY: state.boardState.translateY,
     scale: state.boardState.scale,
   }));
-  const items = useSyncedItems((state) => state.items);
+  const items = useSyncedStore((state) => state.items);
 
   // Update selection bounding box
   const updateBox = React.useCallback(() => {

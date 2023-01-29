@@ -3,7 +3,7 @@ import deepEqual from "fast-deep-equal/es6";
 
 import { useDebouncedEffect } from "@react-hookz/web/esm";
 
-import { useSyncedItems } from "../store/items";
+import { useSyncedStore } from "@/board/store/synced";
 import useSelection from "../store/selection";
 import useMainStore from "../store/main";
 
@@ -43,7 +43,7 @@ const getActionsFromItem = (item, itemMap) => {
 };
 
 const useAvailableActions = () => {
-  const [items, getItems] = useSyncedItems((state) => [
+  const [items, getItems] = useSyncedStore((state) => [
     state.items,
     state.getItems,
   ]);

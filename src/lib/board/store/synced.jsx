@@ -115,15 +115,24 @@ const commonStore = (set, get) => ({
     }),
 });
 
-export const ItemStoreProvider = ({ storeName, children }) => {
+const boardStore = (set, get) => ({
+  boardConfig: {},
+  getBoardConfig: () => get().boardConfig,
+  setBoardConfig: (newBoardConfig) => set(newBoardConfig),
+  updateBoardConfig: (toUpdate) =>
+    set((state) => ({ boardConfig: { ...state.boardConfig, ...toUpdate } })),
+});
+
+export const SyncedStoreProvider = ({ storeName, children }) => {
   const { wire } = useWire("room");
-  const [store] = React.useState(
+  const [store] = React.useState(() =>
     createStore(
       syncMiddleware(
         (...args) => ({
           ...itemsStore(...args),
           ...itemIdsStore(...args),
           ...commonStore(...args),
+          ...boardStore(...args),
         }),
         wire,
         storeName
@@ -134,7 +143,7 @@ export const ItemStoreProvider = ({ storeName, children }) => {
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useSyncedItems = (selector) => {
+export const useSyncedStore = (selector) => {
   const store = useContext(Context);
   return useStore(store, selector);
 };

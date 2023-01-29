@@ -1,14 +1,14 @@
 import Item from "./Item";
 import useItemActions from "./useItemActions";
 
-import { useSyncedItems } from "@/board/store/items";
+import { useSyncedStore } from "@/board/store/synced";
 import { useUsers } from "@/users";
 import useSelection from "../store/selection";
 import useMainStore from "../store/main";
 
 const ItemList = () => {
   const { updateItem } = useItemActions();
-  const [itemList, itemMap] = useSyncedItems((state) => [
+  const [itemList, itemMap] = useSyncedStore((state) => [
     state.itemIds,
     state.items,
   ]);
