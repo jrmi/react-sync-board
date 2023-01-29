@@ -1,45 +1,30 @@
 import React from "react";
-import { useSetRecoilState, useRecoilCallback } from "recoil";
-
-import { ItemInteractionsAtom } from "../atoms";
+import useMainStore from "../store/main";
 
 const useItemInteraction = (interaction) => {
-  const setInteractions = useSetRecoilState(ItemInteractionsAtom);
+  const [registerInStore, unregister, callInteractions] = useMainStore(
+    ({ register, unregister, callInteractions }) => [
+      register,
+      unregister,
+      callInteractions,
+    ]
+  );
 
   const register = React.useCallback(
     (callback) => {
-      setInteractions((prev) => {
-        const newInter = Array.isArray(prev[interaction])
-          ? [...prev[interaction], callback]
-          : [callback];
-
-        return {
-          ...prev,
-          [interaction]: newInter,
-        };
-      });
+      registerInStore(interaction, callback);
       return () => {
-        setInteractions((prev) => ({
-          ...prev,
-          [interaction]: prev[interaction].filter((c) => c !== callback),
-        }));
+        unregister(interaction, callback);
       };
     },
-    [interaction, setInteractions]
+    [interaction, registerInStore, unregister]
   );
 
-  const call = useRecoilCallback(
-    ({ snapshot }) =>
-      async (items) => {
-        const itemInteractions = await snapshot.getPromise(
-          ItemInteractionsAtom
-        );
-        if (!itemInteractions[interaction]) return;
-        itemInteractions[interaction].forEach((callback) => {
-          callback(items);
-        });
-      },
-    [interaction]
+  const call = React.useCallback(
+    (items) => {
+      callInteractions(interaction, items);
+    },
+    [callInteractions, interaction]
   );
 
   return { register, call };

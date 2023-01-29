@@ -5,13 +5,6 @@ export const BoardConfigAtom = atom({
   default: {},
 });
 
-// Session
-export const ItemInteractionsAtom = atom({
-  key: "itemInteractions",
-  default: {},
-});
-
 export default {
   BoardConfigAtom,
-  ItemInteractionsAtom,
 };

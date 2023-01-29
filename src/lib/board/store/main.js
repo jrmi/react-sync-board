@@ -1,14 +1,3 @@
-/*
-// Session
-
-// Session
-
-// Session
-export const ItemInteractionsAtom = atom({
-  key: "itemInteractions",
-  default: {},
-});*/
-
 import { create } from "zustand";
 import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 
@@ -40,7 +29,33 @@ const boardState = (set, get) => ({
     set((state) => ({ boardState: { ...state.boardState, ...toUpdate } })),
   getBoardState: () => get().boardState,
 });
-const itemInteractions = (set, get) => ({ interaction: {} });
+const itemInteractions = (set, get) => ({
+  interactions: {},
+  getInteractions: () => get().interactions,
+  register: (interaction, callback) =>
+    set((state) => {
+      const nextInteraction = [...(state.interactions[interaction] || [])];
+      nextInteraction.push(callback);
+      return {
+        interactions: { ...state.interaction, [interaction]: nextInteraction },
+      };
+    }),
+  unregister: (interaction, callback) =>
+    set((state) => {
+      const nextInteraction = (state.interactions[interaction] || []).filter(
+        (c) => c !== callback
+      );
+      return {
+        interactions: { ...state.interaction, [interaction]: nextInteraction },
+      };
+    }),
+  callInteractions: (interaction, items) => {
+    if (!get().interactions[interaction]) return;
+    get().interactions[interaction].forEach((callback) => {
+      callback(items);
+    });
+  },
+});
 
 const useMainStore = create((...args) => ({
   ...configuration(...args),
