@@ -1,8 +1,5 @@
 import React from "react";
-import { useSetRecoilState, useRecoilCallback } from "recoil";
 import { useSyncedItems } from "@/board/store/items";
-
-import { ConfigurationAtom } from "../atoms";
 
 import useDim from "../useDim";
 
@@ -16,10 +13,12 @@ import {
 
 import useItemInteraction from "./useItemInteraction";
 import useSelection from "../store/selection";
+import useMainStore from "../store/main";
 
 const useItemActions = () => {
   const { call: callPlaceInteractions } = useItemInteraction("place");
   const { getCenter, updateItemExtent } = useDim();
+  const getConfiguration = useMainStore((state) => state.getConfiguration);
 
   const {
     getItems: getStoreItems,
@@ -124,45 +123,44 @@ const useItemActions = () => {
     [getItemIds, setItemIds]
   );
 
-  const stickOnGrid = useRecoilCallback(
-    ({ snapshot }) =>
-      async (itemIds, { type: globalType, size: globalSize } = {}) => {
-        const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
-        const updatedItems = {};
+  const stickOnGrid = React.useCallback(
+    (itemIds, { type: globalType, size: globalSize } = {}) => {
+      const { boardWrapper } = getConfiguration();
+      const updatedItems = {};
 
-        const prevItemMap = getStoreItems();
+      const prevItemMap = getStoreItems();
 
-        itemIds.forEach((id) => {
-          const item = prevItemMap[id];
-          const elem = getItemElem(boardWrapper, id);
+      itemIds.forEach((id) => {
+        const item = prevItemMap[id];
+        const elem = getItemElem(boardWrapper, id);
 
-          if (!elem) {
-            return;
-          }
+        if (!elem) {
+          return;
+        }
 
-          const gridConfig = {
-            type: globalType || "grid",
-            size: globalSize || 1,
-            offset: { x: 0, y: 0 },
-            ...item.grid,
-          };
+        const gridConfig = {
+          type: globalType || "grid",
+          size: globalSize || 1,
+          offset: { x: 0, y: 0 },
+          ...item.grid,
+        };
 
-          const newPos = snapToGrid(
-            {
-              x: item.x,
-              y: item.y,
-              width: elem.clientWidth,
-              height: elem.clientHeight,
-            },
-            gridConfig
-          );
+        const newPos = snapToGrid(
+          {
+            x: item.x,
+            y: item.y,
+            width: elem.clientWidth,
+            height: elem.clientHeight,
+          },
+          gridConfig
+        );
 
-          updatedItems[id] = { ...item, ...newPos };
-        });
+        updatedItems[id] = { ...item, ...newPos };
+      });
 
-        updateItems(updatedItems);
-      },
-    [getStoreItems, updateItems]
+      updateItems(updatedItems);
+    },
+    [getConfiguration, getStoreItems, updateItems]
   );
 
   const placeItems = React.useCallback(
@@ -304,65 +302,62 @@ const useItemActions = () => {
     [getStoreItems]
   );
 
-  const findElementUnderPointer = useRecoilCallback(
-    ({ snapshot }) =>
-      async (
-        { target, clientX, clientY },
-        { returnLocked = false, passLocked = false } = {}
-      ) => {
-        // Allow text selection instead of moving
-        if (["INPUT", "TEXTAREA"].includes(target.tagName)) return null;
+  const findElementUnderPointer = React.useCallback(
+    (
+      { target, clientX, clientY },
+      { returnLocked = false, passLocked = false } = {}
+    ) => {
+      // Allow text selection instead of moving
+      if (["INPUT", "TEXTAREA"].includes(target.tagName)) return null;
 
-        const foundElement = insideClass(target, "item");
+      const foundElement = insideClass(target, "item");
 
-        if (foundElement) {
-          if (hasClass(foundElement, "selected")) {
-            return foundElement;
-          }
-
-          if (
-            !passLocked &&
-            hasClass(foundElement, "locked") &&
-            !hasClass(target, "passthrough")
-          ) {
-            return returnLocked ? foundElement : null;
-          }
-
-          // Is it a passthrough  element?
-          if (hasClass(target, "passthrough")) {
-            // Get current value
-            const itemList = getItemIds();
-            const { boardWrapper } = await snapshot.getPromise(
-              ConfigurationAtom
-            );
-
-            // Found element under the cursor
-            const elements = itemList.reduce((prev, itemId) => {
-              const elem = getItemElem(boardWrapper, itemId);
-              const itemRect = elem.getBoundingClientRect();
-              if (isPointInsideRect({ x: clientX, y: clientY }, itemRect)) {
-                prev.unshift(elem);
-              }
-              return prev;
-            }, []);
-
-            // Figure out if one can be returned
-            for (let i = 0; i < elements.length; i += 1) {
-              const elem = elements[i];
-              if (
-                elem !== foundElement &&
-                (passLocked || !hasClass(elem, "locked"))
-              ) {
-                return elem;
-              }
-            }
-            // Here there is not available elements
-            return null;
-          }
+      if (foundElement) {
+        if (hasClass(foundElement, "selected")) {
+          return foundElement;
         }
-        return foundElement;
-      },
-    [getItemIds]
+
+        if (
+          !passLocked &&
+          hasClass(foundElement, "locked") &&
+          !hasClass(target, "passthrough")
+        ) {
+          return returnLocked ? foundElement : null;
+        }
+
+        // Is it a passthrough  element?
+        if (hasClass(target, "passthrough")) {
+          // Get current value
+          const itemList = getItemIds();
+          const { boardWrapper } = getConfiguration();
+
+          // Found element under the cursor
+          const elements = itemList.reduce((prev, itemId) => {
+            const elem = getItemElem(boardWrapper, itemId);
+            const itemRect = elem.getBoundingClientRect();
+            if (isPointInsideRect({ x: clientX, y: clientY }, itemRect)) {
+              prev.unshift(elem);
+            }
+            return prev;
+          }, []);
+
+          // Figure out if one can be returned
+          for (let i = 0; i < elements.length; i += 1) {
+            const elem = elements[i];
+            if (
+              elem !== foundElement &&
+              (passLocked || !hasClass(elem, "locked"))
+            ) {
+              return elem;
+            }
+          }
+          // Here there is not available elements
+          return null;
+        }
+      }
+      return foundElement;
+    },
+    [getConfiguration, getItemIds]
   );
 
   return {

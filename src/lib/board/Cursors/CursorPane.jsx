@@ -3,12 +3,14 @@ import { useRecoilCallback } from "recoil";
 
 import Cursors from "./Cursors";
 import useWire from "@/hooks/useWire";
-import { BoardTransformAtom, ConfigurationAtom } from "../atoms";
+import { BoardTransformAtom } from "../atoms";
 import { useUsers } from "@/users";
+import useMainStore from "../store/main";
 
 const CursorPane = ({ children }) => {
   const { wire } = useWire("board");
   const { currentUser: user, users } = useUsers();
+  const getConfiguration = useMainStore((state) => state.getConfiguration);
 
   const publish = React.useCallback(
     (newPos) => {
@@ -28,14 +30,14 @@ const CursorPane = ({ children }) => {
         );
         const {
           boardWrapperRect: { left, top },
-        } = await snapshot.getPromise(ConfigurationAtom);
+        } = getConfiguration();
 
         publish({
           x: (clientX - left - translateX) / scale,
           y: (clientY - top - translateY) / scale,
         });
       },
-    [publish]
+    [getConfiguration, publish]
   );
 
   const onLeave = () => {

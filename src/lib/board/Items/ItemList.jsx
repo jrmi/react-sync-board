@@ -1,12 +1,10 @@
-import React from "react";
-import { useRecoilValue } from "recoil";
 import Item from "./Item";
 import useItemActions from "./useItemActions";
 
 import { useSyncedItems } from "@/board/store/items";
-import { ConfigurationAtom } from "..";
 import { useUsers } from "@/users";
 import useSelection from "../store/selection";
+import useMainStore from "../store/main";
 
 const ItemList = () => {
   const { updateItem } = useItemActions();
@@ -15,8 +13,11 @@ const ItemList = () => {
     state.items,
   ]);
   const selection = useSelection((state) => state.selection);
-  const { boardSize, showResizeHandle, itemTemplates } =
-    useRecoilValue(ConfigurationAtom);
+  const [boardSize, showResizeHandle, itemTemplates] = useMainStore((state) => [
+    state.config.boardSize,
+    state.config.showResizeHandle,
+    state.config.itemTemplates,
+  ]);
   const { currentUser } = useUsers();
 
   return itemList.map((itemId) => (

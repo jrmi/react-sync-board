@@ -1,19 +1,23 @@
 import React from "react";
 
-import { useRecoilValue, useSetRecoilState, useRecoilCallback } from "recoil";
-import { BoardTransformAtom, ConfigurationAtom, BoardStateAtom } from "./atoms";
+import { useRecoilValue, useSetRecoilState } from "recoil";
+import { BoardTransformAtom, BoardStateAtom } from "./atoms";
 
 import Gesture from "./Gesture";
 import useDim from "./useDim";
 import useMousePosition from "./useMousePosition";
 import usePositionNavigator from "./usePositionNavigator";
 import useSelection from "./store/selection";
+import useMainStore from "./store/main";
 
 const PanZoom = ({ children, moveFirst = false }) => {
   const wrappedRef = React.useRef(null);
   const dim = useRecoilValue(BoardTransformAtom);
   const { setDim, zoomToCenter, zoomToExtent } = useDim();
-  const { itemExtent: itemExtentGlobal } = useRecoilValue(ConfigurationAtom);
+  const [itemExtentGlobal, getConfiguration] = useMainStore((state) => [
+    state.config.itemExtent,
+    state.getConfiguration,
+  ]);
   const [centered, setCentered] = React.useState(false);
   const setBoardState = useSetRecoilState(BoardStateAtom);
   const timeoutRef = React.useRef({});
@@ -28,14 +32,10 @@ const PanZoom = ({ children, moveFirst = false }) => {
   /**
    * Center board on startup
    */
-  const centerBoard = useRecoilCallback(
-    ({ snapshot }) =>
-      async () => {
-        const { itemExtent } = await snapshot.getPromise(ConfigurationAtom);
-        zoomToExtent(itemExtent);
-      },
-    [zoomToExtent]
-  );
+  const centerBoard = React.useCallback(() => {
+    const { itemExtent } = getConfiguration();
+    zoomToExtent(itemExtent);
+  }, [getConfiguration, zoomToExtent]);
 
   React.useEffect(() => {
     if (!centered && itemExtentGlobal.left) {

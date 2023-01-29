@@ -6,10 +6,10 @@ import Selector from "./Selector";
 import ActionPane from "./ActionPane";
 import CursorPane from "./Cursors/CursorPane";
 import PanZoom from "./PanZoom";
-import { ConfigurationAtom } from "./atoms";
 import Selection from "./Selection";
 import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 import useDim from "./useDim";
+import useMainStore from "./store/main";
 
 const Board = ({
   moveFirst = true,
@@ -19,7 +19,9 @@ const Board = ({
   children,
   showResizeHandle = false,
 }) => {
-  const setConfiguration = useSetRecoilState(ConfigurationAtom);
+  const updateConfiguration = useMainStore(
+    (state) => state.updateConfiguration
+  );
   const { updateItemExtent } = useDim();
 
   const boardStyle = React.useMemo(
@@ -34,13 +36,12 @@ const Board = ({
   );
 
   React.useEffect(() => {
-    setConfiguration((prev) => ({
-      ...prev,
+    updateConfiguration({
       itemTemplates,
       boardSize,
       showResizeHandle,
-    }));
-  }, [itemTemplates, setConfiguration, boardSize, showResizeHandle]);
+    });
+  }, [itemTemplates, boardSize, showResizeHandle, updateConfiguration]);
 
   React.useEffect(() => {
     updateItemExtent();

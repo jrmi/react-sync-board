@@ -1,23 +1,11 @@
 import { atom } from "recoil";
-import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
-
-export const ConfigurationAtom = atom({
-  key: "configuration",
-  default: {
-    itemTemplates: {},
-    actions: {},
-    uid: null,
-    itemExtent: {},
-    boardWrapperRect: {},
-    boardSize: DEFAULT_BOARD_MAX_SIZE,
-  },
-});
 
 export const BoardConfigAtom = atom({
   key: "boardConfig",
   default: {},
 });
 
+// Session
 export const BoardStateAtom = atom({
   key: "boardState",
   default: {
@@ -28,6 +16,7 @@ export const BoardStateAtom = atom({
   },
 });
 
+// Session
 export const BoardTransformAtom = atom({
   key: "BoardTransform",
   default: {
@@ -37,6 +26,7 @@ export const BoardTransformAtom = atom({
   },
 });
 
+// Session
 export const ItemInteractionsAtom = atom({
   key: "itemInteractions",
   default: {},

@@ -1,12 +1,11 @@
 import React, { useCallback } from "react";
 import deepEqual from "fast-deep-equal/es6";
-import { useRecoilValue } from "recoil";
 
 import { useDebouncedEffect } from "@react-hookz/web/esm";
 
-import { ConfigurationAtom } from "../atoms";
 import { useSyncedItems } from "../store/items";
 import useSelection from "../store/selection";
+import useMainStore from "../store/main";
 
 /**
  * Returns the default actions of an item
@@ -48,7 +47,7 @@ const useAvailableActions = () => {
     state.items,
     state.getItems,
   ]);
-  const { itemTemplates } = useRecoilValue(ConfigurationAtom);
+  const itemTemplates = useMainStore((state) => state.config.itemTemplates);
   const [selection, getSelection] = useSelection((state) => [
     state.selection,
     state.getSelection,

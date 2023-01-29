@@ -8,13 +8,12 @@ import useWire, { WireProvider } from "@/hooks/useWire";
 
 import { ItemStoreProvider } from "@/board/store/items";
 
-import { ConfigurationAtom } from "@/board";
-
 import { userAtom } from "@/users/atoms";
 
 import { SubscribeUserEvents } from "@/users";
 
 import { insideClass } from "@/utils";
+import useMainStore from "@/board/store/main";
 
 const StyledBoardView = styled.div`
   overflow: hidden;
@@ -28,7 +27,10 @@ const SyncBoard = ({ children, style }) => {
 
   const { room: session } = useWire("board");
 
-  const [{ uid }, setConfiguration] = useRecoilState(ConfigurationAtom);
+  const [uid, updateConfiguration] = useMainStore((state) => [
+    state.config.uid,
+    state.updateConfiguration,
+  ]);
 
   React.useEffect(() => {
     // Chrome-related issue.
@@ -62,28 +64,25 @@ const SyncBoard = ({ children, style }) => {
 
   React.useEffect(() => {
     if (!uid) {
-      setConfiguration((prev) => ({
-        ...prev,
+      updateConfiguration({
         uid: nanoid(),
-      }));
+      });
     }
-  }, [setConfiguration, uid]);
+  }, [uid, updateConfiguration]);
 
   React.useEffect(() => {
-    setConfiguration((prev) => ({
-      ...prev,
+    updateConfiguration({
       boardWrapper: boardWrapperRef.current,
-    }));
-  }, [setConfiguration, uid]);
+    });
+  }, [updateConfiguration]);
 
   useResizeObserver(boardWrapperRef, () => {
     if (!boardWrapperRef.current) {
       return;
     }
-    setConfiguration((prev) => ({
-      ...prev,
+    updateConfiguration({
       boardWrapperRect: boardWrapperRef.current.getBoundingClientRect(),
-    }));
+    });
   });
 
   return (

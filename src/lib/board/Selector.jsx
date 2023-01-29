@@ -4,12 +4,13 @@ import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 
-import { BoardTransformAtom, BoardStateAtom, ConfigurationAtom } from "./atoms";
+import { BoardTransformAtom, BoardStateAtom } from "./atoms";
 
 import Gesture from "./Gesture";
 import { useItemActions } from "./Items";
 import { useSyncedItems } from "./store/items";
 import useSelection from "./store/selection";
+import useMainStore from "./store/main";
 
 const defaultSelectorStyle = {
   zIndex: 210,
@@ -45,6 +46,7 @@ const Selector = ({ children, moveFirst }) => {
     state.setSelection,
     state.select,
   ]);
+  const getConfiguration = useMainStore((state) => state.getConfiguration);
   const setBoardState = useSetRecoilState(BoardStateAtom);
   const { findElementUnderPointer } = useItemActions();
   const getItems = useSyncedItems((state) => state.getItems);
@@ -64,18 +66,14 @@ const Selector = ({ children, moveFirst }) => {
     };
   }, [clearSelection]);
 
-  const updateSelected = useRecoilCallback(
-    ({ snapshot }) =>
-      async () => {
-        if (stateRef.current.moving) {
-          const itemMap = getItems();
-          const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
-          const selected = findSelected(itemMap, boardWrapper);
-          setSelection(selected);
-        }
-      },
-    [getItems, setSelection]
-  );
+  const updateSelected = React.useCallback(() => {
+    if (stateRef.current.moving) {
+      const itemMap = getItems();
+      const { boardWrapper } = getConfiguration();
+      const selected = findSelected(itemMap, boardWrapper);
+      setSelection(selected);
+    }
+  }, [getConfiguration, getItems, setSelection]);
 
   const throttledUpdateSelected = useThrottledCallback(
     () => {
