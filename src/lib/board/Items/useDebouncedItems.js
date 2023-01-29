@@ -1,21 +1,18 @@
 import React from "react";
-import { useRecoilValue, useRecoilCallback } from "recoil";
 import { useDebouncedEffect } from "@react-hookz/web/esm";
-
-import { AllItemsSelector } from "../atoms";
+import { useSyncedItems } from "../store/items";
 
 const useDebouncedItems = () => {
-  const items = useRecoilValue(AllItemsSelector);
-  const [debouncedItems, setDebouncedItems] = React.useState(items);
+  const [items, getItemList] = useSyncedItems((state) => [
+    state.getItemList(),
+    getItemList,
+  ]);
+  const [debouncedItems, setDebouncedItems] = React.useState([]);
 
-  const updateDebouncedItems = useRecoilCallback(
-    ({ snapshot }) =>
-      async () => {
-        const currentItemMap = await snapshot.getPromise(AllItemsSelector);
-        setDebouncedItems(currentItemMap);
-      },
-    []
-  );
+  const updateDebouncedItems = React.useCallback(async () => {
+    const currentItemMap = getItemList();
+    setDebouncedItems(currentItemMap);
+  }, [getItemList]);
 
   useDebouncedEffect(updateDebouncedItems, [items], 300);
 

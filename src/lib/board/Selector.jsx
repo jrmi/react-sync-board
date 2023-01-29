@@ -6,7 +6,6 @@ import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 
 import {
   BoardTransformAtom,
-  ItemMapAtom,
   BoardStateAtom,
   SelectedItemsAtom,
   ConfigurationAtom,
@@ -14,7 +13,7 @@ import {
 
 import Gesture from "./Gesture";
 import { useItemActions } from "./Items";
-import { useSyncedItems } from "./Store/items";
+import { useSyncedItems } from "./store/items";
 
 const defaultSelectorStyle = {
   zIndex: 210,
@@ -69,7 +68,7 @@ const Selector = ({ children, moveFirst }) => {
     ({ snapshot }) =>
       async () => {
         if (stateRef.current.moving) {
-          const itemMap = await getItems();
+          const itemMap = getItems();
           const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
           const selected = findSelected(itemMap, boardWrapper);
 

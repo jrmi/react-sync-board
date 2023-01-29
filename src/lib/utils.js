@@ -141,7 +141,7 @@ export const syncMiddleware = (config, wire, storeName) => (set, get, api) => {
     // Send the update message on all method calls
     Object.entries(result).map(([key, fn]) => {
       if (typeof fn === "function") {
-        const newFn = async (...args) => {
+        const newFn = (...args) => {
           //console.log("call", key, args);
           const result = fn(...args);
           wire.publish(`${storeName}_call`, [key, args]);

@@ -28,26 +28,6 @@ export const BoardStateAtom = atom({
   },
 });
 
-export const ItemListAtom = atom({
-  key: "itemList",
-  default: [],
-});
-
-export const ItemMapAtom = atom({
-  key: "ItemMap",
-  default: {},
-});
-
-export const AllItemsSelector = selector({
-  key: "AllItemsSelector",
-  get: ({ get }) => {
-    const itemMap = get(ItemMapAtom);
-    return get(ItemListAtom)
-      .map((id) => itemMap[id])
-      .filter((item) => item); // This filter clean the selection of missing items
-  },
-});
-
 export const BoardTransformAtom = atom({
   key: "BoardTransform",
   default: {
@@ -73,10 +53,7 @@ export const SelectionBoxAtom = atom({
 });
 
 export default {
-  ItemListAtom,
   BoardConfigAtom,
-  AllItemsSelector,
-  ItemMapAtom,
   ItemInteractionsAtom,
   BoardTransformAtom,
   SelectedItemsAtom,

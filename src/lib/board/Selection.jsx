@@ -6,12 +6,11 @@ import {
   SelectedItemsAtom,
   BoardTransformAtom,
   BoardStateAtom,
-  ItemMapAtom,
   ConfigurationAtom,
   SelectionBoxAtom,
 } from "./atoms";
 import { getItemBoundingBox } from "@/utils";
-import { useSyncedItems } from "./Store/items";
+import { useSyncedItems } from "./store/items";
 
 const defaultZoneStyle = {
   position: "absolute",
@@ -29,7 +28,6 @@ const BoundingBox = () => {
     useRecoilState(SelectionBoxAtom);
   const boardTransform = useRecoilValue(BoardTransformAtom);
   const items = useSyncedItems((state) => state.items);
-  //const itemMap = useRecoilValue(ItemMapAtom);
 
   // Update selection bounding box
   const updateBox = useRecoilCallback(

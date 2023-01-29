@@ -1,9 +1,8 @@
-import { useRecoilValue } from "recoil";
-import { AllItemsSelector } from "../atoms";
+import { useSyncedItems } from "../store/items";
 
-const useItemList = () => {
-  const items = useRecoilValue(AllItemsSelector);
+const useItems = () => {
+  const items = useSyncedItems((state) => state.getItemList());
   return items;
 };
 
-export default useItemList;
+export default useItems;

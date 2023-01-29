@@ -5,7 +5,7 @@ import useItemActions from "./useItemActions";
 
 import { /*ItemListAtom, ItemMapAtom,*/ SelectedItemsAtom } from "../atoms";
 
-import { useSyncedItems } from "@/board/Store/items";
+import { useSyncedItems } from "@/board/store/items";
 import { ConfigurationAtom } from "..";
 import { useUsers } from "@/users";
 

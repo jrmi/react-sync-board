@@ -4,9 +4,9 @@ import { useRecoilValue, useRecoilCallback } from "recoil";
 
 import { useDebouncedEffect } from "@react-hookz/web/esm";
 
-import { SelectedItemsAtom, ItemMapAtom } from "..";
+import { SelectedItemsAtom } from "..";
 import { ConfigurationAtom } from "../atoms";
-import { useSyncedItems } from "../Store/items";
+import { useSyncedItems } from "../store/items";
 
 /**
  * Returns the default actions of an item
@@ -65,7 +65,7 @@ const useAvailableActions = () => {
   const getItemListOrSelected = useRecoilCallback(
     ({ snapshot }) =>
       async (itemIds) => {
-        const currentItemMap = await getItems();
+        const currentItemMap = getItems();
         if (itemIds) {
           return [itemIds, itemIds.map((id) => currentItemMap[id])];
         }

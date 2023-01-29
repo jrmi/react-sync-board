@@ -4,7 +4,7 @@ import { useDebouncedCallback } from "@react-hookz/web/esm";
 import { useSetRecoilState, useRecoilCallback, useRecoilValue } from "recoil";
 //import { ItemListAtom } from ".";
 
-import { useSyncedItems } from "@/board/Store/items";
+import { useSyncedItems } from "@/board/store/items";
 import { getItemBoundingBox } from "@/utils";
 import { BoardTransformAtom, ConfigurationAtom } from "./atoms";
 
@@ -227,7 +227,7 @@ const useDim = () => {
     ({ snapshot, set }) =>
       async () => {
         // Update item extent
-        const itemIds = await getItemIds();
+        const itemIds = getItemIds();
         const { boardWrapperRect, boardWrapper, boardSize } =
           await snapshot.getPromise(ConfigurationAtom);
         const { scale, translateX, translateY } = await snapshot.getPromise(

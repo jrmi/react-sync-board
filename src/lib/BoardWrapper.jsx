@@ -6,7 +6,7 @@ import { useResizeObserver } from "@react-hookz/web/esm";
 
 import useWire, { WireProvider } from "@/hooks/useWire";
 
-import { ItemStoreProvider } from "@/board/Store/items";
+import { ItemStoreProvider } from "@/board/store/items";
 
 import { ConfigurationAtom } from "@/board";
 

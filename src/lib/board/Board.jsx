@@ -1,7 +1,7 @@
 import React from "react";
 import { useSetRecoilState } from "recoil";
 
-import { ItemList, SubscribeItemEvents } from "./Items";
+import { ItemList } from "./Items";
 import Selector from "./Selector";
 import ActionPane from "./ActionPane";
 import CursorPane from "./Cursors/CursorPane";
@@ -49,7 +49,6 @@ const Board = ({
 
   return (
     <>
-      {/*<SubscribeItemEvents />*/}
       <PanZoom moveFirst={moveFirst}>
         <Selector moveFirst={moveFirst}>
           <ActionPane moveFirst={moveFirst}>
