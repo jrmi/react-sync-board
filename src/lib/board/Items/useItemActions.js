@@ -2,7 +2,7 @@ import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 import { useSyncedItems } from "@/board/store/items";
 
-import { SelectedItemsAtom, ConfigurationAtom } from "../atoms";
+import { ConfigurationAtom } from "../atoms";
 
 import useDim from "../useDim";
 
@@ -15,6 +15,7 @@ import {
 } from "@/utils";
 
 import useItemInteraction from "./useItemInteraction";
+import useSelection from "../store/selection";
 
 const useItemActions = () => {
   const { call: callPlaceInteractions } = useItemInteraction("place");
@@ -54,7 +55,11 @@ const useItemActions = () => {
     })
   );
 
-  const setSelectItems = useSetRecoilState(SelectedItemsAtom);
+  const [clearSelection, reverseSelection, unselect] = useSelection((state) => [
+    state.clear,
+    state.reverse,
+    state.unselect,
+  ]);
 
   const batchUpdateItems = React.useCallback(
     async (itemIds, callbackOrItem) => {
@@ -85,10 +90,10 @@ const useItemActions = () => {
       setItemList(itemList);
 
       // Reset item selection as we are changing all items
-      setSelectItems([]);
+      clearSelection();
       updateItemExtent();
     },
-    [setItemList, setSelectItems, updateItemExtent]
+    [clearSelection, setItemList, updateItemExtent]
   );
 
   const updateItem = React.useCallback(
@@ -207,14 +212,9 @@ const useItemActions = () => {
 
       setItemIds(newOrder);
 
-      // Also reverse selected items
-      setSelectItems((prev) => {
-        const reversed = [...prev];
-        reversed.reverse();
-        return reversed;
-      });
+      reverseSelection();
     },
-    [getItemIds, setItemIds, setSelectItems]
+    [getItemIds, reverseSelection, setItemIds]
   );
 
   // TODO
@@ -289,13 +289,11 @@ const useItemActions = () => {
   const removeItems = React.useCallback(
     (itemsIdToRemove) => {
       // Remove from selected items first
-      setSelectItems((prevList) =>
-        prevList.filter((id) => !itemsIdToRemove.includes(id))
-      );
+      unselect(itemsIdToRemove);
 
       removeItemsById(itemsIdToRemove);
     },
-    [setSelectItems, removeItemsById]
+    [unselect, removeItemsById]
   );
 
   const getItems = React.useCallback(

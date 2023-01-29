@@ -4,16 +4,12 @@ import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 
-import {
-  BoardTransformAtom,
-  BoardStateAtom,
-  SelectedItemsAtom,
-  ConfigurationAtom,
-} from "./atoms";
+import { BoardTransformAtom, BoardStateAtom, ConfigurationAtom } from "./atoms";
 
 import Gesture from "./Gesture";
 import { useItemActions } from "./Items";
 import { useSyncedItems } from "./store/items";
+import useSelection from "./store/selection";
 
 const defaultSelectorStyle = {
   zIndex: 210,
@@ -44,7 +40,11 @@ const findSelected = (itemMap, wrapper) => {
 };
 
 const Selector = ({ children, moveFirst }) => {
-  const setSelected = useSetRecoilState(SelectedItemsAtom);
+  const [clearSelection, setSelection, select] = useSelection((state) => [
+    state.clear,
+    state.setSelection,
+    state.select,
+  ]);
   const setBoardState = useSetRecoilState(BoardStateAtom);
   const { findElementUnderPointer } = useItemActions();
   const getItems = useSyncedItems((state) => state.getItems);
@@ -58,11 +58,11 @@ const Selector = ({ children, moveFirst }) => {
 
   // Reset selection on board loading
   React.useEffect(() => {
-    setSelected((prev) => (prev.length === 0 ? prev : []));
+    clearSelection();
     return () => {
-      setSelected((prev) => (prev.length === 0 ? prev : []));
+      clearSelection();
     };
-  }, [setSelected]);
+  }, [clearSelection]);
 
   const updateSelected = useRecoilCallback(
     ({ snapshot }) =>
@@ -71,16 +71,10 @@ const Selector = ({ children, moveFirst }) => {
           const itemMap = getItems();
           const { boardWrapper } = await snapshot.getPromise(ConfigurationAtom);
           const selected = findSelected(itemMap, boardWrapper);
-
-          setSelected((prevSelected) => {
-            if (JSON.stringify(prevSelected) !== JSON.stringify(selected)) {
-              return selected;
-            }
-            return prevSelected;
-          });
+          setSelection(selected);
         }
       },
-    [getItems, setSelected]
+    [getItems, setSelection]
   );
 
   const throttledUpdateSelected = useThrottledCallback(
@@ -154,41 +148,40 @@ const Selector = ({ children, moveFirst }) => {
       const foundElement = insideClass(target, "item");
       if (foundElement) {
         const id = getIdFromElem(foundElement);
-        setSelected([id]);
+        setSelection([id]);
       }
     },
-    [setSelected]
+    [setSelection]
   );
 
-  const onTap = useRecoilCallback(
-    ({ snapshot }) =>
-      async (event) => {
-        const { target, ctrlKey, metaKey } = event;
+  const onTap = React.useCallback(
+    async (event) => {
+      const { target, ctrlKey, metaKey } = event;
 
-        const foundElement = await findElementUnderPointer(event);
+      const foundElement = await findElementUnderPointer(event);
 
-        if (!foundElement && insideClass(target, "board")) {
-          setSelected([]);
-        } else {
-          const itemId = getIdFromElem(foundElement);
+      if (!foundElement && insideClass(target, "board")) {
+        clearSelection();
+      } else {
+        const itemId = getIdFromElem(foundElement);
 
-          // Being defensive here to avoid bug
-          if (!itemId) {
-            setSelected([]);
-            return;
-          }
+        // Being defensive here to avoid bug
+        if (!itemId) {
+          clearSelection();
+          return;
+        }
 
-          const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
-          if (foundElement && !selectedItems.includes(itemId)) {
-            if (ctrlKey || metaKey) {
-              setSelected((prev) => [...prev, itemId]);
-            } else {
-              setSelected([itemId]);
-            }
+        const selectedItems = getSelection();
+        if (foundElement && !selectedItems.includes(itemId)) {
+          if (ctrlKey || metaKey) {
+            select([itemId]);
+          } else {
+            setSelection([itemId]);
           }
         }
-      },
-    [findElementUnderPointer, setSelected]
+      }
+    },
+    [clearSelection, findElementUnderPointer, select, setSelection]
   );
 
   return (

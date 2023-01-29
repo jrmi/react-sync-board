@@ -1,17 +1,13 @@
 import React from "react";
 
 import { useRecoilValue, useSetRecoilState, useRecoilCallback } from "recoil";
-import {
-  BoardTransformAtom,
-  ConfigurationAtom,
-  SelectedItemsAtom,
-  BoardStateAtom,
-} from "./atoms";
+import { BoardTransformAtom, ConfigurationAtom, BoardStateAtom } from "./atoms";
 
 import Gesture from "./Gesture";
 import useDim from "./useDim";
 import useMousePosition from "./useMousePosition";
 import usePositionNavigator from "./usePositionNavigator";
+import useSelection from "./store/selection";
 
 const PanZoom = ({ children, moveFirst = false }) => {
   const wrappedRef = React.useRef(null);
@@ -21,6 +17,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
   const [centered, setCentered] = React.useState(false);
   const setBoardState = useSetRecoilState(BoardStateAtom);
   const timeoutRef = React.useRef({});
+  const getSelection = useSelection((state) => state.getSelection);
 
   // Get mouse position and hover status
   const getMouseInfo = useMousePosition(wrappedRef);
@@ -88,68 +85,67 @@ const PanZoom = ({ children, moveFirst = false }) => {
     [setBoardState, setDim]
   );
 
-  const onKeyDown = useRecoilCallback(
-    ({ snapshot }) =>
-      async (e) => {
-        // Block shortcut if we are typing in a textarea or input
-        if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+  const onKeyDown = React.useCallback(
+    (e) => {
+      // Block shortcut if we are typing in a textarea or input
+      if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
 
-        let moveX = 0;
-        let moveY = 0;
-        let zoom = 1;
-        switch (e.key) {
-          case "ArrowLeft":
-            moveX = -10;
-            break;
-          case "ArrowRight":
-            moveX = 10;
-            break;
-          case "ArrowUp":
-            moveY = -10;
-            break;
-          case "ArrowDown":
-            moveY = 10;
-            break;
-          case "PageUp":
-            zoom = 1.2;
-            break;
-          case "PageDown":
-            zoom = 0.8;
-            break;
-          default:
+      let moveX = 0;
+      let moveY = 0;
+      let zoom = 1;
+      switch (e.key) {
+        case "ArrowLeft":
+          moveX = -10;
+          break;
+        case "ArrowRight":
+          moveX = 10;
+          break;
+        case "ArrowUp":
+          moveY = -10;
+          break;
+        case "ArrowDown":
+          moveY = 10;
+          break;
+        case "PageUp":
+          zoom = 1.2;
+          break;
+        case "PageDown":
+          zoom = 0.8;
+          break;
+        default:
+      }
+      if (moveX || moveY || zoom !== 1) {
+        // Don't move board if moving item
+        const selectedItems = getSelection();
+        if (zoom === 1 && selectedItems.length) {
+          return;
         }
-        if (moveX || moveY || zoom !== 1) {
-          // Don't move board if moving item
-          const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
-          if (zoom === 1 && selectedItems.length) {
-            return;
-          }
-          if (e.shiftKey) {
-            moveX *= 5;
-            moveY *= 5;
-          }
-          if (e.ctrlKey || e.altKey || e.metaKey) {
-            moveX /= 5;
-            moveY /= 5;
-          }
-          setDim((prev) => ({
-            ...prev,
-            translateY: prev.translateY + moveY,
-            translateX: prev.translateX + moveX,
-          }));
+        if (e.shiftKey) {
+          moveX *= 5;
+          moveY *= 5;
+        }
+        if (e.ctrlKey || e.altKey || e.metaKey) {
+          moveX /= 5;
+          moveY /= 5;
+        }
+        setDim((prev) => ({
+          ...prev,
+          translateY: prev.translateY + moveY,
+          translateX: prev.translateX + moveX,
+        }));
 
-          zoomToCenter(zoom);
+        zoomToCenter(zoom);
 
-          e.preventDefault();
+        e.preventDefault();
+      }
+      // Temporary zoom
+      if (e.key === " " && !e.repeat) {
+        if (getMouseInfo().hover) {
+          zoomToCenter(3, getMouseInfo());
         }
-        // Temporary zoom
-        if (e.key === " " && !e.repeat) {
-          if (getMouseInfo().hover) {
-            zoomToCenter(3, getMouseInfo());
-          }
-        }
-      },
-    [setDim, zoomToCenter, getMouseInfo]
+      }
+    },
+    [getSelection, setDim, zoomToCenter, getMouseInfo]
   );
 
   const onKeyUp = React.useCallback(

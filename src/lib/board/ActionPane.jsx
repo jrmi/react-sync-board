@@ -1,16 +1,12 @@
 import React from "react";
 import { useSetRecoilState, useRecoilCallback } from "recoil";
 
-import {
-  BoardStateAtom,
-  SelectedItemsAtom,
-  BoardTransformAtom,
-  BoardConfigAtom,
-} from "./atoms";
+import { BoardStateAtom, BoardTransformAtom, BoardConfigAtom } from "./atoms";
 import { useItemActions } from "./Items";
 import { getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
+import useSelection from "./store/selection";
 
 /**
  * This component handles the move of items when dragging them or with the keyboard.
@@ -18,7 +14,11 @@ import Gesture from "./Gesture";
 const ActionPane = ({ children }) => {
   const { moveItems, placeItems, findElementUnderPointer } = useItemActions();
 
-  const setSelectedItems = useSetRecoilState(SelectedItemsAtom);
+  const [select, setSelection, getSelection] = useSelection((state) => [
+    state.select,
+    state.setSelection,
+    state.getSelection,
+  ]);
   const setBoardState = useSetRecoilState(BoardStateAtom);
 
   const actionRef = React.useRef({});
@@ -28,38 +28,39 @@ const ActionPane = ({ children }) => {
     items: [],
   });
 
-  const onDragStart = useRecoilCallback(
-    ({ snapshot }) =>
-      async (event) => {
-        const { ctrlKey, metaKey, event: originalEvent } = event;
-        const foundElement = await findElementUnderPointer(event);
+  const onDragStart = React.useCallback(
+    async (event) => {
+      const { ctrlKey, metaKey, event: originalEvent } = event;
+      const foundElement = await findElementUnderPointer(event);
 
-        if (foundElement) {
-          originalEvent.stopPropagation();
-          const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
+      if (foundElement) {
+        originalEvent.stopPropagation();
+        const selectedItems = getSelection();
 
-          selectedItemRef.current.items = selectedItems;
+        selectedItemRef.current.items = selectedItems;
 
-          const itemId = getIdFromElem(foundElement);
+        const itemId = getIdFromElem(foundElement);
 
-          if (!selectedItems.includes(itemId)) {
-            if (ctrlKey || metaKey) {
-              selectedItemRef.current.items = [...selectedItems, itemId];
-              setSelectedItems((prev) => [...prev, itemId]);
-            } else {
-              selectedItemRef.current.items = [itemId];
-              setSelectedItems([itemId]);
-            }
+        if (!selectedItems.includes(itemId)) {
+          if (ctrlKey || metaKey) {
+            selectedItemRef.current.items = [...selectedItems, itemId];
+            select([itemId]);
+            //setSelectedItems((prev) => [...prev, itemId]);
+          } else {
+            selectedItemRef.current.items = [itemId];
+            setSelection([itemId]);
+            //setSelectedItems([itemId]);
           }
-
-          Object.assign(actionRef.current, {
-            moving: true,
-            remainX: 0,
-            remainY: 0,
-          });
         }
-      },
-    [findElementUnderPointer, setSelectedItems]
+
+        Object.assign(actionRef.current, {
+          moving: true,
+          remainX: 0,
+          remainY: 0,
+        });
+      }
+    },
+    [findElementUnderPointer, getSelection, select, setSelection]
   );
 
   const onDrag = useRecoilCallback(
@@ -114,7 +115,7 @@ const ActionPane = ({ children }) => {
         // Block shortcut if we are typing in a textarea or input
         if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
 
-        const selectedItems = await snapshot.getPromise(SelectedItemsAtom);
+        const selectedItems = getSelection();
 
         if (selectedItems.length) {
           const { gridSize: boardGridSize = 1 } = await snapshot.getPromise(
@@ -168,7 +169,7 @@ const ActionPane = ({ children }) => {
           }
         }
       },
-    [moveItems, placeItems]
+    [getSelection, moveItems, placeItems]
   );
 
   React.useEffect(() => {

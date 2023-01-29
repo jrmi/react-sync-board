@@ -1,4 +1,4 @@
-import { atom, selector } from "recoil";
+import { atom } from "recoil";
 import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 
 export const ConfigurationAtom = atom({
@@ -42,19 +42,8 @@ export const ItemInteractionsAtom = atom({
   default: {},
 });
 
-export const SelectedItemsAtom = atom({
-  key: "selectedItems",
-  default: [],
-});
-
-export const SelectionBoxAtom = atom({
-  key: "selectionBox",
-  default: null,
-});
-
 export default {
   BoardConfigAtom,
   ItemInteractionsAtom,
   BoardTransformAtom,
-  SelectedItemsAtom,
 };

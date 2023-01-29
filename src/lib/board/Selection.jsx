@@ -2,15 +2,10 @@ import React from "react";
 import { useRecoilValue, useRecoilCallback, useRecoilState } from "recoil";
 import { useDebouncedCallback } from "@react-hookz/web/esm";
 
-import {
-  SelectedItemsAtom,
-  BoardTransformAtom,
-  BoardStateAtom,
-  ConfigurationAtom,
-  SelectionBoxAtom,
-} from "./atoms";
+import { BoardTransformAtom, BoardStateAtom, ConfigurationAtom } from "./atoms";
 import { getItemBoundingBox } from "@/utils";
 import { useSyncedItems } from "./store/items";
+import useSelection from "./store/selection";
 
 const defaultZoneStyle = {
   position: "absolute",
@@ -23,9 +18,14 @@ const defaultZoneStyle = {
 };
 
 const BoundingBox = () => {
-  const selectedItems = useRecoilValue(SelectedItemsAtom);
-  const [boundingBoxLast, setBoundingBoxLast] =
-    useRecoilState(SelectionBoxAtom);
+  const [selection, getSelection] = useSelection((state) => [
+    state.selection,
+    state.getSelection,
+  ]);
+  const [selectionBox, setSelectionBox] = useSelection((state) => [
+    state.selectionBox,
+    state.setSelectionBox,
+  ]);
   const boardTransform = useRecoilValue(BoardTransformAtom);
   const items = useSyncedItems((state) => state.items);
 
@@ -33,15 +33,13 @@ const BoundingBox = () => {
   const updateBox = useRecoilCallback(
     ({ snapshot }) =>
       async () => {
-        const currentSelectedItems = await snapshot.getPromise(
-          SelectedItemsAtom
-        );
+        const currentSelectedItems = getSelection();
         const { boardWrapperRect, boardWrapper } = await snapshot.getPromise(
           ConfigurationAtom
         );
 
         if (currentSelectedItems.length === 0) {
-          setBoundingBoxLast(null);
+          setSelectionBox(null);
           return;
         }
 
@@ -51,7 +49,7 @@ const BoundingBox = () => {
         );
 
         if (!boundingBox) {
-          setBoundingBoxLast(null);
+          setSelectionBox(null);
           return;
         }
 
@@ -64,20 +62,9 @@ const BoundingBox = () => {
           width,
         };
 
-        setBoundingBoxLast((prevBB) => {
-          if (
-            !prevBB ||
-            prevBB.top !== newBB.top ||
-            prevBB.left !== newBB.left ||
-            prevBB.width !== newBB.width ||
-            prevBB.height !== newBB.height
-          ) {
-            return newBB;
-          }
-          return prevBB;
-        });
+        setSelectionBox(newBB);
       },
-    [setBoundingBoxLast]
+    [getSelection, setSelectionBox]
   );
 
   // Debounced version of update box
@@ -88,17 +75,17 @@ const BoundingBox = () => {
     // Update selected elements bounding box
     updateBox();
     updateBoxDelay(); // Delay to update after board item animation like tap/untap.
-  }, [selectedItems, items, boardTransform, updateBox, updateBoxDelay]);
+  }, [selection, items, boardTransform, updateBox, updateBoxDelay]);
 
-  if (!boundingBoxLast || selectedItems.length < 2) return null;
+  if (!selectionBox || selection.length < 2) return null;
 
   return (
     <div
       style={{
         ...defaultZoneStyle,
-        transform: `translate(${boundingBoxLast.left}px, ${boundingBoxLast.top}px)`,
-        height: `${boundingBoxLast.height}px`,
-        width: `${boundingBoxLast.width}px`,
+        transform: `translate(${selectionBox.left}px, ${selectionBox.top}px)`,
+        height: `${selectionBox.height}px`,
+        width: `${selectionBox.width}px`,
       }}
       className="selection"
     />

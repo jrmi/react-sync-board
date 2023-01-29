@@ -1,7 +1,5 @@
-import { useRecoilValue } from "recoil";
+import useSelection from "../store/selection";
 
-import { SelectedItemsAtom } from "../atoms";
-
-const useSelectedItems = () => useRecoilValue(SelectedItemsAtom);
+const useSelectedItems = () => useSelection((state) => state.selection);
 
 export default useSelectedItems;
