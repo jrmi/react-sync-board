@@ -45,10 +45,8 @@ const itemIdsStore = (set, get) => ({
     }),
   remove: (position) =>
     set((state) => {
-      console.log(state.itemIds);
       const newValue = [...state.itemIds];
       newValue.splice(position, 1);
-      console.log(state.newValue);
       return { itemIds: newValue };
     }),
   updateItemIds: (position, value) =>

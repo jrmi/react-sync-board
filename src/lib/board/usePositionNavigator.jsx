@@ -1,34 +1,36 @@
 import React from "react";
-import { useRecoilCallback } from "recoil";
-
-import { BoardTransformAtom } from "./atoms";
+import useMainStore from "./store/main";
 
 const digitCodes = [...Array(5).keys()].map((id) => `Digit${id + 1}`);
 
 const usePositionNavigator = () => {
   const [positions, setPositions] = React.useState({});
+  const [getBoardState, updateBoardState] = useMainStore((state) => [
+    state.getBoardState,
+    state.updateBoardState,
+  ]);
 
-  const onKeyDown = useRecoilCallback(
-    ({ snapshot, set }) =>
-      async (e) => {
-        // Block shortcut if we are typing in a textarea or input
-        if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+  const onKeyDown = React.useCallback(
+    (e) => {
+      // Block shortcut if we are typing in a textarea or input
+      if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
 
-        if (digitCodes.includes(e.code)) {
-          const positionKey = e.code;
-          const dim = await snapshot.getPromise(BoardTransformAtom);
-          if (e.altKey || e.metaKey || e.ctrlKey) {
-            setPositions((prev) => ({ ...prev, [positionKey]: { ...dim } }));
-          } else if (positions[positionKey]) {
-            set(BoardTransformAtom, (prev) => ({
-              ...prev,
-              ...positions[positionKey],
-            }));
-          }
-          e.preventDefault();
+      if (digitCodes.includes(e.code)) {
+        const positionKey = e.code;
+        const { translateX, translateY, scale } = getBoardState();
+
+        if (e.altKey || e.metaKey || e.ctrlKey) {
+          setPositions((prev) => ({
+            ...prev,
+            [positionKey]: { translateX, translateY, scale },
+          }));
+        } else if (positions[positionKey]) {
+          updateBoardState(positions[positionKey]);
         }
-      },
-    [positions]
+        e.preventDefault();
+      }
+    },
+    [getBoardState, positions, updateBoardState]
   );
 
   React.useEffect(() => {

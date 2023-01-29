@@ -1,12 +1,8 @@
 import React from "react";
 import { useDebouncedCallback } from "@react-hookz/web/esm";
 
-import { useSetRecoilState, useRecoilCallback, useRecoilValue } from "recoil";
-//import { ItemListAtom } from ".";
-
 import { useSyncedItems } from "@/board/store/items";
 import { getItemBoundingBox } from "@/utils";
-import { BoardTransformAtom } from "./atoms";
 import useMainStore from "./store/main";
 
 const TOLERANCE = 100;
@@ -45,7 +41,10 @@ const translateBoundaries = ({
 };
 
 const useDim = () => {
-  const setDim = useSetRecoilState(BoardTransformAtom);
+  const [getBoardState, updateBoardState] = useMainStore((state) => [
+    state.getBoardState,
+    state.updateBoardState,
+  ]);
   const scaleBoundariesRef = React.useRef([0.1, 8]);
   const [itemExtentGlobal, getConfiguration, updateConfiguration] =
     useMainStore((state) => [
@@ -55,52 +54,54 @@ const useDim = () => {
     ]);
   const getItemIds = useSyncedItems((state) => state.getItemIds);
 
-  const getDim = useRecoilCallback(
-    ({ snapshot }) =>
-      () =>
-        snapshot.getPromise(BoardTransformAtom),
-    []
-  );
+  const getDim = React.useCallback(() => {
+    const { translateX, translateY, scale } = getBoardState();
+    return { translateX, translateY, scale };
+  }, [getBoardState]);
 
   const setDimSafe = React.useCallback(
     (fn) => {
       const { itemExtent, boardWrapperRect, boardSize } = getConfiguration();
-      setDim((prev) => {
-        const { translateX, translateY, scale } = { ...prev, ...fn(prev) };
-        let newScale = scale;
 
-        if (scale !== prev.scale) {
-          if (newScale > scaleBoundariesRef.current[1]) {
-            [, newScale] = scaleBoundariesRef.current;
-          }
+      const prev = getBoardState();
 
-          if (newScale < scaleBoundariesRef.current[0]) {
-            [newScale] = scaleBoundariesRef.current;
-          }
+      const { translateX, translateY, scale } = {
+        ...prev,
+        ...fn(prev),
+      };
+
+      let newScale = scale;
+
+      if (scale !== prev.scale) {
+        if (newScale > scaleBoundariesRef.current[1]) {
+          [, newScale] = scaleBoundariesRef.current;
         }
 
-        let [newX, newY] = [translateX, translateY];
-
-        if (translateX !== prev.translateX || translateY !== prev.translateY) {
-          [newX, newY] = translateBoundaries({
-            x: translateX,
-            y: translateY,
-            scale: newScale,
-            itemExtent,
-            boardWrapperRect,
-            boardSize,
-          });
+        if (newScale < scaleBoundariesRef.current[0]) {
+          [newScale] = scaleBoundariesRef.current;
         }
+      }
 
-        return {
-          ...prev,
-          translateX: newX,
-          translateY: newY,
+      let [newX, newY] = [translateX, translateY];
+
+      if (translateX !== prev.translateX || translateY !== prev.translateY) {
+        [newX, newY] = translateBoundaries({
+          x: translateX,
+          y: translateY,
           scale: newScale,
-        };
+          itemExtent,
+          boardWrapperRect,
+          boardSize,
+        });
+      }
+
+      updateBoardState({
+        translateX: newX,
+        translateY: newY,
+        scale: newScale,
       });
     },
-    [getConfiguration, setDim]
+    [getBoardState, getConfiguration, updateBoardState]
   );
 
   const zoomToCenter = React.useCallback(
@@ -116,43 +117,42 @@ const useDim = () => {
         };
       }
 
-      setDim((prev) => {
-        let newScale = prev.scale * factor;
+      const prev = getBoardState();
 
-        if (newScale > scaleBoundariesRef.current[1]) {
-          [, newScale] = scaleBoundariesRef.current;
-        }
+      let newScale = prev.scale * factor;
 
-        if (newScale < scaleBoundariesRef.current[0]) {
-          [newScale] = scaleBoundariesRef.current;
-        }
+      if (newScale > scaleBoundariesRef.current[1]) {
+        [, newScale] = scaleBoundariesRef.current;
+      }
 
-        const centerX = center.x - boardWrapperRect.left;
-        const centerY = center.y - boardWrapperRect.top;
+      if (newScale < scaleBoundariesRef.current[0]) {
+        [newScale] = scaleBoundariesRef.current;
+      }
 
-        const newTx =
-          centerX - ((centerX - prev.translateX) * newScale) / prev.scale;
-        const newTy =
-          centerY - ((centerY - prev.translateY) * newScale) / prev.scale;
+      const centerX = center.x - boardWrapperRect.left;
+      const centerY = center.y - boardWrapperRect.top;
 
-        const [newX, newY] = translateBoundaries({
-          x: newTx,
-          y: newTy,
-          scale: newScale,
-          itemExtent,
-          boardWrapperRect,
-          boardSize,
-        });
+      const newTx =
+        centerX - ((centerX - prev.translateX) * newScale) / prev.scale;
+      const newTy =
+        centerY - ((centerY - prev.translateY) * newScale) / prev.scale;
 
-        return {
-          ...prev,
-          scale: newScale,
-          translateX: newX,
-          translateY: newY,
-        };
+      const [newX, newY] = translateBoundaries({
+        x: newTx,
+        y: newTy,
+        scale: newScale,
+        itemExtent,
+        boardWrapperRect,
+        boardSize,
+      });
+
+      updateBoardState({
+        scale: newScale,
+        translateX: newX,
+        translateY: newY,
       });
     },
-    [getConfiguration, setDim]
+    [getBoardState, getConfiguration, updateBoardState]
   );
 
   const zoomToExtent = React.useCallback(
@@ -171,14 +171,13 @@ const useDim = () => {
       const centerY =
         boardWrapperRect.height / 2 - (top + height / 2) * scaleWithTolerance;
 
-      setDim((prev) => ({
-        ...prev,
+      updateBoardState({
         translateX: centerX,
         translateY: centerY,
         scale: scaleWithTolerance,
-      }));
+      });
     },
-    [getConfiguration, setDim]
+    [getConfiguration, updateBoardState]
   );
 
   const updateScaleBoundaries = React.useCallback(async () => {
@@ -198,71 +197,58 @@ const useDim = () => {
     ];
   }, [getConfiguration]);
 
-  const getCenterCoordinates = useRecoilCallback(
-    ({ snapshot }) =>
-      async () => {
-        const { boardWrapperRect, boardSize } = getConfiguration();
-        const { translateX, translateY, scale } = await snapshot.getPromise(
-          BoardTransformAtom
-        );
-        return {
-          x: (boardWrapperRect.width / 2 - translateX) / scale - boardSize / 2,
-          y: (boardWrapperRect.height / 2 - translateY) / scale - boardSize / 2,
-        };
-      },
-    [getConfiguration]
-  );
+  const getCenterCoordinates = React.useCallback(async () => {
+    const { boardWrapperRect, boardSize } = getConfiguration();
+    const { translateX, translateY, scale } = getBoardState();
+    return {
+      x: (boardWrapperRect.width / 2 - translateX) / scale - boardSize / 2,
+      y: (boardWrapperRect.height / 2 - translateY) / scale - boardSize / 2,
+    };
+  }, [getBoardState, getConfiguration]);
 
-  const updateItemExtent = useRecoilCallback(
-    ({ snapshot }) =>
-      async () => {
-        // Update item extent
-        const itemIds = getItemIds();
-        const { boardWrapperRect, boardWrapper, boardSize } =
-          getConfiguration();
-        const { scale, translateX, translateY } = await snapshot.getPromise(
-          BoardTransformAtom
-        );
+  const updateItemExtent = React.useCallback(() => {
+    // Update item extent
+    const itemIds = getItemIds();
+    const { boardWrapperRect, boardWrapper, boardSize } = getConfiguration();
+    const { scale, translateX, translateY } = getBoardState();
 
-        const { left, top, width, height } = getItemBoundingBox(
-          itemIds,
-          boardWrapper
-        ) || {
-          left: (boardSize / 2) * scale + boardWrapperRect.left + translateX,
-          top: (boardSize / 2) * scale + boardWrapperRect.top + translateY,
-          width: 0,
-          height: 0,
-        };
+    const { left, top, width, height } = getItemBoundingBox(
+      itemIds,
+      boardWrapper
+    ) || {
+      left: (boardSize / 2) * scale + boardWrapperRect.left + translateX,
+      top: (boardSize / 2) * scale + boardWrapperRect.top + translateY,
+      width: 0,
+      height: 0,
+    };
 
-        const relativeExtent = {
-          left: (left - boardWrapperRect.left - translateX) / scale,
-          top: (top - boardWrapperRect.top - translateY) / scale,
+    const relativeExtent = {
+      left: (left - boardWrapperRect.left - translateX) / scale,
+      top: (top - boardWrapperRect.top - translateY) / scale,
 
-          width: width / scale,
-          height: height / scale,
-        };
+      width: width / scale,
+      height: height / scale,
+    };
 
-        relativeExtent.right = relativeExtent.left + relativeExtent.width;
-        relativeExtent.bottom = relativeExtent.top + relativeExtent.height;
+    relativeExtent.right = relativeExtent.left + relativeExtent.width;
+    relativeExtent.bottom = relativeExtent.top + relativeExtent.height;
 
-        // Resize to have a minimal size
-        if (relativeExtent.width < MIN_SIZE) {
-          const delta = (MIN_SIZE - relativeExtent.width) / 2;
-          relativeExtent.left -= delta;
-          relativeExtent.right += delta;
-          relativeExtent.width = MIN_SIZE;
-        }
-        if (relativeExtent.height < MIN_SIZE) {
-          const delta = (MIN_SIZE - relativeExtent.height) / 2;
-          relativeExtent.top -= delta;
-          relativeExtent.bottom += delta;
-          relativeExtent.height = MIN_SIZE;
-        }
+    // Resize to have a minimal size
+    if (relativeExtent.width < MIN_SIZE) {
+      const delta = (MIN_SIZE - relativeExtent.width) / 2;
+      relativeExtent.left -= delta;
+      relativeExtent.right += delta;
+      relativeExtent.width = MIN_SIZE;
+    }
+    if (relativeExtent.height < MIN_SIZE) {
+      const delta = (MIN_SIZE - relativeExtent.height) / 2;
+      relativeExtent.top -= delta;
+      relativeExtent.bottom += delta;
+      relativeExtent.height = MIN_SIZE;
+    }
 
-        updateConfiguration({ itemExtent: relativeExtent });
-      },
-    [getConfiguration, getItemIds, updateConfiguration]
-  );
+    updateConfiguration({ itemExtent: relativeExtent });
+  }, [getBoardState, getConfiguration, getItemIds, updateConfiguration]);
 
   const debouncedUpdateItemExtent = useDebouncedCallback(
     updateItemExtent,

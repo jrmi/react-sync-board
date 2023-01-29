@@ -1,12 +1,13 @@
 import React from "react";
-import { useSetRecoilState, useRecoilCallback } from "recoil";
+import { useRecoilCallback } from "recoil";
 
-import { BoardStateAtom, BoardTransformAtom, BoardConfigAtom } from "./atoms";
+import { BoardConfigAtom } from "./atoms";
 import { useItemActions } from "./Items";
 import { getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
 import useSelection from "./store/selection";
+import useMainStore from "./store/main";
 
 /**
  * This component handles the move of items when dragging them or with the keyboard.
@@ -19,7 +20,10 @@ const ActionPane = ({ children }) => {
     state.setSelection,
     state.getSelection,
   ]);
-  const setBoardState = useSetRecoilState(BoardStateAtom);
+  const [getBoardState, updateBoardState] = useMainStore((state) => [
+    state.getBoardState,
+    state.updateBoardState,
+  ]);
 
   const actionRef = React.useRef({});
 
@@ -63,30 +67,27 @@ const ActionPane = ({ children }) => {
     [findElementUnderPointer, getSelection, select, setSelection]
   );
 
-  const onDrag = useRecoilCallback(
-    ({ snapshot }) =>
-      async ({ deltaX, deltaY, event: originalEvent }) => {
-        if (actionRef.current.moving) {
-          originalEvent.stopPropagation();
-          const { scale } = await snapshot.getPromise(BoardTransformAtom);
-          const moveX = actionRef.current.remainX + deltaX / scale;
-          const moveY = actionRef.current.remainY + deltaY / scale;
+  const onDrag = React.useCallback(
+    ({ deltaX, deltaY, event: originalEvent }) => {
+      if (actionRef.current.moving) {
+        originalEvent.stopPropagation();
+        const { scale } = getBoardState();
+        const moveX = actionRef.current.remainX + deltaX / scale;
+        const moveY = actionRef.current.remainY + deltaY / scale;
 
-          moveItems(
-            selectedItemRef.current.items,
-            {
-              x: moveX,
-              y: moveY,
-            },
-            true
-          );
+        moveItems(
+          selectedItemRef.current.items,
+          {
+            x: moveX,
+            y: moveY,
+          },
+          true
+        );
 
-          setBoardState((prev) =>
-            !prev.movingItems ? { ...prev, movingItems: true } : prev
-          );
-        }
-      },
-    [moveItems, setBoardState]
+        updateBoardState({ movingItems: true });
+      }
+    },
+    [getBoardState, moveItems, updateBoardState]
   );
 
   const onDragEnd = useRecoilCallback(
@@ -103,10 +104,10 @@ const ActionPane = ({ children }) => {
             type: "grid",
             size: gridSize,
           });
-          setBoardState((prev) => ({ ...prev, movingItems: false }));
+          updateBoardState({ movingItems: false });
         }
       },
-    [placeItems, setBoardState]
+    [placeItems, updateBoardState]
   );
 
   const onKeyDown = useRecoilCallback(

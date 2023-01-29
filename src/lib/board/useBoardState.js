@@ -1,7 +1,5 @@
-import { useRecoilValue } from "recoil";
+import useMainStore from "./store/main";
 
-import { BoardStateAtom } from "./atoms";
-
-const useBoardState = () => useRecoilValue(BoardStateAtom);
+const useBoardState = () => useMainStore((state) => state.boardState);
 
 export default useBoardState;

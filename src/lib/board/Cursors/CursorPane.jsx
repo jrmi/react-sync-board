@@ -1,9 +1,7 @@
 import React from "react";
-import { useRecoilCallback } from "recoil";
 
 import Cursors from "./Cursors";
 import useWire from "@/hooks/useWire";
-import { BoardTransformAtom } from "../atoms";
 import { useUsers } from "@/users";
 import useMainStore from "../store/main";
 
@@ -11,6 +9,7 @@ const CursorPane = ({ children }) => {
   const { wire } = useWire("board");
   const { currentUser: user, users } = useUsers();
   const getConfiguration = useMainStore((state) => state.getConfiguration);
+  const getBoardState = useMainStore((state) => state.getBoardState);
 
   const publish = React.useCallback(
     (newPos) => {
@@ -22,22 +21,19 @@ const CursorPane = ({ children }) => {
     [wire, user.id]
   );
 
-  const onMouseMove = useRecoilCallback(
-    ({ snapshot }) =>
-      async ({ clientX, clientY }) => {
-        const { scale, translateX, translateY } = await snapshot.getPromise(
-          BoardTransformAtom
-        );
-        const {
-          boardWrapperRect: { left, top },
-        } = getConfiguration();
+  const onMouseMove = React.useCallback(
+    ({ clientX, clientY }) => {
+      const { scale, translateX, translateY } = getBoardState();
+      const {
+        boardWrapperRect: { left, top },
+      } = getConfiguration();
 
-        publish({
-          x: (clientX - left - translateX) / scale,
-          y: (clientY - top - translateY) / scale,
-        });
-      },
-    [getConfiguration, publish]
+      publish({
+        x: (clientX - left - translateX) / scale,
+        y: (clientY - top - translateY) / scale,
+      });
+    },
+    [getBoardState, getConfiguration, publish]
   );
 
   const onLeave = () => {

@@ -1,8 +1,5 @@
 import React from "react";
 
-import { useRecoilValue, useSetRecoilState } from "recoil";
-import { BoardTransformAtom, BoardStateAtom } from "./atoms";
-
 import Gesture from "./Gesture";
 import useDim from "./useDim";
 import useMousePosition from "./useMousePosition";
@@ -12,14 +9,18 @@ import useMainStore from "./store/main";
 
 const PanZoom = ({ children, moveFirst = false }) => {
   const wrappedRef = React.useRef(null);
-  const dim = useRecoilValue(BoardTransformAtom);
+  const dim = useMainStore((state) => ({
+    translateX: state.boardState.translateX,
+    translateY: state.boardState.translateY,
+    scale: state.boardState.scale,
+  }));
   const { setDim, zoomToCenter, zoomToExtent } = useDim();
   const [itemExtentGlobal, getConfiguration] = useMainStore((state) => [
     state.config.itemExtent,
     state.getConfiguration,
   ]);
   const [centered, setCentered] = React.useState(false);
-  const setBoardState = useSetRecoilState(BoardStateAtom);
+  const updateBoardState = useMainStore((state) => state.updateBoardState);
   const timeoutRef = React.useRef({});
   const getSelection = useSelection((state) => state.getSelection);
 
@@ -52,15 +53,11 @@ const PanZoom = ({ children, moveFirst = false }) => {
       // Update the board zooming state
       clearTimeout(timeoutRef.current.zoom);
       timeoutRef.current.zoom = setTimeout(() => {
-        setBoardState((prev) =>
-          prev.zooming ? { ...prev, zooming: false } : prev
-        );
+        updateBoardState({ zooming: false });
       }, 200);
-      setBoardState((prev) =>
-        !prev.zooming ? { ...prev, zooming: true } : prev
-      );
+      updateBoardState({ zooming: true });
     },
-    [setBoardState, zoomToCenter]
+    [updateBoardState, zoomToCenter]
   );
 
   const onPan = React.useCallback(
@@ -74,15 +71,11 @@ const PanZoom = ({ children, moveFirst = false }) => {
       // update the board panning state
       clearTimeout(timeoutRef.current.pan);
       timeoutRef.current.pan = setTimeout(() => {
-        setBoardState((prev) =>
-          prev.panning ? { ...prev, panning: false } : prev
-        );
+        updateBoardState({ panning: false });
       }, 200);
-      setBoardState((prev) =>
-        !prev.panning ? { ...prev, panning: true } : prev
-      );
+      updateBoardState({ panning: true });
     },
-    [setBoardState, setDim]
+    [setDim, updateBoardState]
   );
 
   const onKeyDown = React.useCallback(

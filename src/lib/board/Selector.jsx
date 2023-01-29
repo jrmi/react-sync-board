@@ -1,10 +1,7 @@
 import React from "react";
 import { useThrottledCallback } from "@react-hookz/web/esm";
-import { useSetRecoilState, useRecoilCallback } from "recoil";
 
 import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
-
-import { BoardTransformAtom, BoardStateAtom } from "./atoms";
 
 import Gesture from "./Gesture";
 import { useItemActions } from "./Items";
@@ -41,13 +38,19 @@ const findSelected = (itemMap, wrapper) => {
 };
 
 const Selector = ({ children, moveFirst }) => {
-  const [clearSelection, setSelection, select] = useSelection((state) => [
-    state.clear,
-    state.setSelection,
-    state.select,
-  ]);
+  const [getSelection, clearSelection, setSelection, select] = useSelection(
+    (state) => [
+      state.getSelection,
+      state.clear,
+      state.setSelection,
+      state.select,
+    ]
+  );
   const getConfiguration = useMainStore((state) => state.getConfiguration);
-  const setBoardState = useSetRecoilState(BoardStateAtom);
+  const [getBoardState, updateBoardState] = useMainStore((state) => [
+    state.getBoardState,
+    state.updateBoardState,
+  ]);
   const { findElementUnderPointer } = useItemActions();
   const getItems = useSyncedItems((state) => state.getItems);
 
@@ -89,57 +92,56 @@ const Selector = ({ children, moveFirst }) => {
 
       if (!foundElement) {
         stateRef.current.moving = true;
-        setBoardState((prev) => ({ ...prev, selecting: true }));
+        updateBoardState({ selection: true });
         wrapperRef.current.style.cursor = "crosshair";
       }
     },
-    [findElementUnderPointer, setBoardState]
+    [findElementUnderPointer, updateBoardState]
   );
 
-  const onDrag = useRecoilCallback(
-    ({ snapshot }) =>
-      async ({ distanceY, distanceX, startX, startY }) => {
-        if (stateRef.current.moving) {
-          const { top, left } = wrapperRef.current.getBoundingClientRect();
+  const onDrag = React.useCallback(
+    ({ distanceY, distanceX, startX, startY }) => {
+      if (stateRef.current.moving) {
+        const { top, left } = wrapperRef.current.getBoundingClientRect();
 
-          const { scale } = await snapshot.getPromise(BoardTransformAtom);
+        const { scale } = getBoardState();
 
-          const displayX = (startX - left) / scale;
-          const displayY = (startY - top) / scale;
+        const displayX = (startX - left) / scale;
+        const displayY = (startY - top) / scale;
 
-          const displayDistanceX = distanceX / scale;
-          const displayDistanceY = distanceY / scale;
+        const displayDistanceX = distanceX / scale;
+        const displayDistanceY = distanceY / scale;
 
-          if (displayDistanceX > 0) {
-            stateRef.current.left = displayX;
-            stateRef.current.width = displayDistanceX;
-          } else {
-            stateRef.current.left = displayX + displayDistanceX;
-            stateRef.current.width = -displayDistanceX;
-          }
-          if (displayDistanceY > 0) {
-            stateRef.current.top = displayY;
-            stateRef.current.height = displayDistanceY;
-          } else {
-            stateRef.current.top = displayY + displayDistanceY;
-            stateRef.current.height = -displayDistanceY;
-          }
-
-          setSelector({ ...stateRef.current, moving: true });
-          throttledUpdateSelected();
+        if (displayDistanceX > 0) {
+          stateRef.current.left = displayX;
+          stateRef.current.width = displayDistanceX;
+        } else {
+          stateRef.current.left = displayX + displayDistanceX;
+          stateRef.current.width = -displayDistanceX;
         }
-      },
-    [throttledUpdateSelected]
+        if (displayDistanceY > 0) {
+          stateRef.current.top = displayY;
+          stateRef.current.height = displayDistanceY;
+        } else {
+          stateRef.current.top = displayY + displayDistanceY;
+          stateRef.current.height = -displayDistanceY;
+        }
+
+        setSelector({ ...stateRef.current, moving: true });
+        throttledUpdateSelected();
+      }
+    },
+    [getBoardState, throttledUpdateSelected]
   );
 
   const onDragEnd = React.useCallback(() => {
     if (stateRef.current.moving) {
-      setBoardState((prev) => ({ ...prev, selecting: false }));
+      updateBoardState({ selecting: false });
       stateRef.current.moving = false;
       setSelector({ moving: false });
       wrapperRef.current.style.cursor = "auto";
     }
-  }, [setBoardState]);
+  }, [updateBoardState]);
 
   const onLongTap = React.useCallback(
     ({ target }) => {
@@ -179,7 +181,13 @@ const Selector = ({ children, moveFirst }) => {
         }
       }
     },
-    [clearSelection, findElementUnderPointer, select, setSelection]
+    [
+      clearSelection,
+      findElementUnderPointer,
+      getSelection,
+      select,
+      setSelection,
+    ]
   );
 
   return (

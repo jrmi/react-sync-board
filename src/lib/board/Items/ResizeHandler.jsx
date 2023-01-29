@@ -1,20 +1,19 @@
 import React from "react";
-import { useRecoilCallback } from "recoil";
 import Gesture from "../Gesture";
-import { BoardTransformAtom } from "../atoms";
+import useMainStore from "../store/main";
 
 const ResizeHandler = ({ onResize, ...rest }) => {
-  const onDrag = useRecoilCallback(
-    ({ snapshot }) =>
-      async ({ deltaX, deltaY, event }) => {
-        event.stopPropagation();
-        const { scale } = await snapshot.getPromise(BoardTransformAtom);
-        onResize({
-          width: deltaX / scale,
-          height: deltaY / scale,
-        });
-      },
-    [onResize]
+  const getBoardState = useMainStore((state) => state.getBoardState);
+  const onDrag = React.useCallback(
+    async ({ deltaX, deltaY, event }) => {
+      event.stopPropagation();
+      const { scale } = getBoardState();
+      onResize({
+        width: deltaX / scale,
+        height: deltaY / scale,
+      });
+    },
+    [getBoardState, onResize]
   );
 
   return (

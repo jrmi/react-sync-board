@@ -1,24 +1,7 @@
 /*
 // Session
-export const BoardStateAtom = atom({
-  key: "boardState",
-  default: {
-    movingItems: false,
-    selecting: false,
-    zooming: false,
-    panning: false,
-  },
-});
 
 // Session
-export const BoardTransformAtom = atom({
-  key: "BoardTransform",
-  default: {
-    translateX: 0,
-    translateY: 0,
-    scale: 1,
-  },
-});
 
 // Session
 export const ItemInteractionsAtom = atom({
@@ -38,18 +21,24 @@ const configuration = (set, get) => ({
     boardWrapperRect: {},
     boardSize: DEFAULT_BOARD_MAX_SIZE,
   },
+  // TODO optimize when same value as before
   updateConfiguration: (toUpdate) =>
     set((state) => ({ config: { ...state.config, ...toUpdate } })),
   getConfiguration: () => get().config,
 });
 const boardState = (set, get) => ({
-  movingItems: false,
-  selecting: false,
-  zooming: false,
-  panning: false,
-  translateX: 0,
-  translateY: 0,
-  scale: 1,
+  boardState: {
+    movingItems: false,
+    selecting: false,
+    zooming: false,
+    panning: false,
+    translateX: 0,
+    translateY: 0,
+    scale: 1,
+  },
+  updateBoardState: (toUpdate) =>
+    set((state) => ({ boardState: { ...state.boardState, ...toUpdate } })),
+  getBoardState: () => get().boardState,
 });
 const itemInteractions = (set, get) => ({ interaction: {} });
 

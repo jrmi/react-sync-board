@@ -1,8 +1,6 @@
 import React from "react";
-import { useRecoilValue, useRecoilCallback } from "recoil";
 import { useDebouncedCallback } from "@react-hookz/web/esm";
 
-import { BoardTransformAtom, BoardStateAtom } from "./atoms";
 import { getItemBoundingBox } from "@/utils";
 import { useSyncedItems } from "./store/items";
 import useSelection from "./store/selection";
@@ -27,8 +25,13 @@ const BoundingBox = () => {
       state.setSelectionBox,
     ]
   );
+
   const getConfiguration = useMainStore((state) => state.getConfiguration);
-  const boardTransform = useRecoilValue(BoardTransformAtom);
+  const { translateX, translateY, scale } = useMainStore((state) => ({
+    translateX: state.boardState.translateX,
+    translateY: state.boardState.translateY,
+    scale: state.boardState.scale,
+  }));
   const items = useSyncedItems((state) => state.items);
 
   // Update selection bounding box
@@ -68,7 +71,15 @@ const BoundingBox = () => {
     // Update selected elements bounding box
     updateBox();
     updateBoxDelay(); // Delay to update after board item animation like tap/untap.
-  }, [selection, items, boardTransform, updateBox, updateBoxDelay]);
+  }, [
+    selection,
+    items,
+    translateX,
+    translateY,
+    scale,
+    updateBox,
+    updateBoxDelay,
+  ]);
 
   if (!selectionBox || selection.length < 2) return null;
 
@@ -86,9 +97,9 @@ const BoundingBox = () => {
 };
 
 const Selection = () => {
-  const boardState = useRecoilValue(BoardStateAtom);
+  const movingItems = useMainStore((state) => state.boardState.movingItems);
 
-  if (boardState.movingItems) {
+  if (movingItems) {
     return null;
   }
 
