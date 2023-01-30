@@ -24,13 +24,12 @@ export default defineConfig({
     rollupOptions: {
       // make sure to externalize deps that shouldn't be bundled
       // into your library
-      external: ["react", "react-dom", "recoil", "@scripters/use-socket.io"],
+      external: ["react", "react-dom", "@scripters/use-socket.io"],
       output: {
         // Provide global variables to use in the UMD build
         // for externalized deps
         globals: {
           react: "React",
-          recoil: "recoil",
         },
       },
     },

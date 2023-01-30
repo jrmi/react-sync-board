@@ -1,5 +1,4 @@
 import React from "react";
-import { useSetRecoilState } from "recoil";
 
 import { ItemList } from "./Items";
 import Selector from "./Selector";

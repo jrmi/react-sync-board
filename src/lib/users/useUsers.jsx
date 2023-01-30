@@ -1,5 +1,5 @@
 import React from "react";
-import { useSyncedUsers } from "./users";
+import { useSyncedUsers } from "./store";
 
 const useUsers = () => {
   const [currentUser, userMap, updateCurrentUser] = useSyncedUsers((state) => [

@@ -1,6 +1,5 @@
 import React from "react";
 import styled from "@emotion/styled";
-import { RecoilRoot, useSetRecoilState, useRecoilState } from "recoil";
 import { nanoid } from "nanoid";
 import { useResizeObserver } from "@react-hookz/web/esm";
 
@@ -10,7 +9,7 @@ import { SyncedStoreProvider } from "@/board/store/synced";
 
 import { insideClass } from "@/utils";
 import useMainStore from "@/board/store/main";
-import { SyncedUsersProvider, useSyncedUsers } from "./users/users";
+import { SyncedUsersProvider, useSyncedUsers } from "./users/store";
 
 const StyledBoardView = styled.div`
   overflow: hidden;
@@ -109,20 +108,18 @@ const ConnectedSyncBoard = ({
   if (!roomChannel) {
     // No room declared so we create one
     return (
-      <RecoilRoot>
-        <WireProvider room={stableRoom} channel="room" socket={socket}>
-          <SyncedUsersProvider storeName={`${stableRoom}_users`}>
-            <WireProvider room={stableSession} channel="board" socket={socket}>
-              <SyncedStoreProvider
-                storeName={`${stableSession}_item`}
-                defaultValue={defaultItemsValue}
-              >
-                <SyncBoard {...props} />
-              </SyncedStoreProvider>
-            </WireProvider>
-          </SyncedUsersProvider>
-        </WireProvider>
-      </RecoilRoot>
+      <WireProvider room={stableRoom} channel="room" socket={socket}>
+        <SyncedUsersProvider storeName={`${stableRoom}_users`}>
+          <WireProvider room={stableSession} channel="board" socket={socket}>
+            <SyncedStoreProvider
+              storeName={`${stableSession}_item`}
+              defaultValue={defaultItemsValue}
+            >
+              <SyncBoard {...props} />
+            </SyncedStoreProvider>
+          </WireProvider>
+        </SyncedUsersProvider>
+      </WireProvider>
     );
   }
   return (
