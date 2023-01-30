@@ -1,5 +1,5 @@
 import React from "react";
-import useTranslation from "@/hooks/useTranslation";
+import useTranslation from "../../useTranslation";
 import { Field } from "react-final-form";
 
 import Label from "../ui/Label";

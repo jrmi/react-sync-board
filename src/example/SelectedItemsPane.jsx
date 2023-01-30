@@ -1,6 +1,6 @@
 import React from "react";
 import styled from "styled-components";
-import useTranslation from "@/hooks/useTranslation";
+import useTranslation from "./useTranslation";
 
 import SidePanel from "./ui/SidePanel";
 import ItemFormFactory from "./ItemFormFactory";

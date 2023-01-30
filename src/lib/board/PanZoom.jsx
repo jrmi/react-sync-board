@@ -9,18 +9,20 @@ import useMainStore from "./store/main";
 
 const PanZoom = ({ children, moveFirst = false }) => {
   const wrappedRef = React.useRef(null);
-  const dim = useMainStore((state) => ({
-    translateX: state.boardState.translateX,
-    translateY: state.boardState.translateY,
-    scale: state.boardState.scale,
-  }));
+  const [dim, itemExtentGlobal, getConfiguration, updateBoardState] =
+    useMainStore((state) => [
+      {
+        translateX: state.boardState.translateX,
+        translateY: state.boardState.translateY,
+        scale: state.boardState.scale,
+      },
+      state.config.itemExtent,
+      state.getConfiguration,
+      state.updateBoardState,
+    ]);
   const { setDim, zoomToCenter, zoomToExtent } = useDim();
-  const [itemExtentGlobal, getConfiguration] = useMainStore((state) => [
-    state.config.itemExtent,
-    state.getConfiguration,
-  ]);
+
   const [centered, setCentered] = React.useState(false);
-  const updateBoardState = useMainStore((state) => state.updateBoardState);
   const timeoutRef = React.useRef({});
   const getSelection = useSelection((state) => state.getSelection);
 

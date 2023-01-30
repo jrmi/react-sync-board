@@ -1,10 +1,10 @@
 import React from "react";
-import useTranslation from "@/hooks/useTranslation";
 import { Field } from "react-final-form";
 
 import Label from "./ui/Label";
 import Hint from "./ui/Hint";
 import Slider from "./ui/Slider";
+import useTranslation from "../useTranslation";
 
 import itemMap from "./itemMap";
 

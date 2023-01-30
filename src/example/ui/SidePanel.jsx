@@ -2,7 +2,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import usePortal from "react-useportal";
 
-import useTranslation from "@/hooks/useTranslation";
+import useTranslation from "../useTranslation";
 
 const Overlay = styled.div`
   position: absolute;

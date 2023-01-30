@@ -49,11 +49,9 @@ const ActionPane = ({ children }) => {
           if (ctrlKey || metaKey) {
             selectedItemRef.current.items = [...selectedItems, itemId];
             select([itemId]);
-            //setSelectedItems((prev) => [...prev, itemId]);
           } else {
             selectedItemRef.current.items = [itemId];
             setSelection([itemId]);
-            //setSelectedItems([itemId]);
           }
         }
 
