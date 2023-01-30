@@ -8,12 +8,9 @@ import useWire, { WireProvider } from "@/hooks/useWire";
 
 import { SyncedStoreProvider } from "@/board/store/synced";
 
-import { userAtom } from "@/users/atoms";
-
-import { SubscribeUserEvents } from "@/users";
-
 import { insideClass } from "@/utils";
 import useMainStore from "@/board/store/main";
+import { SyncedUsersProvider, useSyncedUsers } from "./users/users";
 
 const StyledBoardView = styled.div`
   overflow: hidden;
@@ -23,7 +20,7 @@ const StyledBoardView = styled.div`
 
 const SyncBoard = ({ children, style }) => {
   const boardWrapperRef = React.useRef(null);
-  const setCurrentUserState = useSetRecoilState(userAtom);
+  const updateCurrentUser = useSyncedUsers((state) => state.updateCurrentUser);
 
   const { room: session } = useWire("board");
 
@@ -50,17 +47,11 @@ const SyncBoard = ({ children, style }) => {
 
   // Set user space
   React.useEffect(() => {
-    setCurrentUserState((prevUser) => ({
-      ...prevUser,
-      space: session,
-    }));
+    updateCurrentUser({ space: session });
     return () => {
-      setCurrentUserState((prevUser) => ({
-        ...prevUser,
-        space: null,
-      }));
+      updateCurrentUser({ space: null });
     };
-  }, [session, setCurrentUserState]);
+  }, [session, updateCurrentUser]);
 
   React.useEffect(() => {
     if (!uid) {
@@ -97,9 +88,21 @@ const SyncBoard = ({ children, style }) => {
   );
 };
 
-const ConnectedSyncBoard = ({ socket, room, session, ...props }) => {
+const ConnectedSyncBoard = ({
+  socket,
+  room,
+  session,
+  items = [],
+  ...props
+}) => {
   const [stableRoom] = React.useState(room || nanoid());
   const [stableSession] = React.useState(session || nanoid());
+  const [defaultItemsValue] = React.useState(() => {
+    return {
+      itemIds: items.map(({ id }) => id),
+      items: Object.fromEntries(items.map((item) => [item.id, item])),
+    };
+  });
 
   const roomChannel = useWire("room");
 
@@ -108,19 +111,26 @@ const ConnectedSyncBoard = ({ socket, room, session, ...props }) => {
     return (
       <RecoilRoot>
         <WireProvider room={stableRoom} channel="room" socket={socket}>
-          <SubscribeUserEvents />
-          <WireProvider room={stableSession} channel="board" socket={socket}>
-            <SyncedStoreProvider storeName={`${stableSession}_item`}>
-              <SyncBoard {...props} />
-            </SyncedStoreProvider>
-          </WireProvider>
+          <SyncedUsersProvider storeName={`${stableRoom}_users`}>
+            <WireProvider room={stableSession} channel="board" socket={socket}>
+              <SyncedStoreProvider
+                storeName={`${stableSession}_item`}
+                defaultValue={defaultItemsValue}
+              >
+                <SyncBoard {...props} />
+              </SyncedStoreProvider>
+            </WireProvider>
+          </SyncedUsersProvider>
         </WireProvider>
       </RecoilRoot>
     );
   }
   return (
     <WireProvider room={stableSession} channel="board" socket={socket}>
-      <SyncedStoreProvider storeName={`${stableSession}_item`}>
+      <SyncedStoreProvider
+        storeName={`${stableSession}_item`}
+        defaultValue={defaultItemsValue}
+      >
         <SyncBoard {...props} />
       </SyncedStoreProvider>
     </WireProvider>

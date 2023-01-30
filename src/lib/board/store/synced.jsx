@@ -123,20 +123,16 @@ const boardStore = (set, get) => ({
     set((state) => ({ boardConfig: { ...state.boardConfig, ...toUpdate } })),
 });
 
-export const SyncedStoreProvider = ({ storeName, children }) => {
+export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
   const { wire } = useWire("room");
   const [store] = React.useState(() =>
     createStore(
-      syncMiddleware(
-        (...args) => ({
-          ...itemsStore(...args),
-          ...itemIdsStore(...args),
-          ...commonStore(...args),
-          ...boardStore(...args),
-        }),
-        wire,
-        storeName
-      )
+      syncMiddleware({ wire, storeName, defaultValue }, (...args) => ({
+        ...itemsStore(...args),
+        ...itemIdsStore(...args),
+        ...commonStore(...args),
+        ...boardStore(...args),
+      }))
     )
   );
 

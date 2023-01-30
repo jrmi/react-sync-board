@@ -3,17 +3,17 @@ import { RecoilRoot } from "recoil";
 import { nanoid } from "nanoid";
 
 import { WireProvider } from "@/hooks/useWire";
+import { SyncedUsersProvider } from "@/users/users";
 
-import { SubscribeUserEvents } from "@/users";
-
-const ConnectedSyncRoom = ({ socket, room: givenRoom, children }) => {
-  const [room] = React.useState(() => givenRoom || nanoid());
+const ConnectedSyncRoom = ({ socket, room, children }) => {
+  const [stableRoom] = React.useState(room || nanoid());
 
   return (
     <RecoilRoot>
-      <WireProvider room={room} channel="room" socket={socket}>
-        <SubscribeUserEvents />
-        {children}
+      <WireProvider room={stableRoom} channel="room" socket={socket}>
+        <SyncedUsersProvider stableSession={`${stableRoom}_users`}>
+          {children}
+        </SyncedUsersProvider>
       </WireProvider>
     </RecoilRoot>
   );

@@ -1,32 +1,21 @@
 import React from "react";
-import { useRecoilValue, useRecoilState } from "recoil";
-import { userAtom, usersAtom, persistUser, localUsersAtom } from "./atoms";
+import { useSyncedUsers } from "./users";
 
 const useUsers = () => {
-  const [currentUser, setCurrentUserState] = useRecoilState(userAtom);
-  const users = useRecoilValue(usersAtom);
-  const localUsers = useRecoilValue(localUsersAtom);
+  const [currentUser, userMap, updateCurrentUser] = useSyncedUsers((state) => [
+    state.getUser(),
+    state.users,
+    state.updateCurrentUser,
+  ]);
 
-  const setCurrentUser = React.useCallback(
-    (callbackOrUser) => {
-      let callback = callbackOrUser;
-      if (typeof callbackOrUser === "object") {
-        callback = () => callbackOrUser;
-      }
-      setCurrentUserState((prevUser) => {
-        const newUser = {
-          ...callback(prevUser),
-          id: prevUser.id,
-          uid: prevUser.uid,
-        };
-        persistUser(newUser);
-        return newUser;
-      });
-    },
-    [setCurrentUserState]
-  );
+  const users = React.useMemo(() => Object.values(userMap), [userMap]);
 
-  return { currentUser, setCurrentUser, users, localUsers };
+  const localUsers = React.useMemo(() => {
+    const { space: currentUserSpace } = currentUser;
+    return users.filter(({ space }) => space === currentUserSpace);
+  }, [currentUser, users]);
+
+  return { currentUser, updateCurrentUser, users, localUsers };
 };
 
 export default useUsers;

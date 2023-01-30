@@ -149,14 +149,6 @@ const UserList = () => {
   );
 };
 
-const Init = () => {
-  const { setItemList } = useItemActions();
-  React.useEffect(() => {
-    setItemList(initialItems);
-  }, [setItemList]);
-  return null;
-};
-
 const Overlay = ({ children, hideMenu }) => (
   <div
     style={{
@@ -176,7 +168,6 @@ const Overlay = ({ children, hideMenu }) => (
         padding: "0.5em",
       }}
     >
-      <Init />
       <AddItems />
       <UserList />
     </div>
@@ -195,7 +186,12 @@ const OneViewContent = ({
 }) => {
   const socket = useSocket();
   return (
-    <BoardWrapper room={room} session={session} socket={socket}>
+    <BoardWrapper
+      room={room}
+      session={session}
+      socket={socket}
+      items={initialItems}
+    >
       <Overlay hideMenu={hideMenu}>
         <Board
           moveFirst={moveFirst}

@@ -106,55 +106,6 @@ export const getItemBoundingBox = (items, wrapper = document) => {
   return result;
 };
 
-export const syncMiddleware = (config, wire, storeName) => (set, get, api) => {
-  const result = config(set, get, api);
-
-  const init = async () => {
-    try {
-      // Try to get the initial value from a peer
-      const newValue = await wire.call(`${storeName}_getValue`);
-      set((state) => ({ ...state, ...newValue }));
-    } catch {
-      console.log(`No initial value for ${storeName}`);
-    }
-    wire.register(
-      `${storeName}_getValue`,
-      () => {
-        return Object.fromEntries(
-          Object.entries(get()).filter(
-            ([, value]) => typeof value !== "function"
-          )
-        );
-      },
-      { invoke: "first" }
-    );
-  };
-  init();
-
-  // Register the sync callback
-  const previousFn = { ...result };
-  wire.subscribe(`${storeName}_call`, ([methodName, args]) => {
-    previousFn[methodName](...args);
-  });
-
-  const syncResult = Object.fromEntries(
-    // Send the update message on all method calls
-    Object.entries(result).map(([key, fn]) => {
-      if (typeof fn === "function") {
-        const newFn = (...args) => {
-          //console.log("call", key, args);
-          const result = fn(...args);
-          wire.publish(`${storeName}_call`, [key, args]);
-          return result;
-        };
-        return [key, newFn];
-      }
-      return [key, fn];
-    })
-  );
-  return syncResult;
-};
-
 export const snapToGrid = (
   { x, y, width, height },
   { type = "grid", size = 1, offset = { x: 0, y: 0 } }
@@ -231,3 +182,112 @@ export const snapToGrid = (
     y: newY + offset.y - height / 2,
   };
 };
+
+const colors = [
+  "#037758",
+  "#99092a",
+  "#067070",
+  "#c6650f",
+  "#008726",
+  "#3d7004",
+  "#348402",
+  "#057f58",
+  "#b58612",
+  "#c44c01",
+  "#0a7704",
+  "#0e910e",
+  "#027377",
+  "#c99e02",
+  "#054160",
+  "#157a01",
+  "#b10de2",
+  "#0d6289",
+  "#bc5d03",
+  "#ba0cd1",
+  "#d39f10",
+  "#0c4c7a",
+  "#460782",
+  "#a51f10",
+  "#cecb10",
+  "#9b0943",
+  "#607f0c",
+  "#007a4b",
+  "#bf0daa",
+  "#af0ad8",
+];
+
+export const getRandomColor = () =>
+  colors[Math.floor(Math.random() * colors.length)];
+
+const debug = false;
+
+export const syncMiddleware =
+  ({ wire, storeName, noSync = [], defaultValue }, config) =>
+  (set, get, api) => {
+    set({ ready: false });
+    const unsubs = [];
+    const init = async () => {
+      try {
+        // Try to get the initial value from a peer
+        const newValue = await wire.call(`${storeName}_getValue`);
+        debug && console.log("init from peer with value", newValue);
+        set((state) => ({ ...state, ...newValue }));
+      } catch {
+        //console.log(`No peers for ${storeName}...`);
+        if (defaultValue !== undefined) {
+          set(defaultValue);
+        }
+      }
+      unsubs.push(
+        await wire.register(
+          `${storeName}_getValue`,
+          () => {
+            return Object.fromEntries(
+              Object.entries(get()).filter(
+                ([, value]) => typeof value !== "function"
+              )
+            );
+          },
+          { invoke: "first" }
+        )
+      );
+      // Register the sync callback
+      unsubs.push(
+        wire.subscribe(`${storeName}_call`, ([methodName, args]) => {
+          debug && console.log("receive", methodName, args);
+          previousFn[methodName](...args);
+        })
+      );
+      set({ ready: true });
+    };
+    init();
+
+    const result = config(set, get, api);
+    const previousFn = { ...result };
+
+    const syncResult = Object.fromEntries(
+      // Send the update message on all method calls
+      Object.entries(result).map(([key, fn]) => {
+        if (
+          typeof fn === "function" &&
+          !key.startsWith("get") &&
+          !noSync.includes(key)
+        ) {
+          const newFn = (...args) => {
+            debug && console.log("call", key, args);
+            const result = fn(...args);
+            wire.publish(`${storeName}_call`, [key, args]);
+            return result;
+          };
+          return [key, newFn];
+        }
+        return [key, fn];
+      })
+    );
+
+    syncResult.unsub = () => {
+      unsubs.forEach((unsub) => unsub());
+    };
+
+    return syncResult;
+  };
