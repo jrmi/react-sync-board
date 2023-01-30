@@ -1,25 +1,17 @@
 import React from "react";
 
 import Cursors from "./Cursors";
-import useWire from "@/hooks/useWire";
-import { useUsers } from "@/users";
-import useMainStore from "../store/main";
+import useMainStore from "@/board/store/main";
+import { useSyncedUsers } from "@/users/store";
 
 const CursorPane = ({ children }) => {
-  const { wire } = useWire("board");
-  const { currentUser: user, users } = useUsers();
+  const currentUser = useSyncedUsers((state) => state.getUser());
+  const [moveCursor, removeCursor] = useSyncedUsers((state) => [
+    state.moveCursor,
+    state.removeCursor,
+  ]);
   const getConfiguration = useMainStore((state) => state.getConfiguration);
   const getBoardState = useMainStore((state) => state.getBoardState);
-
-  const publish = React.useCallback(
-    (newPos) => {
-      wire.publish("cursorMove", {
-        userId: user.id,
-        pos: newPos,
-      });
-    },
-    [wire, user.id]
-  );
 
   const onMouseMove = React.useCallback(
     ({ clientX, clientY }) => {
@@ -27,25 +19,23 @@ const CursorPane = ({ children }) => {
       const {
         boardWrapperRect: { left, top },
       } = getConfiguration();
-
-      publish({
+      const newPos = {
         x: (clientX - left - translateX) / scale,
         y: (clientY - top - translateY) / scale,
-      });
+      };
+      moveCursor(currentUser.id, newPos);
     },
-    [getBoardState, getConfiguration, publish]
+    [getBoardState, getConfiguration, moveCursor, currentUser.id]
   );
 
   const onLeave = () => {
-    wire.publish("cursorOff", {
-      userId: user.id,
-    });
+    removeCursor(currentUser.id);
   };
 
   return (
     <div onPointerMove={onMouseMove} onPointerLeave={onLeave}>
       {children}
-      <Cursors users={users} />
+      <Cursors />
     </div>
   );
 };

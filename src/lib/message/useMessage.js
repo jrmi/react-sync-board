@@ -15,6 +15,11 @@ const useMessage = (onMessage = noop) => {
     ]
   );
 
+  React.useEffect(() => {
+    // React on new message
+    onMessage();
+  }, [messages, onMessage]);
+
   const sendMessageWithUser = React.useCallback(
     (messageContent) => {
       sendMessage(currentUser, messageContent);

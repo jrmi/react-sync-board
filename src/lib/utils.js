@@ -244,7 +244,8 @@ export const syncMiddleware =
           () => {
             return Object.fromEntries(
               Object.entries(get()).filter(
-                ([, value]) => typeof value !== "function"
+                ([key, value]) =>
+                  typeof value !== "function" && !noSync.includes(key)
               )
             );
           },

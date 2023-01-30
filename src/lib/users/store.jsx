@@ -77,6 +77,18 @@ const usersStore = (curentUserId) => (set, get) => ({
     }),
 });
 
+const cursorsStore = (set) => ({
+  cursors: {},
+  moveCursor: (userId, newPos) =>
+    set((state) => ({ cursors: { ...state.cursors, [userId]: newPos } })),
+  removeCursor: (userId) =>
+    set((state) => {
+      const newCursors = { ...state.cursors };
+      delete newCursors[userId];
+      return { cursors: newCursors };
+    }),
+});
+
 export const SyncedUsersProvider = ({ storeName, children }) => {
   const { wire, isMaster } = useWire("room");
   const [store, setStore] = React.useState(null);
@@ -94,6 +106,7 @@ export const SyncedUsersProvider = ({ storeName, children }) => {
             { wire, storeName, noSync: ["updateCurrentUser"] },
             (...args) => ({
               ...usersStore(wire.userId)(...args),
+              ...cursorsStore(...args),
             }),
             wire,
             storeName
