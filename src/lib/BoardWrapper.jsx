@@ -92,6 +92,7 @@ const ConnectedSyncBoard = ({
   room,
   session,
   items = [],
+  LoadingComponent,
   ...props
 }) => {
   const [stableRoom] = React.useState(room || nanoid());
@@ -108,9 +109,19 @@ const ConnectedSyncBoard = ({
   if (!roomChannel) {
     // No room declared so we create one
     return (
-      <WireProvider room={stableRoom} channel="room" socket={socket}>
+      <WireProvider
+        room={stableRoom}
+        channel="room"
+        socket={socket}
+        LoadingComponent={LoadingComponent}
+      >
         <SyncedUsersProvider storeName={`${stableRoom}_users`}>
-          <WireProvider room={stableSession} channel="board" socket={socket}>
+          <WireProvider
+            room={stableSession}
+            channel="board"
+            socket={socket}
+            LoadingComponent={LoadingComponent}
+          >
             <SyncedStoreProvider
               storeName={`${stableSession}_item`}
               defaultValue={defaultItemsValue}
@@ -123,7 +134,12 @@ const ConnectedSyncBoard = ({
     );
   }
   return (
-    <WireProvider room={stableSession} channel="board" socket={socket}>
+    <WireProvider
+      room={stableSession}
+      channel="board"
+      socket={socket}
+      LoadingComponent={LoadingComponent}
+    >
       <SyncedStoreProvider
         storeName={`${stableSession}_item`}
         defaultValue={defaultItemsValue}

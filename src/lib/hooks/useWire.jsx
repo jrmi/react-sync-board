@@ -1,14 +1,31 @@
 import React, { useContext } from "react";
 import { joinWire } from "wire.io";
 
-import Spinner from "../ui/Spinner";
-
 const Context = React.createContext();
+
+export const DefaultLoading = () => {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        top: "0",
+        bottom: "0",
+        width: "100%",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <h2>🌀 Loading...</h2>
+    </div>
+  );
+};
 
 export const WireProvider = ({
   socket,
   room,
   channel = "default",
+  LoadingComponent = DefaultLoading,
   children,
 }) => {
   const [joined, setJoined] = React.useState(false);
@@ -52,19 +69,19 @@ export const WireProvider = ({
     if (!socket.connected) {
       socket.connect();
     }
-    //console.log(`Try to connect to wire ${room} on channel ${channel}`);
+    console.log(`Try to connect to wire ${room} on channel ${channel}`);
     if (!connectingRef.current) {
       connectingRef.current = true;
       joinWire({
         socket,
         room,
         onMaster: () => {
-          //console.log(`Is now master on channel ${channel}…`);
+          console.log(`Is now master on channel ${channel}…`);
           if (!mountedRef.current) return;
           setIsMaster(true);
         },
         onJoined: (newRoom) => {
-          //console.log(`Connected on channel ${channel}…`);
+          console.log(`Connected on channel ${channel}…`);
           roomRef.current = newRoom;
 
           if (!mountedRef.current) return;
@@ -80,21 +97,7 @@ export const WireProvider = ({
   }, [channel, room, socket]);
 
   if (!joined || !wire) {
-    return (
-      <div
-        style={{
-          position: "absolute",
-          top: "0",
-          bottom: "0",
-          width: "100%",
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      >
-        <Spinner />
-      </div>
-    );
+    return <LoadingComponent />;
   }
 
   return (

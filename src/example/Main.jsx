@@ -13,6 +13,8 @@ import { itemMap, ItemForm } from "./sample";
 
 import SelectedItemsPane from "./SelectedItemsPane";
 
+import Spinner from "./ui/Spinner";
+
 //STORYBOOK_SOCKET_URL=https://public.jeremiez.net
 //STORYBOOK_SOCKET_PATH=/wamp/socket.io
 
@@ -191,6 +193,7 @@ const OneViewContent = ({
       session={session}
       socket={socket}
       items={initialItems}
+      LoadingComponent={() => <Spinner />}
     >
       <Overlay hideMenu={hideMenu}>
         <Board
@@ -249,8 +252,16 @@ const OneViewWithRoomContent = ({
 }) => {
   const socket = useSocket();
   return (
-    <RoomWrapper room={room} socket={socket}>
-      <BoardWrapper session={session} socket={socket}>
+    <RoomWrapper
+      room={room}
+      socket={socket}
+      LoadingComponent={() => <Spinner />}
+    >
+      <BoardWrapper
+        session={session}
+        socket={socket}
+        LoadingComponent={() => <Spinner />}
+      >
         <Overlay hideMenu={hideMenu}>
           <Board
             moveFirst={moveFirst}
