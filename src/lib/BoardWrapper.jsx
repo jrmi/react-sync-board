@@ -17,11 +17,9 @@ const StyledBoardView = styled.div`
   inset: 0;
 `;
 
-const SyncBoard = ({ children, style }) => {
+const SyncBoard = ({ children, session, style }) => {
   const boardWrapperRef = React.useRef(null);
   const updateCurrentUser = useSyncedUsers((state) => state.updateCurrentUser);
-
-  const { room: session } = useWire("board");
 
   const [uid, updateConfiguration] = useMainStore((state) => [
     state.config.uid,
@@ -116,37 +114,23 @@ const ConnectedSyncBoard = ({
         LoadingComponent={LoadingComponent}
       >
         <SyncedUsersProvider storeName={`${stableRoom}_users`}>
-          <WireProvider
-            room={stableSession}
-            channel="board"
-            socket={socket}
-            LoadingComponent={LoadingComponent}
+          <SyncedStoreProvider
+            storeName={`${stableSession}_item`}
+            defaultValue={defaultItemsValue}
           >
-            <SyncedStoreProvider
-              storeName={`${stableSession}_item`}
-              defaultValue={defaultItemsValue}
-            >
-              <SyncBoard {...props} />
-            </SyncedStoreProvider>
-          </WireProvider>
+            <SyncBoard {...props} session={stableSession} />
+          </SyncedStoreProvider>
         </SyncedUsersProvider>
       </WireProvider>
     );
   }
   return (
-    <WireProvider
-      room={stableSession}
-      channel="board"
-      socket={socket}
-      LoadingComponent={LoadingComponent}
+    <SyncedStoreProvider
+      storeName={`${stableSession}_item`}
+      defaultValue={defaultItemsValue}
     >
-      <SyncedStoreProvider
-        storeName={`${stableSession}_item`}
-        defaultValue={defaultItemsValue}
-      >
-        <SyncBoard {...props} />
-      </SyncedStoreProvider>
-    </WireProvider>
+      <SyncBoard {...props} />
+    </SyncedStoreProvider>
   );
 };
 

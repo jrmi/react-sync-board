@@ -92,6 +92,7 @@ const cursorsStore = (set) => ({
 export const SyncedUsersProvider = ({ storeName, children }) => {
   const { wire, isMaster } = useWire("room");
   const [store, setStore] = React.useState(null);
+  const [ready, setReady] = React.useState(false);
   const storeRef = React.useRef(false);
 
   React.useEffect(() => {
@@ -138,6 +139,7 @@ export const SyncedUsersProvider = ({ storeName, children }) => {
         ...restoreUser(),
         id: wire.userId,
       });
+      setReady(true);
       return () => {
         store.getState().removeUser(wire.userId);
       };
@@ -163,7 +165,7 @@ export const SyncedUsersProvider = ({ storeName, children }) => {
     }
   }, [isMaster, store, wire]);
 
-  if (!store) {
+  if (!ready) {
     return null;
   }
 
