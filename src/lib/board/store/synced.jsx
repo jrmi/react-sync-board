@@ -3,6 +3,7 @@ import { createStore, useStore } from "zustand";
 
 import useWire from "@/hooks/useWire";
 import { syncMiddleware } from "@/utils";
+import { shallow } from "zustand/shallow";
 
 const Context = React.createContext();
 
@@ -70,8 +71,6 @@ const itemIdsStore = (set, get) => ({
 });
 
 const commonStore = (set, get) => ({
-  initialized: false,
-  isInit: () => get().initialized,
   removeItemsById: (itemIdsToRemove) =>
     set((state) => {
       return {
@@ -91,7 +90,6 @@ const commonStore = (set, get) => ({
     set({
       items: Object.fromEntries(itemList.map((item) => [item.id, item])),
       itemIds: itemList.map(({ id }) => id),
-      initialized: true,
     }),
   insertItems: (newItems, beforeId) =>
     set((state) => {
@@ -118,9 +116,17 @@ const commonStore = (set, get) => ({
 const boardStore = (set, get) => ({
   boardConfig: {},
   getBoardConfig: () => get().boardConfig,
-  setBoardConfig: (newBoardConfig) => set(newBoardConfig),
+  setBoardConfig: (newBoardConfig) => set({ boardConfig: newBoardConfig }),
   updateBoardConfig: (toUpdate) =>
     set((state) => ({ boardConfig: { ...state.boardConfig, ...toUpdate } })),
+});
+
+const sessionInfoStore = (set, get) => ({
+  session: {},
+  getSessionInfo: () => get().session,
+  setSessionInfo: (newSession) => set({ session: newSession }),
+  updateSessionInfo: (toUpdate) =>
+    set((state) => ({ session: { ...state.session, ...toUpdate } })),
 });
 
 export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
@@ -132,6 +138,7 @@ export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
         ...itemIdsStore(...args),
         ...commonStore(...args),
         ...boardStore(...args),
+        ...sessionInfoStore(...args),
       }))
     )
   );
@@ -139,7 +146,7 @@ export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useSyncedStore = (selector) => {
+export const useSyncedStore = (selector, equalityFn) => {
   const store = useContext(Context);
-  return useStore(store, selector);
+  return useStore(store, selector, equalityFn ? equalityFn : shallow);
 };

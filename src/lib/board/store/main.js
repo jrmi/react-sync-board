@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { shallow } from 'zustand/shallow';
 import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 
 const configuration = (set, get) => ({
@@ -57,10 +58,14 @@ const itemInteractions = (set, get) => ({
   },
 });
 
-const useMainStore = create((...args) => ({
+const useMainStoreBare = create((...args) => ({
   ...configuration(...args),
   ...boardState(...args),
   ...itemInteractions(...args),
 }));
+
+const useMainStore = (selector, equalityFn)=>{
+  return useMainStoreBare(selector, equalityFn? equalityFn: shallow)
+}
 
 export default useMainStore;

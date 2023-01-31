@@ -19,6 +19,7 @@ const ActionPane = ({ children }) => {
     state.setSelection,
     state.getSelection,
   ]);
+
   const [getBoardState, updateBoardState] = useMainStore((state) => [
     state.getBoardState,
     state.updateBoardState,

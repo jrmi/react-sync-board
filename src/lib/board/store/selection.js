@@ -1,6 +1,7 @@
 import { create } from "zustand";
+import { shallow } from "zustand/shallow";
 
-const useSelection = create((set, get) => ({
+const useSelectionBare = create((set, get) => ({
   selection: [],
   setSelection: (idsToSelect) =>
     set((state) => {
@@ -49,5 +50,10 @@ const useSelection = create((set, get) => ({
       return {};
     }),
 }));
+
+const useSelection = (selector, equalityFn)=>{
+  return useSelectionBare(selector, equalityFn? equalityFn: shallow)
+}
+
 
 export default useSelection;

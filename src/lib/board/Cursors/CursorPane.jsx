@@ -10,8 +10,10 @@ const CursorPane = ({ children }) => {
     state.moveCursor,
     state.removeCursor,
   ]);
-  const getConfiguration = useMainStore((state) => state.getConfiguration);
-  const getBoardState = useMainStore((state) => state.getBoardState);
+  const [getConfiguration, getBoardState] = useMainStore((state) => [
+    state.getConfiguration,
+    state.getBoardState,
+  ]);
 
   const onMouseMove = React.useCallback(
     ({ clientX, clientY }) => {

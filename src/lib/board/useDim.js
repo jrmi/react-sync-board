@@ -197,7 +197,7 @@ const useDim = () => {
     ];
   }, [getConfiguration]);
 
-  const getCenterCoordinates = React.useCallback(async () => {
+  const getCenterCoordinates = React.useCallback(() => {
     const { boardWrapperRect, boardSize } = getConfiguration();
     const { translateX, translateY, scale } = getBoardState();
     return {

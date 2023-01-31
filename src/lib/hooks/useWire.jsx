@@ -96,6 +96,7 @@ export const WireProvider = ({
     };
   }, [channel, room, socket]);
 
+
   if (!joined || !wire) {
     return <LoadingComponent />;
   }

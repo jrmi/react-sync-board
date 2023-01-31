@@ -83,7 +83,7 @@ const Selector = ({ children, moveFirst }) => {
       updateSelected();
     },
     [selector, updateSelected],
-    200
+    50
   );
 
   const onDragStart = React.useCallback(

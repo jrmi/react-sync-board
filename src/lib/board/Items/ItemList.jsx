@@ -2,9 +2,9 @@ import Item from "./Item";
 import useItemActions from "./useItemActions";
 
 import { useSyncedStore } from "@/board/store/synced";
-import { useUsers } from "@/users";
 import useSelection from "../store/selection";
 import useMainStore from "../store/main";
+import { useSyncedUsers } from "@/users/store";
 
 const ItemList = () => {
   const { updateItem } = useItemActions();
@@ -18,7 +18,7 @@ const ItemList = () => {
     state.config.showResizeHandle,
     state.config.itemTemplates,
   ]);
-  const { currentUser } = useUsers();
+  const currentUser = useSyncedUsers((state)=> state.getUser())
 
   return itemList.map((itemId) => (
     <Item

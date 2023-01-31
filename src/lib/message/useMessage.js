@@ -1,19 +1,17 @@
 import React from "react";
 
-import { useUsers } from "@/users";
-import { useSyncedMessage } from "./store";
+import { useSyncedMessage } from "@/message/store";
+import { useSyncedUsers } from "@/users/store";
 
 const noop = () => {};
 
 const useMessage = (onMessage = noop) => {
-  const { currentUser } = useUsers();
-  const [messages, setMessages, sendMessage] = useSyncedMessage(
-    ({ messages, setMessages, sendMessage }) => [
-      messages,
-      setMessages,
-      sendMessage,
-    ]
-  );
+  const currentUser = useSyncedUsers((state) => state.getUser());
+  const [messages, setMessages, sendMessage] = useSyncedMessage((state) => [
+    state.messages,
+    state.setMessages,
+    state.sendMessage,
+  ]);
 
   React.useEffect(() => {
     // React on new message

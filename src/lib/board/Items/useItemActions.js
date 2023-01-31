@@ -61,7 +61,7 @@ const useItemActions = () => {
   ]);
 
   const batchUpdateItems = React.useCallback(
-    async (itemIds, callbackOrItem) => {
+    (itemIds, callbackOrItem) => {
       let callback = callbackOrItem;
       if (typeof callbackOrItem === "object") {
         callback = () => callbackOrItem;
@@ -96,8 +96,8 @@ const useItemActions = () => {
   );
 
   const updateItem = React.useCallback(
-    (id, callbackOrItem, sync = true) => {
-      batchUpdateItems([id], callbackOrItem, sync);
+    (id, callbackOrItem) => {
+      batchUpdateItems([id], callbackOrItem);
     },
     [batchUpdateItems]
   );
@@ -111,7 +111,7 @@ const useItemActions = () => {
   );
 
   const putItemsOnTop = React.useCallback(
-    async (itemIdsToMove) => {
+    (itemIdsToMove) => {
       const prevItemIds = getItemIds();
       const filtered = prevItemIds.filter((id) => !itemIdsToMove.includes(id));
       const toBePutOnTop = prevItemIds.filter((id) =>
@@ -164,7 +164,7 @@ const useItemActions = () => {
   );
 
   const placeItems = React.useCallback(
-    async (itemIds, gridConfig) => {
+    (itemIds, gridConfig) => {
       // Put moved items on top
       putItemsOnTop(itemIds);
       // Remove moving state
@@ -195,7 +195,7 @@ const useItemActions = () => {
   );
 
   const reverseItemsOrder = React.useCallback(
-    async (itemIdsToReverse) => {
+    (itemIdsToReverse) => {
       const prevItemIds = getItemIds();
 
       const toBeReversed = prevItemIds.filter((id) =>
@@ -215,9 +215,8 @@ const useItemActions = () => {
     [getItemIds, reverseSelection, setItemIds]
   );
 
-  // TODO
   const swapItems = React.useCallback(
-    async (fromIds, toIds) => {
+    (fromIds, toIds) => {
       const prevItemMap = getStoreItems();
       const fromItems = fromIds.map((id) => prevItemMap[id]);
       const toItems = toIds.map((id) => prevItemMap[id]);
@@ -263,11 +262,14 @@ const useItemActions = () => {
   );
 
   const pushItems = React.useCallback(
-    async (itemsToInsert, beforeId) => {
-      const center = await getCenter();
+    (itemsToInsert, beforeId) => {
+      const center = getCenter();
 
       const itemsWithPosition = itemsToInsert.map((item, index) => {
-        return { ...item, x: center.x + 2 * index, y: center.y + 2 * index };
+        if (!item.x || !item.y) {
+          return { ...item, x: center.x + 2 * index, y: center.y + 2 * index };
+        }
+        return item;
       });
 
       insertItems(itemsWithPosition, beforeId);
@@ -278,8 +280,8 @@ const useItemActions = () => {
   );
 
   const pushItem = React.useCallback(
-    (itemToInsert, beforeId, sync = true) => {
-      pushItems([itemToInsert], beforeId, sync);
+    (itemToInsert, beforeId) => {
+      pushItems([itemToInsert], beforeId);
     },
     [pushItems]
   );
@@ -295,7 +297,7 @@ const useItemActions = () => {
   );
 
   const getItems = React.useCallback(
-    async (itemIds) => {
+    (itemIds) => {
       const itemMap = getStoreItems();
       return itemIds.map((id) => itemMap[id]);
     },

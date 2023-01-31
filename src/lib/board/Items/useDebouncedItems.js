@@ -1,20 +1,24 @@
 import React from "react";
-import { useDebouncedEffect } from "@react-hookz/web/esm";
+import { useThrottledEffect } from "@react-hookz/web/esm";
+
 import { useSyncedStore } from "@/board/store/synced";
 
 const useDebouncedItems = () => {
-  const [items, getItemList] = useSyncedStore((state) => [
-    state.getItemList(),
-    getItemList,
+  const [items, itemIds, getItemList] = useSyncedStore((state) => [
+    state.items,
+    state.itemIds,
+    state.getItemList,
   ]);
-  const [debouncedItems, setDebouncedItems] = React.useState([]);
+  const [debouncedItems, setDebouncedItems] = React.useState(getItemList());
 
-  const updateDebouncedItems = React.useCallback(async () => {
-    const currentItemMap = getItemList();
-    setDebouncedItems(currentItemMap);
-  }, [getItemList]);
-
-  useDebouncedEffect(updateDebouncedItems, [items], 300);
+  useThrottledEffect(
+    () => {
+      const currentItemList = getItemList();
+      setDebouncedItems(currentItemList);
+    },
+    [items, itemIds, getItemList],
+    300
+  );
 
   return debouncedItems;
 };

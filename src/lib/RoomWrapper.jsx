@@ -14,7 +14,7 @@ const ConnectedSyncRoom = ({ socket, room, children, LoadingComponent }) => {
       socket={socket}
       LoadingComponent={LoadingComponent}
     >
-      <SyncedUsersProvider stableSession={`${stableRoom}_users`}>
+      <SyncedUsersProvider storeName={`${stableRoom}_users`}>
         {children}
       </SyncedUsersProvider>
     </WireProvider>

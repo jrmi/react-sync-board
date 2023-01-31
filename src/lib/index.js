@@ -14,6 +14,7 @@ export { useUsers } from "@/users";
 export { default as useBoardConfig } from "@/board/useBoardConfig";
 export { default as useBoardState } from "@/board/useBoardState";
 export { default as useBoardPosition } from "@/board/useDim";
+export { default as useSessionInfo } from "@/board/useSessionInfo";
 
 export { default as useMessage } from "@/message/useMessage";
 

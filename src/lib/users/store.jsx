@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
 import { createStore, useStore } from "zustand";
+import { shallow } from "zustand/shallow";
 import { getRandomColor } from "@/utils";
 import { nanoid } from "nanoid";
 
@@ -36,6 +37,7 @@ export const restoreUser = () => {
 };
 
 const usersStore = (curentUserId) => (set, get) => ({
+  isSpaceMaster: false,
   users: {},
   getUser: () => get().users[curentUserId],
   getUsers: () => {
@@ -43,6 +45,9 @@ const usersStore = (curentUserId) => (set, get) => ({
   },
   getUserList: () => Object.values(get().users),
   getLocalUsers: () => {
+    if (!get().users[curentUserId]) {
+      return [];
+    }
     const { space: currentUserSpace } = get().users[curentUserId];
     return get()
       .getUserList()
@@ -50,9 +55,11 @@ const usersStore = (curentUserId) => (set, get) => ({
   },
   addUser: (newUser) =>
     set((state) => ({ users: { ...state.users, [newUser.id]: newUser } })),
-  updateCurrentUser: (toUpdate) => get().updateUser(curentUserId, toUpdate),
   updateUser: (userId, toUpdate) =>
     set((state) => {
+      if (!state.users[userId]) {
+        return {};
+      }
       const newUser = {
         ...state.users[userId],
         ...toUpdate,
@@ -62,6 +69,7 @@ const usersStore = (curentUserId) => (set, get) => ({
       if (newUser.id === curentUserId) {
         persistUser(newUser);
       }
+      setTimeout(() => get().electSpaceMaster(), 100);
       return {
         users: {
           ...state.users,
@@ -73,8 +81,28 @@ const usersStore = (curentUserId) => (set, get) => ({
     set((state) => {
       const newUsers = { ...state.users };
       delete newUsers[userId];
+      setTimeout(() => get().electSpaceMaster(), 100);
       return { users: newUsers };
     }),
+  // Not synchronized methods
+  updateCurrentUser: (toUpdate) => get().updateUser(curentUserId, toUpdate),
+  joinSpace: (space) =>
+    get().updateUser(curentUserId, { space, spaceJoinedTimestamp: Date.now() }),
+  electSpaceMaster: () => {
+    const localUsers = get().getLocalUsers();
+    const master = {
+      uid: null,
+      timestamp: Date.now(),
+    };
+    Object.values(localUsers).forEach(({ spaceJoinedTimestamp, id }) => {
+      if (spaceJoinedTimestamp < master.timestamp) {
+        master.id = id;
+        master.timestamp = spaceJoinedTimestamp;
+      }
+    });
+
+    set({ isSpaceMaster: master.id === curentUserId });
+  },
 });
 
 const cursorsStore = (set) => ({
@@ -104,7 +132,16 @@ export const SyncedUsersProvider = ({ storeName, children }) => {
         // Create store
         const localStore = createStore(
           syncMiddleware(
-            { wire, storeName, noSync: ["updateCurrentUser"] },
+            {
+              wire,
+              storeName,
+              noSync: [
+                "updateCurrentUser",
+                "joinSpace",
+                "isSpaceMaster",
+                "electSpaceMaster",
+              ],
+            },
             (...args) => ({
               ...usersStore(wire.userId)(...args),
               ...cursorsStore(...args),
@@ -172,7 +209,7 @@ export const SyncedUsersProvider = ({ storeName, children }) => {
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useSyncedUsers = (selector) => {
+export const useSyncedUsers = (selector, equalityFn) => {
   const store = useContext(Context);
-  return useStore(store, selector);
+  return useStore(store, selector, equalityFn ? equalityFn : shallow);
 };

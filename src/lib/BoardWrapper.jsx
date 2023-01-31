@@ -10,6 +10,7 @@ import { SyncedStoreProvider } from "@/board/store/synced";
 import { insideClass } from "@/utils";
 import useMainStore from "@/board/store/main";
 import { SyncedUsersProvider, useSyncedUsers } from "./users/store";
+import { SyncedMessageProvider } from "./message/store";
 
 const StyledBoardView = styled.div`
   overflow: hidden;
@@ -19,7 +20,7 @@ const StyledBoardView = styled.div`
 
 const SyncBoard = ({ children, session, style }) => {
   const boardWrapperRef = React.useRef(null);
-  const updateCurrentUser = useSyncedUsers((state) => state.updateCurrentUser);
+  const joinSpace = useSyncedUsers((state) => state.joinSpace);
 
   const [uid, updateConfiguration] = useMainStore((state) => [
     state.config.uid,
@@ -44,11 +45,11 @@ const SyncBoard = ({ children, session, style }) => {
 
   // Set user space
   React.useEffect(() => {
-    updateCurrentUser({ space: session });
+    joinSpace(session);
     return () => {
-      updateCurrentUser({ space: null });
+      joinSpace(null);
     };
-  }, [session, updateCurrentUser]);
+  }, [joinSpace, session]);
 
   React.useEffect(() => {
     if (!uid) {
@@ -90,6 +91,7 @@ const ConnectedSyncBoard = ({
   room,
   session,
   items = [],
+  messages = [],
   LoadingComponent,
   ...props
 }) => {
@@ -114,23 +116,33 @@ const ConnectedSyncBoard = ({
         LoadingComponent={LoadingComponent}
       >
         <SyncedUsersProvider storeName={`${stableRoom}_users`}>
-          <SyncedStoreProvider
-            storeName={`${stableSession}_item`}
-            defaultValue={defaultItemsValue}
+          <SyncedMessageProvider
+            storeName={`${stableSession}_messages`}
+            defaultValue={messages}
           >
-            <SyncBoard {...props} session={stableSession} />
-          </SyncedStoreProvider>
+            <SyncedStoreProvider
+              storeName={`${stableSession}_item`}
+              defaultValue={defaultItemsValue}
+            >
+              <SyncBoard {...props} session={stableSession} />
+            </SyncedStoreProvider>
+          </SyncedMessageProvider>
         </SyncedUsersProvider>
       </WireProvider>
     );
   }
   return (
-    <SyncedStoreProvider
-      storeName={`${stableSession}_item`}
-      defaultValue={defaultItemsValue}
+    <SyncedMessageProvider
+      storeName={`${stableSession}_messages`}
+      defaultValue={messages}
     >
-      <SyncBoard {...props} />
-    </SyncedStoreProvider>
+      <SyncedStoreProvider
+        storeName={`${stableSession}_item`}
+        defaultValue={defaultItemsValue}
+      >
+        <SyncBoard {...props} session={stableSession} />
+      </SyncedStoreProvider>
+    </SyncedMessageProvider>
   );
 };
 

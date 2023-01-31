@@ -4,6 +4,7 @@ import { nanoid } from "nanoid";
 
 import useWire from "@/hooks/useWire";
 import { syncMiddleware } from "@/utils";
+import { shallow } from "zustand/shallow";
 
 const Context = React.createContext();
 
@@ -28,12 +29,12 @@ const messageStore = (set, get) => ({
       })),
     }),
   addMessage: (newMessage) =>
-    set((state) => {
-      [
+    set((state) => ({
+      messages: [
         ...state.messages,
         { ...newMessage, timestamp: Date.parse(newMessage.timestamp) },
-      ];
-    }),
+      ],
+    })),
   sendMessage: (user, content) => {
     const newMessage = generateMsg({
       user,
@@ -46,7 +47,7 @@ const messageStore = (set, get) => ({
 export const SyncedMessageProvider = ({
   storeName,
   children,
-  defaultValue,
+  defaultValue = [],
 }) => {
   const { wire } = useWire("room");
   const [store] = React.useState(() =>
@@ -63,7 +64,7 @@ export const SyncedMessageProvider = ({
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useSyncedMessage = (selector) => {
+export const useSyncedMessage = (selector, equalityFn) => {
   const store = useContext(Context);
-  return useStore(store, selector);
+  return useStore(store, selector, equalityFn ? equalityFn : shallow);
 };

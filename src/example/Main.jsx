@@ -15,14 +15,8 @@ import SelectedItemsPane from "./SelectedItemsPane";
 
 import Spinner from "./ui/Spinner";
 
-//STORYBOOK_SOCKET_URL=https://public.jeremiez.net
-//STORYBOOK_SOCKET_PATH=/wamp/socket.io
-
-//const STORYBOOK_SOCKET_URL = "https://public.jeremiez.net";
-//const SOCKET_PATH = "/wamp/socket.io";
-
-const STORYBOOK_SOCKET_URL = "localhost:4000";
-const SOCKET_PATH = "/socket.io";
+const STORYBOOK_SOCKET_URL = "https://public.jeremiez.net";
+const SOCKET_PATH = "/wamp2/socket.io";
 
 const SOCKET_OPTIONS = {
   forceNew: true,
