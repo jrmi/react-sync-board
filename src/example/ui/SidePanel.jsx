@@ -1,17 +1,8 @@
 import React from "react";
 import styled from "@emotion/styled";
-import usePortal from "react-useportal";
+import { createPortal } from "react-dom";
 
 import useTranslation from "../useTranslation";
-
-const Overlay = styled.div`
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  right: 0;
-  background-color: rgba(0, 0, 0, 0.6);
-`;
 
 const StyledSidePanel = styled.div`
   position: absolute;
@@ -109,10 +100,7 @@ const SidePanel = ({
 }) => {
   const { t } = useTranslation();
 
-  const { ref, Portal, openPortal, closePortal, isOpen } = usePortal({
-    closeOnOutsideClick: modal,
-    bindTo: document.getElementById(`portal-container-uid`),
-  });
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const onAnimationEnd = React.useCallback(() => {
     if (!isOpen) {
@@ -122,41 +110,42 @@ const SidePanel = ({
 
   React.useEffect(() => {
     if (open) {
-      openPortal();
+      setIsOpen(true);
     } else {
-      closePortal();
+      setIsOpen(false);
     }
-  }, [openPortal, closePortal, open]);
+  }, [open]);
 
   return (
-    <Portal>
-      {modal && isOpen && <Overlay onClick={closePortal} />}
-      <StyledSidePanel
-        position={position}
-        open={isOpen}
-        onTransitionEnd={onAnimationEnd}
-        noMargin={noMargin}
-        ref={ref}
-        width={width}
-        modal={modal}
-        className={isOpen ? "side-panel open" : "side-panel"}
-      >
-        <header>
-          {title && <h2 className="title">{title}</h2>}
-          <button
-            className="button clear icon-only close"
-            onClick={closePortal}
-          >
-            <img
-              src="https://icongr.am/feather/x.svg?size=42&color=ffffff"
-              alt={t("Close")}
-            />
-          </button>
-        </header>
-        <div className="content">{open && children}</div>
-        {footer && <footer>{footer}</footer>}
-      </StyledSidePanel>
-    </Portal>
+    <div>
+      {createPortal(
+        <StyledSidePanel
+          position={position}
+          open={isOpen}
+          onTransitionEnd={onAnimationEnd}
+          noMargin={noMargin}
+          width={width}
+          modal={modal}
+          className={isOpen ? "side-panel open" : "side-panel"}
+        >
+          <header>
+            {title && <h2 className="title">{title}</h2>}
+            <button
+              className="button clear icon-only close"
+              onClick={() => setIsOpen(false)}
+            >
+              <img
+                src="https://icongr.am/feather/x.svg?size=42&color=ffffff"
+                alt={t("Close")}
+              />
+            </button>
+          </header>
+          <div className="content">{open && children}</div>
+          {footer && <footer>{footer}</footer>}
+        </StyledSidePanel>,
+        document.getElementById(`portal-container-uid`)
+      )}
+    </div>
   );
 };
 
