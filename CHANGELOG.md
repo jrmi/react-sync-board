@@ -1,4 +1,11 @@
 
+1.0.0 / 2023-02-05
+==================
+
+  * Convert to vitejs
+  * Use zustand instead of recoil
+  * Fix missing events for pointer 2
+
 0.7.2 / 2022-08-10
 ==================
 
