@@ -37,7 +37,7 @@ body {
 [type="reset"],
 [type="submit"],
 button {
-  padding: 1rem 1rem;
+  padding: 0.5rem 1rem;
   color: var(--font-color);
   background: var(--color-midGrey);
   border-radius: 0;

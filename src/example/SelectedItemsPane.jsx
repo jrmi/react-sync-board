@@ -166,7 +166,7 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
       {selectedItems.length && !hideMenu && (
         <ActionPane
           left="50%"
-          top="5px"
+          bottom="5px"
           hide={
             boardState.zooming || boardState.panning || boardState.movingItems
           }

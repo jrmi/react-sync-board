@@ -111,28 +111,52 @@ const AddItems = () => {
   };
 
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "start" }}
-    >
-      {Object.entries(itemMap).map(
-        ([key, itemTpl]) =>
-          key !== "error" && (
-            <div key={key}>
-              <button onClick={() => addItem(key, itemTpl.template)}>
-                Add {key}
-              </button>
-            </div>
-          )
-      )}
-    </div>
+    <>
+      <h2>Add item</h2>
+      <div
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "start",
+        }}
+      >
+        {Object.entries(itemMap).map(
+          ([key, itemTpl]) =>
+            key !== "error" && (
+              <div key={key} style={{ width: "100%" }}>
+                <button
+                  style={{ width: "100%" }}
+                  onClick={() => addItem(key, itemTpl.template)}
+                >
+                  Add {key}
+                </button>
+              </div>
+            )
+        )}
+      </div>
+    </>
   );
 };
 
 const UserList = () => {
-  const { currentUser, localUsers } = useUsers();
+  const { currentUser, updateCurrentUser, localUsers } = useUsers();
+
+  React.useEffect(() => {
+    fetch("https://randomuser.me/api/")
+      .then((result) => {
+        return result.json();
+      })
+      .then(({ results }) => {
+        const {
+          name: { first, last },
+        } = results[0];
+        updateCurrentUser({ name: `${first} ${last}` });
+      });
+  }, [updateCurrentUser]);
+
   return (
     <>
-      <h1>Users</h1>
+      <h2>Users</h2>
       <ul>
         {localUsers.map((user) => (
           <li key={user.id}>
@@ -211,6 +235,7 @@ export const OneView = (props) => (
       style={{
         width: "100vw",
         height: "100vh",
+        marginTop: "3rem",
         position: "relative",
         border: "1px solid black",
       }}
@@ -219,14 +244,6 @@ export const OneView = (props) => (
     </div>
   </WithSocketIO>
 );
-
-OneView.args = {
-  moveFirst: false,
-  showResizeHandle: false,
-  hideMenu: false,
-  room: nanoid(),
-  session: nanoid(),
-};
 
 const style = {
   backgroundColor: "#555",
@@ -275,6 +292,7 @@ export const OneViewWithRoom = (props) => (
       style={{
         width: "100vw",
         height: "100vh",
+        marginTop: "3rem",
         position: "relative",
         border: "1px solid black",
       }}
@@ -284,15 +302,22 @@ export const OneViewWithRoom = (props) => (
   </WithSocketIO>
 );
 
+<div
+  style={{
+    width: "100vw",
+    height: "100vh",
+    marginTop: "3rem",
+    position: "relative",
+    border: "1px solid black",
+  }}
+></div>;
 export const TwoView = (props) => {
-  // Generate stable room and sessions
-  const [[room, session]] = React.useState(() => [nanoid(), nanoid()]);
-
   return (
     <div
       style={{
         width: "100%",
-        height: "500px",
+        height: "100vh",
+        marginTop: "3rem",
         display: "flex",
       }}
     >
@@ -305,7 +330,7 @@ export const TwoView = (props) => {
             border: "1px solid grey",
           }}
         >
-          <OneViewContent room={room} session={session} {...props} />
+          <OneViewContent {...props} />
         </div>
       </WithSocketIO>
       <WithSocketIO>
@@ -317,7 +342,7 @@ export const TwoView = (props) => {
             border: "1px solid grey",
           }}
         >
-          <OneViewContent room={room} session={session} {...props} />
+          <OneViewContent {...props} />
         </div>
       </WithSocketIO>
     </div>
