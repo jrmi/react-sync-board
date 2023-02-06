@@ -1,5 +1,3 @@
-import React from "react";
-
 import Cursors from "./Cursors";
 import useMainStore from "@/board/store/main";
 import { useSyncedUsers } from "@/users/store";
@@ -15,20 +13,17 @@ const CursorPane = ({ children }) => {
     state.getBoardState,
   ]);
 
-  const onMouseMove = React.useCallback(
-    ({ clientX, clientY }) => {
-      const { scale, translateX, translateY } = getBoardState();
-      const {
-        boardWrapperRect: { left, top },
-      } = getConfiguration();
-      const newPos = {
-        x: (clientX - left - translateX) / scale,
-        y: (clientY - top - translateY) / scale,
-      };
-      moveCursor(currentUser.id, newPos);
-    },
-    [getBoardState, getConfiguration, moveCursor, currentUser.id]
-  );
+  const onMouseMove = ({ clientX, clientY }) => {
+    const { scale, translateX, translateY } = getBoardState();
+    const {
+      boardWrapperRect: { left, top },
+    } = getConfiguration();
+    const newPos = {
+      x: (clientX - left - translateX) / scale,
+      y: (clientY - top - translateY) / scale,
+    };
+    moveCursor(currentUser.id, newPos);
+  };
 
   const onLeave = () => {
     removeCursor(currentUser.id);

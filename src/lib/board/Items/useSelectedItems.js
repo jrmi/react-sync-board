@@ -1,5 +1,8 @@
-import useSelection from "../store/selection";
+import useMainStore from "../store/main";
 
-const useSelectedItems = () => useSelection((state) => state.selection);
+const useSelectedItems = () => {
+  const [selection] = useMainStore((state) => [state.selection]);
+  return selection;
+};
 
 export default useSelectedItems;

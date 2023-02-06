@@ -35,7 +35,7 @@ export default {
   title: "SyncBoard/Main",
 };
 
-const initialItems = [
+const defaultInitialItems = [
   {
     type: "cylinder",
     x: 0,
@@ -203,6 +203,7 @@ const OneViewContent = ({
   room,
   session,
   children,
+  initialItems = null,
 }) => {
   const socket = useSocket();
   return (
@@ -210,7 +211,7 @@ const OneViewContent = ({
       room={room}
       session={session}
       socket={socket}
-      items={initialItems}
+      items={initialItems || defaultInitialItems}
       LoadingComponent={() => <Spinner />}
     >
       <Overlay hideMenu={hideMenu}>
@@ -245,6 +246,19 @@ export const OneView = (props) => (
   </WithSocketIO>
 );
 
+export const OneViewPerf = (props) => {
+  const initialItems = [...Array(2000)].map((e, index) => ({
+    type: "rect",
+    x: 10 + index,
+    y: 10 + index,
+    width: 100,
+    height: 100,
+    id: nanoid(),
+  }));
+
+  return <OneView {...props} initialItems={initialItems} />;
+};
+
 const style = {
   backgroundColor: "#555",
   backgroundImage: `linear-gradient(white 2px, transparent 2px),
@@ -260,6 +274,7 @@ const OneViewWithRoomContent = ({
   hideMenu,
   room,
   session,
+  initialItems = null,
 }) => {
   const socket = useSocket();
   return (
@@ -272,6 +287,7 @@ const OneViewWithRoomContent = ({
         session={session}
         socket={socket}
         LoadingComponent={() => <Spinner />}
+        items={initialItems || defaultInitialItems}
       >
         <Overlay hideMenu={hideMenu}>
           <Board
@@ -354,9 +370,9 @@ export const OneViewWithCustomBoardElements = (props) => (
     <div
       style={{
         width: "100%",
-        height: "500px",
-        position: "relative",
-        border: "1px solid black",
+        height: "100vh",
+        marginTop: "3rem",
+        display: "flex",
       }}
     >
       <OneViewContent {...props}>

@@ -22,7 +22,7 @@ const Cursors = () => {
   }, {});
 
   return (
-    <div>
+    <>
       {Object.entries(currentCursors).map(([userId, pos]) => (
         <Cursor
           key={userId}
@@ -31,7 +31,7 @@ const Cursors = () => {
           color={usersById[userId].color}
         />
       ))}
-    </div>
+    </>
   );
 };
 

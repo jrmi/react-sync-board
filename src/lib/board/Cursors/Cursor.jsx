@@ -1,39 +1,35 @@
 import React from "react";
-
-import styled from "@emotion/styled";
+import { css } from "goober";
 
 import { readableColorIsBlack } from "color2k";
 
-const StyledCursor = styled.div`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  z-index: 210;
-  pointer-events: none;
-`;
+const cursorClass = css({
+  display: "flex",
+  flexDirection: "row",
+  alignItems: "center",
+  zIndex: 210,
+  pointerEvents: "none",
+});
 
-const CursorName = styled.div`
-  color: ${({ textColor }) => textColor};
-  font-weight: bold;
-  padding: 0 0.5em;
-  border-radius: 2px;
-  max-width: 5em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-left: -0.5em;
-  margin-top: 1.7em;
-  whitespace: nowrap;
-  pointer-events: none;
-  background-color: ${({ color }) => color};
-`;
+const cursorLabelClass = css({
+  fontWeight: "bold",
+  padding: "0 0.5em",
+  borderRadius: "2px",
+  maxWidth: "5em",
+  overflow: "hidden",
+  textOverflow: "ellipsis",
+  marginLeft: "-0.5em",
+  marginTop: "1.7em",
+  whitespace: "nowrap",
+  pointerEvents: "none",
+});
 
 const Cursor = ({ color = "#666", size = 40, text }) => {
   const textColor = readableColorIsBlack(color) ? "#222" : "#EEE";
   return (
-    <StyledCursor>
+    <div className={cursorClass}>
       <svg
         version="1.1"
-        id="Layer_1"
         xmlns="http://www.w3.org/2000/svg"
         viewBox="1064.7701 445.5539 419.8101 717.0565"
         width={size}
@@ -54,26 +50,33 @@ const Cursor = ({ color = "#666", size = 40, text }) => {
           }}
         />
       </svg>
-
-      <CursorName color={color} textColor={textColor}>
+      <div
+        style={{
+          color: textColor,
+          backgroundColor: color,
+        }}
+        className={cursorLabelClass}
+      >
         {text}
-      </CursorName>
-    </StyledCursor>
+      </div>
+    </div>
   );
 };
 
 const MemoizedCursor = React.memo(Cursor);
 
+const defaultPositionedCursorClass = css({
+  top: 0,
+  left: 0,
+  zIndex: 210,
+  position: "fixed",
+  pointerEvents: "none",
+});
+
 const PositionedCursor = ({ pos, ...rest }) => (
   <div
-    style={{
-      transform: `translate(${pos.x - 5}px, ${pos.y - 3}px)`,
-      top: 0,
-      left: 0,
-      zIndex: 210,
-      position: "fixed",
-      pointerEvents: "none",
-    }}
+    className={defaultPositionedCursorClass}
+    style={{ transform: `translate(${pos.x - 5}px, ${pos.y - 3}px)` }}
   >
     <MemoizedCursor {...rest} />
   </div>

@@ -21,3 +21,8 @@ export { default as useMessage } from "@/message/useMessage";
 export { default as BoardWrapper } from "@/BoardWrapper";
 export { default as RoomWrapper } from "@/RoomWrapper";
 export { default as Board } from "@/board/Board";
+
+import React from "react";
+import { setup } from "goober";
+
+setup(React.createElement);

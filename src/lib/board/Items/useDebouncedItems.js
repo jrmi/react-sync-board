@@ -1,5 +1,4 @@
 import React from "react";
-import { useThrottledEffect } from "@react-hookz/web/esm";
 
 import { useSyncedStore } from "@/board/store/synced";
 
@@ -10,15 +9,14 @@ const useDebouncedItems = () => {
     state.getItemList,
   ]);
   const [debouncedItems, setDebouncedItems] = React.useState(getItemList());
+  const [, startTransition] = React.useTransition();
 
-  useThrottledEffect(
-    () => {
-      const currentItemList = getItemList();
+  React.useEffect(() => {
+    const currentItemList = getItemList();
+    startTransition(() => {
       setDebouncedItems(currentItemList);
-    },
-    [items, itemIds, getItemList],
-    300
-  );
+    });
+  }, [items, itemIds, getItemList]);
 
   return debouncedItems;
 };

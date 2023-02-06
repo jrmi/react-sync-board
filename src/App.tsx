@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { OneView, TwoView } from "./example/Main.jsx";
+import {
+  OneView,
+  TwoView,
+  OneViewPerf,
+  OneViewWithCustomBoardElements,
+  OneViewWithRoom,
+} from "./example/Main.jsx";
 
 const TopBar = ({ setView }: { setView: (viewName: string) => void }) => {
   return (
@@ -16,7 +22,10 @@ const TopBar = ({ setView }: { setView: (viewName: string) => void }) => {
     >
       <h1 style={{ padding: 0, margin: 0 }}>ReactSyncBoard demo</h1>
       <button onClick={() => setView("one")}>One view</button>
+      <button onClick={() => setView("style")}>One view with style</button>
+      <button onClick={() => setView("custom")}>One view with custom</button>
       <button onClick={() => setView("two")}>Two views</button>
+      <button onClick={() => setView("perf")}>Perf</button>
     </div>
   );
 };
@@ -32,10 +41,28 @@ function App() {
       {view === "one" && (
         <OneView
           moveFirst={false}
+          showResizeHandle={true}
+          hideMenu={false}
+          room={`${room}_one`}
+          session={`${session}_one`}
+        />
+      )}
+      {view === "style" && (
+        <OneViewWithRoom
+          moveFirst={false}
           showResizeHandle={false}
           hideMenu={false}
-          room={room}
-          session={session}
+          room={`${room}_one`}
+          session={`${session}_one`}
+        />
+      )}
+      {view === "custom" && (
+        <OneViewWithCustomBoardElements
+          moveFirst={false}
+          showResizeHandle={false}
+          hideMenu={false}
+          room={`${room}_custom`}
+          session={`${session}_custom`}
         />
       )}
       {view === "two" && (
@@ -43,8 +70,17 @@ function App() {
           moveFirst={false}
           showResizeHandle={false}
           hideMenu={false}
-          room={room}
-          session={session}
+          room={`${room}_two`}
+          session={`${session}_two`}
+        />
+      )}
+      {view === "perf" && (
+        <OneViewPerf
+          moveFirst={false}
+          showResizeHandle={false}
+          hideMenu={false}
+          room={`${room}_perf`}
+          session={`${session}_perf`}
         />
       )}
     </div>

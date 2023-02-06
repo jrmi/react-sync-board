@@ -12,13 +12,19 @@ import {
 } from "@/utils";
 
 import useItemInteraction from "./useItemInteraction";
-import useSelection from "../store/selection";
 import useMainStore from "../store/main";
 
 const useItemActions = () => {
   const { call: callPlaceInteractions } = useItemInteraction("place");
   const { getCenter, updateItemExtent } = useDim();
-  const getConfiguration = useMainStore((state) => state.getConfiguration);
+
+  const [clearSelection, reverseSelection, unselect, getConfiguration] =
+    useMainStore((state) => [
+      state.clear,
+      state.reverse,
+      state.unselect,
+      state.getConfiguration,
+    ]);
 
   const {
     getItems: getStoreItems,
@@ -53,12 +59,6 @@ const useItemActions = () => {
       setItemList,
     })
   );
-
-  const [clearSelection, reverseSelection, unselect] = useSelection((state) => [
-    state.clear,
-    state.reverse,
-    state.unselect,
-  ]);
 
   const batchUpdateItems = React.useCallback(
     (itemIds, callbackOrItem) => {
@@ -353,7 +353,7 @@ const useItemActions = () => {
               return elem;
             }
           }
-          // Here there is not available elements
+          // Here there is no available elements
           return null;
         }
       }

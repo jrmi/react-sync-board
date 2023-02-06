@@ -15,7 +15,9 @@ const useMessage = (onMessage = noop) => {
 
   React.useEffect(() => {
     // React on new message
-    onMessage();
+    if (messages.length) {
+      onMessage();
+    }
   }, [messages, onMessage]);
 
   const sendMessageWithUser = React.useCallback(
