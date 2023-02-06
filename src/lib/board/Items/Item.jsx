@@ -1,111 +1,92 @@
 import React, { memo } from "react";
 
-import styled from "@emotion/styled";
 import ResizeHandler from "./ResizeHandler";
-import lockIcon from "../../images/lock.svg";
+import { css } from "goober";
+import deepEqual from "fast-deep-equal";
 
-const ItemWrapper = styled.div`
+const itemClass = css`
   display: inline-block;
   transition: transform 150ms;
   user-select: none;
   padding: 2px;
   box-sizing: border-box;
-  transform: rotate(${({ rotation }) => rotation}deg);
-
-  & .corner {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-  }
-
-  & .top-left {
-    top: 0;
-    left: 0;
-  }
-  & .top-right {
-    top: 0;
-    right: 0;
-  }
-  & .bottom-left {
-    bottom: 0;
-    left: 0;
-  }
-  & .bottom-right {
-    bottom: 0;
-    right: 0;
-  }
-
-  & .center {
-    position: absolute;
-    width: 0px;
-    height: 0px;
-    top: 50%;
-    left: 50%;
-  }
-
-  &.selected {
-    border: 2px dashed #db5034;
-    padding: 0px;
-    cursor: pointer;
-  }
-
-  &.locked::after {
-    content: "";
-    position: absolute;
-    width: 24px;
-    height: 30px;
-    top: 4px;
-    right: 4px;
-    opacity: 0.1;
-    background-image: url("${lockIcon}");
-    background-size: cover;
-    user-select: none;
-  }
-
-  &.locked:hover::after {
-    opacity: 0.3;
-  }
-
-  & .resize {
-    position: absolute;
-
-    width: 10px;
-    height: 10px;
-    border: 2px solid #db5034;
-    background-color: #db5034;
-    cursor: move;
-
-    &.resize-width {
-      cursor: ew-resize;
-      right: -6px;
-      top: calc(50% - 5px);
-    }
-    &.resize-height {
-      cursor: ns-resize;
-      bottom: -6px;
-      left: calc(50% - 5px);
-    }
-    &.resize-ratio {
-      cursor: nwse-resize;
-      bottom: -6px;
-      right: -6px;
-    }
-  }
 `;
 
-const identity = (x) => x;
+const selectedItemClass = css`
+  border: 2px dashed #db5034;
+  padding: 0px;
+  cursor: pointer;
+`;
+
+const itemMark = css`
+  position: absolute;
+  width: 0px;
+  height: 0px;
+`;
+
+const itemMarkTopLeft = css`
+  top: 0;
+  left: 0;
+`;
+
+const itemMarkTopRight = css`
+  top: 0;
+  right: 0;
+`;
+
+const itemMarkBottomLeft = css`
+  bottom: 0;
+  left: 0;
+`;
+
+const itemMarkBottomRight = css`
+  bottom: 0;
+  right: 0;
+`;
+
+const itemMarkCenter = css`
+  top: 50%;
+  left: 50%;
+`;
+
+const itemResize = css`
+  position: absolute;
+
+  width: 10px;
+  height: 10px;
+  border: 2px solid #db5034;
+  background-color: #db5034;
+  cursor: move;
+`;
+
+const itemResizeWidth = css`
+  cursor: ew-resize;
+  right: -6px;
+  top: calc(50% - 5px);
+`;
+
+const itemResizeHeight = css`
+  cursor: ns-resize;
+  bottom: -6px;
+  left: calc(50% - 5px);
+`;
+
+const itemResizeRatio = css`
+  cursor: nwse-resize;
+  bottom: -6px;
+  right: -6px;
+`;
 
 const DefaultErrorComponent = ({ onReload }) => (
   <div
-    style={{
+    className={`syncboard-error-item ${css({
       width: "100px",
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
       textAlign: "center",
       color: "red",
-    }}
-    className="syncboard-error-item"
+    })}`}
   >
     Sorry, this item seems broken.
     <button onClick={onReload}>Reload it</button>
@@ -196,11 +177,11 @@ const defaultResizeDirection = {
 
 const Item = ({
   setState,
-  state: { type, rotation = 0, id, locked, layer, ...rest } = {},
+  state: { type, rotation = 0, id, locked, extraClasses, ...rest } = {},
   animate = "hvr-pop",
   isSelected,
   itemMap,
-  showResizeHandle = false,
+  showResizeHandle = true,
 }) => {
   const itemWrapperRef = React.useRef(null);
 
@@ -211,7 +192,7 @@ const Item = ({
   } = itemMap[type];
 
   const updateState = React.useCallback(
-    (callbackOrItem, sync = true) => setState(id, callbackOrItem, sync),
+    (callbackOrItem) => setState(id, callbackOrItem),
     [setState, id]
   );
 
@@ -219,58 +200,49 @@ const Item = ({
     itemWrapperRef.current.className = animate;
   }, [animate]);
 
-  let className = `item ${id}`;
+  const classes = ["item", id, itemClass];
   if (locked) {
-    className += " locked";
+    classes.push("locked");
   }
   if (isSelected) {
-    className += " selected";
+    classes.push("selected");
+    classes.push(selectedItemClass);
+  }
+  if (Array.isArray(extraClasses)) {
+    classes.concat(extraClasses);
   }
 
-  const onResize = React.useCallback(
-    ({ width = 0, height = 0, keepRatio }) => {
-      updateState((prev) => {
-        const { offsetWidth, offsetHeight } = itemWrapperRef.current;
-        return resize({
-          prevState: prev,
-          width,
-          height,
-          actualHeight: offsetHeight,
-          actualWidth: offsetWidth,
-          keepRatio,
-        });
+  const className = classes.join(" ");
+
+  const onResize = ({ width = 0, height = 0, keepRatio }) => {
+    updateState((prev) => {
+      const { offsetWidth, offsetHeight } = itemWrapperRef.current;
+      return resize({
+        prevState: prev,
+        width,
+        height,
+        actualHeight: offsetHeight,
+        actualWidth: offsetWidth,
+        keepRatio,
       });
-    },
-    [resize, updateState]
-  );
+    });
+  };
 
-  const onResizeWidth = React.useCallback(
-    ({ width }) => {
-      onResize({ width });
-    },
-    [onResize]
-  );
+  const onResizeWidth = ({ width }) => {
+    onResize({ width });
+  };
 
-  const onResizeHeight = React.useCallback(
-    ({ height }) => {
-      onResize({ height });
-    },
-    [onResize]
-  );
+  const onResizeHeight = ({ height }) => {
+    onResize({ height });
+  };
 
-  const onResizeRatio = React.useCallback(
-    ({ width }) => {
-      onResize({ height: width, width, keepRatio: true });
-    },
-    [onResize]
-  );
+  const onResizeRatio = ({ width }) => {
+    onResize({ height: width, width, keepRatio: true });
+  };
 
   return (
-    <ItemWrapper
-      rotation={rotation}
-      locked={locked}
-      selected={isSelected}
-      layer={layer}
+    <div
+      style={{ transform: `rotate(${rotation}deg` }}
       data-id={id}
       className={className}
     >
@@ -284,42 +256,41 @@ const Item = ({
         <ItemErrorBoundary
           itemId={id}
           state={rest}
-          setState={updateState}
           ErrorComponent={itemMap?.error?.component || DefaultErrorComponent}
         >
           <Component {...rest} id={id} setState={updateState} />
         </ItemErrorBoundary>
-        <div className="corner top-left" />
-        <div className="corner top-right" />
-        <div className="corner bottom-right" />
-        <div className="corner bottom-left" />
-        <div className="center" />
-        {isSelected && showResizeHandle && (
+        <div className={`corner ${itemMark} ${itemMarkTopLeft}`} />
+        <div className={`corner ${itemMark} ${itemMarkTopRight}`} />
+        <div className={`corner ${itemMark} ${itemMarkBottomRight}`} />
+        <div className={`corner ${itemMark} ${itemMarkBottomLeft}`} />
+        <div className={`${itemMark} ${itemMarkCenter}`} />
+        {showResizeHandle && (
           <>
             {resizeDirections.b && (
               <ResizeHandler
-                className="resize resize-ratio"
+                className={`${itemResize} ${itemResizeRatio}`}
                 onResize={onResizeRatio}
               />
             )}
 
             {resizeDirections.h && (
               <ResizeHandler
-                className="resize resize-height"
+                className={`${itemResize} ${itemResizeHeight}`}
                 onResize={onResizeHeight}
               />
             )}
 
             {resizeDirections.w && (
               <ResizeHandler
-                className="resize resize-width"
+                className={`${itemResize} ${itemResizeWidth}`}
                 onResize={onResizeWidth}
               />
             )}
           </>
         )}
       </div>
-    </ItemWrapper>
+    </div>
   );
 };
 
@@ -342,11 +313,13 @@ const MemoizedItem = memo(
     prevIsSelected === nextIsSelected &&
     prevShowResizeHandle === nextShowResizeHandle &&
     prevSetState === nextSetState &&
-    JSON.stringify(prevState) === JSON.stringify(nextState)
+    deepEqual(prevState, nextState)
 );
 
+const identity = (x) => x;
+
 // Exclude positioning from memoization
-const PositionedItem = ({ state = {}, boardSize, currentUser, ...rest }) => {
+const PositionedItem = ({ state = {}, getCurrentUser, className, ...rest }) => {
   if (!rest.itemMap[state.type]) {
     return null;
   }
@@ -359,17 +332,16 @@ const PositionedItem = ({ state = {}, boardSize, currentUser, ...rest }) => {
     layer = 0,
     moving,
     ...stateRest
-  } = stateHook(state, { currentUser });
+  } = stateHook(state, { getCurrentUser });
+
+  const zIndex = (layer + 4) * 10 + 100 + (moving ? 5 : 0); // Items z-index between 100 and 200
 
   return (
     <div
+      className={className}
       style={{
-        position: "absolute",
-        top: `${boardSize / 2}px`,
-        left: `${boardSize / 2}px`,
-        display: "inline-block",
         transform: `translate(${x}px, ${y}px)`,
-        zIndex: (layer + 4) * 10 + 100 + (moving ? 5 : 0), // Items z-index between 100 and 200
+        zIndex,
       }}
     >
       <MemoizedItem

@@ -1,5 +1,5 @@
 import React from "react";
-import { useDebouncedCallback } from "@react-hookz/web/esm";
+import { useDebouncedCallback } from "@react-hookz/web/esm/useDebouncedCallback";
 
 import { useSyncedStore } from "@/board/store/synced";
 import { getItemBoundingBox } from "@/utils";
@@ -41,18 +41,22 @@ const translateBoundaries = ({
 };
 
 const useDim = () => {
-  const [getBoardState, updateBoardState] = useMainStore((state) => [
+  const [
+    getBoardState,
+    updateBoardState,
+    itemExtentGlobal,
+    getConfiguration,
+    updateConfiguration,
+  ] = useMainStore((state) => [
     state.getBoardState,
     state.updateBoardState,
+    state.config.itemExtent,
+    state.getConfiguration,
+    state.updateConfiguration,
   ]);
   const scaleBoundariesRef = React.useRef([0.1, 8]);
-  const [itemExtentGlobal, getConfiguration, updateConfiguration] =
-    useMainStore((state) => [
-      state.config.itemExtent,
-      state.getConfiguration,
-      state.updateConfiguration,
-    ]);
-  const getItemIds = useSyncedStore((state) => state.getItemIds);
+
+  const [getItemList] = useSyncedStore((state) => [state.getItemList]);
 
   const getDim = React.useCallback(() => {
     const { translateX, translateY, scale } = getBoardState();
@@ -208,12 +212,12 @@ const useDim = () => {
 
   const updateItemExtent = React.useCallback(() => {
     // Update item extent
-    const itemIds = getItemIds();
+    const items = getItemList();
     const { boardWrapperRect, boardWrapper, boardSize } = getConfiguration();
     const { scale, translateX, translateY } = getBoardState();
 
     const { left, top, width, height } = getItemBoundingBox(
-      itemIds,
+      items.map(({ id }) => id),
       boardWrapper
     ) || {
       left: (boardSize / 2) * scale + boardWrapperRect.left + translateX,
@@ -248,12 +252,12 @@ const useDim = () => {
     }
 
     updateConfiguration({ itemExtent: relativeExtent });
-  }, [getBoardState, getConfiguration, getItemIds, updateConfiguration]);
+  }, [getBoardState, getConfiguration, getItemList, updateConfiguration]);
 
   const debouncedUpdateItemExtent = useDebouncedCallback(
-    updateItemExtent,
-    [],
-    300
+    () => updateItemExtent(),
+    [updateItemExtent],
+    200
   );
 
   React.useEffect(() => {

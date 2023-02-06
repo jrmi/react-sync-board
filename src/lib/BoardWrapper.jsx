@@ -1,47 +1,16 @@
 import React from "react";
-import styled from "@emotion/styled";
 import { nanoid } from "nanoid";
-import { useResizeObserver } from "@react-hookz/web/esm";
 
 import useWire, { WireProvider } from "@/hooks/useWire";
 
 import { SyncedStoreProvider } from "@/board/store/synced";
+import { MainStoreProvider } from "@/board/store/main";
 
-import { insideClass } from "@/utils";
-import useMainStore from "@/board/store/main";
 import { SyncedUsersProvider, useSyncedUsers } from "./users/store";
 import { SyncedMessageProvider } from "./message/store";
 
-const StyledBoardView = styled.div`
-  overflow: hidden;
-  position: absolute;
-  inset: 0;
-`;
-
-const SyncBoard = ({ children, session, style }) => {
-  const boardWrapperRef = React.useRef(null);
+const SyncBoard = ({ children, session }) => {
   const joinSpace = useSyncedUsers((state) => state.joinSpace);
-
-  const [uid, updateConfiguration] = useMainStore((state) => [
-    state.config.uid,
-    state.updateConfiguration,
-  ]);
-
-  React.useEffect(() => {
-    // Chrome-related issue.
-    // Making the wheel event non-passive, which allows to use preventDefault() to prevent
-    // the browser original zoom  and therefore allowing our custom one.
-    // More detail at https://github.com/facebook/react/issues/14856
-    const cancelWheel = (event) => {
-      if (insideClass(event.target, "board")) event.preventDefault();
-    };
-
-    document.body.addEventListener("wheel", cancelWheel, { passive: false });
-
-    return () => {
-      document.body.removeEventListener("wheel", cancelWheel);
-    };
-  }, []);
 
   // Set user space
   React.useEffect(() => {
@@ -51,39 +20,7 @@ const SyncBoard = ({ children, session, style }) => {
     };
   }, [joinSpace, session]);
 
-  React.useEffect(() => {
-    if (!uid) {
-      updateConfiguration({
-        uid: nanoid(),
-      });
-    }
-  }, [uid, updateConfiguration]);
-
-  React.useEffect(() => {
-    updateConfiguration({
-      boardWrapper: boardWrapperRef.current,
-    });
-  }, [updateConfiguration]);
-
-  useResizeObserver(boardWrapperRef, () => {
-    if (!boardWrapperRef.current) {
-      return;
-    }
-    updateConfiguration({
-      boardWrapperRect: boardWrapperRef.current.getBoundingClientRect(),
-    });
-  });
-
-  return (
-    <StyledBoardView
-      ref={boardWrapperRef}
-      id={uid}
-      className="sync-board"
-      style={style}
-    >
-      {children}
-    </StyledBoardView>
-  );
+  return children;
 };
 
 const ConnectedSyncBoard = ({
@@ -120,12 +57,14 @@ const ConnectedSyncBoard = ({
             storeName={`${stableSession}_messages`}
             defaultValue={messages}
           >
-            <SyncedStoreProvider
-              storeName={`${stableSession}_item`}
-              defaultValue={defaultItemsValue}
-            >
-              <SyncBoard {...props} session={stableSession} />
-            </SyncedStoreProvider>
+            <MainStoreProvider>
+              <SyncedStoreProvider
+                storeName={`${stableSession}_item`}
+                defaultValue={defaultItemsValue}
+              >
+                <SyncBoard {...props} session={stableSession} />
+              </SyncedStoreProvider>
+            </MainStoreProvider>
           </SyncedMessageProvider>
         </SyncedUsersProvider>
       </WireProvider>
@@ -136,12 +75,14 @@ const ConnectedSyncBoard = ({
       storeName={`${stableSession}_messages`}
       defaultValue={messages}
     >
-      <SyncedStoreProvider
-        storeName={`${stableSession}_item`}
-        defaultValue={defaultItemsValue}
-      >
-        <SyncBoard {...props} session={stableSession} />
-      </SyncedStoreProvider>
+      <MainStoreProvider>
+        <SyncedStoreProvider
+          storeName={`${stableSession}_item`}
+          defaultValue={defaultItemsValue}
+        >
+          <SyncBoard {...props} session={stableSession} />
+        </SyncedStoreProvider>
+      </MainStoreProvider>
     </SyncedMessageProvider>
   );
 };

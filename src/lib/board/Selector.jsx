@@ -1,20 +1,19 @@
 import React from "react";
-import { useThrottledCallback } from "@react-hookz/web/esm";
+import { css } from "goober";
 
 import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
 import { useItemActions } from "./Items";
 import { useSyncedStore } from "@/board/store/synced";
-import useSelection from "./store/selection";
 import useMainStore from "./store/main";
 
-const defaultSelectorStyle = {
+const defaultSelectorClass = css({
   zIndex: 210,
   position: "absolute",
   backgroundColor: "hsla(0, 40%, 50%, 10%)",
   border: "2px solid hsl(0, 55%, 40%)",
-};
+});
 
 const findSelected = (itemMap, wrapper) => {
   const selectors = wrapper.getElementsByClassName("selector");
@@ -38,23 +37,28 @@ const findSelected = (itemMap, wrapper) => {
 };
 
 const Selector = ({ children, moveFirst }) => {
-  const [getSelection, clearSelection, setSelection, select] = useSelection(
-    (state) => [
-      state.getSelection,
-      state.clear,
-      state.setSelection,
-      state.select,
-    ]
-  );
-  const getConfiguration = useMainStore((state) => state.getConfiguration);
-  const [getBoardState, updateBoardState] = useMainStore((state) => [
+  const [
+    getSelection,
+    clearSelection,
+    setSelection,
+    select,
+    getConfiguration,
+    getBoardState,
+    updateBoardState,
+  ] = useMainStore((state) => [
+    state.getSelection,
+    state.clear,
+    state.setSelection,
+    state.select,
+    state.getConfiguration,
     state.getBoardState,
     state.updateBoardState,
   ]);
   const { findElementUnderPointer } = useItemActions();
-  const getItems = useSyncedStore((state) => state.getItems);
+  const [getItems] = useSyncedStore((state) => [state.getItems]);
 
   const [selector, setSelector] = React.useState({});
+  const [, startTransition] = React.useTransition();
 
   const wrapperRef = React.useRef(null);
   const stateRef = React.useRef({
@@ -69,126 +73,105 @@ const Selector = ({ children, moveFirst }) => {
     };
   }, [clearSelection]);
 
-  const updateSelected = React.useCallback(() => {
+  React.useEffect(() => {
     if (stateRef.current.moving) {
       const itemMap = getItems();
       const { boardWrapper } = getConfiguration();
       const selected = findSelected(itemMap, boardWrapper);
-      setSelection(selected);
+      startTransition(() => {
+        setSelection(selected);
+      });
     }
-  }, [getConfiguration, getItems, setSelection]);
+  }, [getConfiguration, getItems, selector, setSelection]);
 
-  const throttledUpdateSelected = useThrottledCallback(
-    () => {
-      updateSelected();
-    },
-    [selector, updateSelected],
-    50
-  );
+  const onDragStart = async (event) => {
+    const foundElement = await findElementUnderPointer(event);
 
-  const onDragStart = React.useCallback(
-    async (event) => {
-      const foundElement = await findElementUnderPointer(event);
+    if (!foundElement) {
+      stateRef.current.moving = true;
+      startTransition(() => {
+        updateBoardState({ selecting: true });
+      });
+      wrapperRef.current.style.cursor = "crosshair";
+    }
+  };
 
-      if (!foundElement) {
-        stateRef.current.moving = true;
-        updateBoardState({ selection: true });
-        wrapperRef.current.style.cursor = "crosshair";
-      }
-    },
-    [findElementUnderPointer, updateBoardState]
-  );
-
-  const onDrag = React.useCallback(
-    ({ distanceY, distanceX, startX, startY }) => {
-      if (stateRef.current.moving) {
-        const { top, left } = wrapperRef.current.getBoundingClientRect();
-
-        const { scale } = getBoardState();
-
-        const displayX = (startX - left) / scale;
-        const displayY = (startY - top) / scale;
-
-        const displayDistanceX = distanceX / scale;
-        const displayDistanceY = distanceY / scale;
-
-        if (displayDistanceX > 0) {
-          stateRef.current.left = displayX;
-          stateRef.current.width = displayDistanceX;
-        } else {
-          stateRef.current.left = displayX + displayDistanceX;
-          stateRef.current.width = -displayDistanceX;
-        }
-        if (displayDistanceY > 0) {
-          stateRef.current.top = displayY;
-          stateRef.current.height = displayDistanceY;
-        } else {
-          stateRef.current.top = displayY + displayDistanceY;
-          stateRef.current.height = -displayDistanceY;
-        }
-
-        setSelector({ ...stateRef.current, moving: true });
-        throttledUpdateSelected();
-      }
-    },
-    [getBoardState, throttledUpdateSelected]
-  );
-
-  const onDragEnd = React.useCallback(() => {
+  const onDrag = ({ distanceY, distanceX, startX, startY }) => {
     if (stateRef.current.moving) {
-      updateBoardState({ selecting: false });
+      const { top, left } = wrapperRef.current.getBoundingClientRect();
+
+      const { scale } = getBoardState();
+
+      const displayX = (startX - left) / scale;
+      const displayY = (startY - top) / scale;
+
+      const displayDistanceX = distanceX / scale;
+      const displayDistanceY = distanceY / scale;
+
+      if (displayDistanceX > 0) {
+        stateRef.current.left = displayX;
+        stateRef.current.width = displayDistanceX;
+      } else {
+        stateRef.current.left = displayX + displayDistanceX;
+        stateRef.current.width = -displayDistanceX;
+      }
+      if (displayDistanceY > 0) {
+        stateRef.current.top = displayY;
+        stateRef.current.height = displayDistanceY;
+      } else {
+        stateRef.current.top = displayY + displayDistanceY;
+        stateRef.current.height = -displayDistanceY;
+      }
+
+      setSelector({ ...stateRef.current, moving: true });
+    }
+  };
+
+  const onDragEnd = () => {
+    if (stateRef.current.moving) {
+      startTransition(() => {
+        updateBoardState({ selecting: false });
+      });
       stateRef.current.moving = false;
       setSelector({ moving: false });
       wrapperRef.current.style.cursor = "auto";
     }
-  }, [updateBoardState]);
+  };
 
-  const onLongTap = React.useCallback(
-    ({ target }) => {
-      const foundElement = insideClass(target, "item");
-      if (foundElement) {
-        const id = getIdFromElem(foundElement);
-        setSelection([id]);
-      }
-    },
-    [setSelection]
-  );
+  const onLongTap = ({ target }) => {
+    const foundElement = insideClass(target, "item");
+    if (foundElement) {
+      const id = getIdFromElem(foundElement);
+      setSelection([id]);
+    }
+  };
 
-  const onTap = React.useCallback(
-    async (event) => {
-      const { target, ctrlKey, metaKey } = event;
+  const onTap = (event) => {
+    const { target, ctrlKey, metaKey } = event;
 
-      const foundElement = await findElementUnderPointer(event);
+    const foundElement = findElementUnderPointer(event);
 
-      if (!foundElement && insideClass(target, "board")) {
+    if (!foundElement && insideClass(target, "board")) {
+      clearSelection();
+    } else {
+      const itemId = getIdFromElem(foundElement);
+
+      // Being defensive here to avoid bug
+      if (!itemId) {
         clearSelection();
-      } else {
-        const itemId = getIdFromElem(foundElement);
+        return;
+      }
 
-        // Being defensive here to avoid bug
-        if (!itemId) {
-          clearSelection();
-          return;
-        }
-
-        const selectedItems = getSelection();
-        if (foundElement && !selectedItems.includes(itemId)) {
-          if (ctrlKey || metaKey) {
-            select([itemId]);
-          } else {
-            setSelection([itemId]);
-          }
+      const selectedItems = getSelection();
+      if (foundElement && !selectedItems.includes(itemId)) {
+        if (ctrlKey || metaKey) {
+          select([itemId]);
+        } else {
+          setSelection([itemId]);
         }
       }
-    },
-    [
-      clearSelection,
-      findElementUnderPointer,
-      getSelection,
-      select,
-      setSelection,
-    ]
-  );
+    }
+  };
 
   return (
     <Gesture
@@ -203,12 +186,11 @@ const Selector = ({ children, moveFirst }) => {
         {selector.moving && (
           <div
             style={{
-              ...defaultSelectorStyle,
               transform: `translate(${selector.left}px, ${selector.top}px)`,
               height: `${selector.height}px`,
               width: `${selector.width}px`,
             }}
-            className="selector"
+            className={`selector ${defaultSelectorClass}`}
           />
         )}
         {children}

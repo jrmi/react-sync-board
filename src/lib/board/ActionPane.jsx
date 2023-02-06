@@ -4,9 +4,9 @@ import { useItemActions } from "./Items";
 import { getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
-import useSelection from "./store/selection";
 import useMainStore from "./store/main";
 import { useSyncedStore } from "@/board/store/synced";
+import { useEventListener } from "@react-hookz/web/esm/useEventListener";
 
 /**
  * This component handles the move of items when dragging them or with the keyboard.
@@ -14,17 +14,15 @@ import { useSyncedStore } from "@/board/store/synced";
 const ActionPane = ({ children }) => {
   const { moveItems, placeItems, findElementUnderPointer } = useItemActions();
 
-  const [select, setSelection, getSelection] = useSelection((state) => [
-    state.select,
-    state.setSelection,
-    state.getSelection,
-  ]);
-
-  const [getBoardState, updateBoardState] = useMainStore((state) => [
-    state.getBoardState,
-    state.updateBoardState,
-  ]);
-  const getBoardConfig = useSyncedStore((state) => state.getBoardConfig);
+  const [select, setSelection, getSelection, getBoardState, updateBoardState] =
+    useMainStore((state) => [
+      state.select,
+      state.setSelection,
+      state.getSelection,
+      state.getBoardState,
+      state.updateBoardState,
+    ]);
+  const [getBoardConfig] = useSyncedStore((state) => [state.getBoardConfig]);
 
   const actionRef = React.useRef({});
 
@@ -33,63 +31,57 @@ const ActionPane = ({ children }) => {
     items: [],
   });
 
-  const onDragStart = React.useCallback(
-    async (event) => {
-      const { ctrlKey, metaKey, event: originalEvent } = event;
-      const foundElement = await findElementUnderPointer(event);
+  const onDragStart = (event) => {
+    const { ctrlKey, metaKey, event: originalEvent } = event;
+    const foundElement = findElementUnderPointer(event);
 
-      if (foundElement) {
-        originalEvent.stopPropagation();
-        const selectedItems = getSelection();
+    if (foundElement) {
+      originalEvent.stopPropagation();
+      const selectedItems = getSelection();
 
-        selectedItemRef.current.items = selectedItems;
+      selectedItemRef.current.items = selectedItems;
 
-        const itemId = getIdFromElem(foundElement);
+      const itemId = getIdFromElem(foundElement);
 
-        if (!selectedItems.includes(itemId)) {
-          if (ctrlKey || metaKey) {
-            selectedItemRef.current.items = [...selectedItems, itemId];
-            select([itemId]);
-          } else {
-            selectedItemRef.current.items = [itemId];
-            setSelection([itemId]);
-          }
+      if (!selectedItems.includes(itemId)) {
+        if (ctrlKey || metaKey) {
+          selectedItemRef.current.items = [...selectedItems, itemId];
+          select([itemId]);
+        } else {
+          selectedItemRef.current.items = [itemId];
+          setSelection([itemId]);
         }
-
-        Object.assign(actionRef.current, {
-          moving: true,
-          remainX: 0,
-          remainY: 0,
-        });
       }
-    },
-    [findElementUnderPointer, getSelection, select, setSelection]
-  );
 
-  const onDrag = React.useCallback(
-    ({ deltaX, deltaY, event: originalEvent }) => {
-      if (actionRef.current.moving) {
-        originalEvent.stopPropagation();
-        const { scale } = getBoardState();
-        const moveX = actionRef.current.remainX + deltaX / scale;
-        const moveY = actionRef.current.remainY + deltaY / scale;
+      Object.assign(actionRef.current, {
+        moving: true,
+        remainX: 0,
+        remainY: 0,
+      });
+    }
+  };
 
-        moveItems(
-          selectedItemRef.current.items,
-          {
-            x: moveX,
-            y: moveY,
-          },
-          true
-        );
+  const onDrag = ({ deltaX, deltaY, event: originalEvent }) => {
+    if (actionRef.current.moving) {
+      originalEvent.stopPropagation();
+      const { scale } = getBoardState();
+      const moveX = actionRef.current.remainX + deltaX / scale;
+      const moveY = actionRef.current.remainY + deltaY / scale;
 
-        updateBoardState({ movingItems: true });
-      }
-    },
-    [getBoardState, moveItems, updateBoardState]
-  );
+      moveItems(
+        selectedItemRef.current.items,
+        {
+          x: moveX,
+          y: moveY,
+        },
+        true
+      );
 
-  const onDragEnd = React.useCallback(() => {
+      updateBoardState({ movingItems: true });
+    }
+  };
+
+  const onDragEnd = () => {
     if (actionRef.current.moving) {
       const { gridSize: boardGridSize = 1 } = getBoardConfig();
       const gridSize = boardGridSize || 1; // avoid 0 grid size
@@ -101,74 +93,66 @@ const ActionPane = ({ children }) => {
       });
       updateBoardState({ movingItems: false });
     }
-  }, [getBoardConfig, placeItems, updateBoardState]);
+  };
 
-  const onKeyDown = React.useCallback(
-    (e) => {
-      // Block shortcut if we are typing in a textarea or input
-      if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
+  const onKeyDown = (e) => {
+    // Block shortcut if we are typing in a textarea or input
+    if (["INPUT", "TEXTAREA"].includes(e.target.tagName)) return;
 
-      const selectedItems = getSelection();
+    const selectedItems = getSelection();
 
-      if (selectedItems.length) {
-        const { gridSize: boardGridSize = 1 } = getBoardConfig();
-        let moveX = 0;
-        let moveY = 0;
-        switch (e.key) {
-          case "ArrowLeft":
-            // Left pressed
-            moveX = -10;
-            break;
-          case "ArrowRight":
-            moveX = 10;
-            // Right pressed
-            break;
-          case "ArrowUp":
-            // Up pressed
-            moveY = -10;
-            break;
-          case "ArrowDown":
-            // Down pressed
-            moveY = 10;
-            break;
-          default:
-        }
-        if (moveX || moveY) {
-          if (e.shiftKey) {
-            moveX *= 5;
-            moveY *= 5;
-          }
-          if (e.ctrlKey || e.altKey || e.metaKey) {
-            moveX /= 10;
-            moveY /= 10;
-          }
-          moveItems(
-            selectedItems,
-            {
-              x: moveX,
-              y: moveY,
-            },
-            true
-          );
-          const gridSize = boardGridSize || 1; // avoid 0 grid size
-
-          placeItems(selectedItems, {
-            type: "grid",
-            size: gridSize,
-          });
-          e.preventDefault();
-        }
+    if (selectedItems.length) {
+      const { gridSize: boardGridSize = 1 } = getBoardConfig();
+      let moveX = 0;
+      let moveY = 0;
+      switch (e.key) {
+        case "ArrowLeft":
+          // Left pressed
+          moveX = -10;
+          break;
+        case "ArrowRight":
+          moveX = 10;
+          // Right pressed
+          break;
+        case "ArrowUp":
+          // Up pressed
+          moveY = -10;
+          break;
+        case "ArrowDown":
+          // Down pressed
+          moveY = 10;
+          break;
+        default:
       }
-    },
-    [getBoardConfig, getSelection, moveItems, placeItems]
-  );
+      if (moveX || moveY) {
+        if (e.shiftKey) {
+          moveX *= 5;
+          moveY *= 5;
+        }
+        if (e.ctrlKey || e.altKey || e.metaKey) {
+          moveX /= 10;
+          moveY /= 10;
+        }
+        moveItems(
+          selectedItems,
+          {
+            x: moveX,
+            y: moveY,
+          },
+          true
+        );
+        const gridSize = boardGridSize || 1; // avoid 0 grid size
 
-  React.useEffect(() => {
-    document.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-    };
-  }, [onKeyDown]);
+        placeItems(selectedItems, {
+          type: "grid",
+          size: gridSize,
+        });
+        e.preventDefault();
+      }
+    }
+  };
+
+  useEventListener(document, "keydown", onKeyDown);
 
   return (
     <Gesture onDragStart={onDragStart} onDrag={onDrag} onDragEnd={onDragEnd}>

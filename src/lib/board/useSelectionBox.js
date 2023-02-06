@@ -1,5 +1,8 @@
-import useSelection from "./store/selection";
+import useMainStore from "./store/main";
 
-const useSelectionBox = () => useSelection((state) => state.selectionBox);
+const useSelectionBox = () => {
+  const [selectionBox] = useMainStore((state) => [state.selectionBox]);
+  return selectionBox;
+};
 
 export default useSelectionBox;

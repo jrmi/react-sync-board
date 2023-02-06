@@ -2,23 +2,34 @@ import Item from "./Item";
 import useItemActions from "./useItemActions";
 
 import { useSyncedStore } from "@/board/store/synced";
-import useSelection from "../store/selection";
 import useMainStore from "../store/main";
 import { useSyncedUsers } from "@/users/store";
+import { css } from "goober";
 
 const ItemList = () => {
   const { updateItem } = useItemActions();
+
   const [itemList, itemMap] = useSyncedStore((state) => [
     state.itemIds,
     state.items,
   ]);
-  const selection = useSelection((state) => state.selection);
-  const [boardSize, showResizeHandle, itemTemplates] = useMainStore((state) => [
-    state.config.boardSize,
-    state.config.showResizeHandle,
-    state.config.itemTemplates,
-  ]);
-  const currentUser = useSyncedUsers((state)=> state.getUser())
+
+  const [boardSize, showResizeHandle, itemTemplates, selection] = useMainStore(
+    (state) => [
+      state.config.boardSize,
+      state.config.showResizeHandle,
+      state.config.itemTemplates,
+      state.selection,
+    ]
+  );
+  const [getCurrentUser] = useSyncedUsers((state) => [state.getUser]);
+
+  const itemClassName = css({
+    position: "absolute",
+    top: `${boardSize / 2}px`,
+    left: `${boardSize / 2}px`,
+    display: "inline-block",
+  });
 
   return itemList.map((itemId) => (
     <Item
@@ -28,8 +39,9 @@ const ItemList = () => {
       isSelected={selection.includes(itemId)}
       itemMap={itemTemplates}
       boardSize={boardSize}
-      currentUser={currentUser}
+      getCurrentUser={getCurrentUser}
       showResizeHandle={showResizeHandle}
+      className={itemClassName}
     />
   ));
 };

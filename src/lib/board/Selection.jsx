@@ -1,12 +1,12 @@
 import React from "react";
-import { useDebouncedCallback } from "@react-hookz/web/esm";
+import { css } from "goober";
+import { useDebouncedCallback } from "@react-hookz/web/esm/useDebouncedCallback";
 
 import { getItemBoundingBox } from "@/utils";
 import { useSyncedStore } from "@/board/store/synced";
-import useSelection from "./store/selection";
 import useMainStore from "./store/main";
 
-const defaultZoneStyle = {
+const defaultZoneStyle = css({
   position: "absolute",
   top: 0,
   left: 0,
@@ -14,25 +14,33 @@ const defaultZoneStyle = {
   backgroundColor: "hsla(0, 40%, 50%, 0%)",
   border: "2px dashed hsl(20, 55%, 40%)",
   pointerEvents: "none",
-};
+});
 
+/**
+ * Show a bounding box around all selected items.
+ */
 const BoundingBox = () => {
-  const [selection, getSelection, selectionBox, setSelectionBox] = useSelection(
-    (state) => [
-      state.selection,
-      state.getSelection,
-      state.selectionBox,
-      state.setSelectionBox,
-    ]
-  );
+  const [
+    selection,
+    getSelection,
+    selectionBox,
+    setSelectionBox,
+    getConfiguration,
+    { translateX, translateY, scale },
+  ] = useMainStore((state) => [
+    state.selection,
+    state.getSelection,
+    state.selectionBox,
+    state.setSelectionBox,
+    state.getConfiguration,
+    {
+      translateX: state.boardState.translateX,
+      translateY: state.boardState.translateY,
+      scale: state.boardState.scale,
+    },
+  ]);
 
-  const getConfiguration = useMainStore((state) => state.getConfiguration);
-  const { translateX, translateY, scale } = useMainStore((state) => ({
-    translateX: state.boardState.translateX,
-    translateY: state.boardState.translateY,
-    scale: state.boardState.scale,
-  }));
-  const items = useSyncedStore((state) => state.items);
+  const [items] = useSyncedStore((state) => [state.items]);
 
   // Update selection bounding box
   const updateBox = React.useCallback(() => {
@@ -59,12 +67,10 @@ const BoundingBox = () => {
       height,
       width,
     };
-
     setSelectionBox(newBB);
   }, [getConfiguration, getSelection, setSelectionBox]);
 
   // Debounced version of update box
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   const updateBoxDelay = useDebouncedCallback(updateBox, [updateBox], 300);
 
   React.useEffect(() => {
@@ -86,18 +92,17 @@ const BoundingBox = () => {
   return (
     <div
       style={{
-        ...defaultZoneStyle,
         transform: `translate(${selectionBox.left}px, ${selectionBox.top}px)`,
         height: `${selectionBox.height}px`,
         width: `${selectionBox.width}px`,
       }}
-      className="selection"
+      className={`selection ${defaultZoneStyle}`}
     />
   );
 };
 
 const Selection = () => {
-  const movingItems = useMainStore((state) => state.boardState.movingItems);
+  const [movingItems] = useMainStore((state) => [state.boardState.movingItems]);
 
   if (movingItems) {
     return null;

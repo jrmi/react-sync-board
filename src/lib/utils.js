@@ -33,14 +33,20 @@ export const isPointInsideRect = (point, rect) =>
   point.y > rect.top &&
   point.y < rect.top + rect.height;
 
-export const isItemInsideElement = (itemElement, otherElem) => {
-  const rect = otherElem.getBoundingClientRect();
+export const isItemInsideRect = (itemElement, rect) => {
   const fourElem = Array.from(itemElement.querySelectorAll(".corner"));
 
   return fourElem.every((corner) => {
     const { top: y, left: x } = corner.getBoundingClientRect();
     return isPointInsideRect({ x, y }, rect);
   });
+};
+
+export const isItemInsideElement = (itemElement, otherElem) => {
+  const rect = otherElem.getBoundingClientRect();
+
+  const result = isItemInsideRect(itemElement, rect);
+  return result;
 };
 
 export const getItemElem = (wrapper, itemId) => {
@@ -67,8 +73,8 @@ export const getIdFromElem = (elem) => {
   return value;
 };
 
-export const getItemBoundingBox = (items, wrapper = document) => {
-  const result = items.reduce((prev, itemId) => {
+export const getItemBoundingBox = (itemIds, wrapper = document) => {
+  const result = itemIds.reduce((prev, itemId) => {
     const elem = getItemElem(wrapper, itemId);
 
     if (!elem) return null;

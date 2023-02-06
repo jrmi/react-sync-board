@@ -1,10 +1,9 @@
 import React, { useCallback } from "react";
 import deepEqual from "fast-deep-equal/es6";
 
-import { useDebouncedEffect } from "@react-hookz/web/esm";
+import { useDebouncedEffect } from "@react-hookz/web/esm/useDebouncedEffect";
 
 import { useSyncedStore } from "@/board/store/synced";
-import useSelection from "../store/selection";
 import useMainStore from "../store/main";
 
 /**
@@ -47,13 +46,14 @@ const useAvailableActions = () => {
     state.items,
     state.getItems,
   ]);
-  const itemTemplates = useMainStore((state) => state.config.itemTemplates);
-  const [selection, getSelection] = useSelection((state) => [
+  const [itemTemplates, selection, getSelection] = useMainStore((state) => [
+    state.config.itemTemplates,
     state.selection,
     state.getSelection,
   ]);
   const [availableActions, setAvailableActions] = React.useState([]);
   const isMountedRef = React.useRef(false);
+  const [, startTransition] = React.useTransition();
 
   React.useEffect(() => {
     // Mounted guard
@@ -93,22 +93,21 @@ const useAvailableActions = () => {
         );
       }, getActionsFromItem(selectedItemList[0], itemTemplates));
 
-      setAvailableActions(allActions);
+      startTransition(() => {
+        setAvailableActions(allActions);
+      });
     } else {
-      setAvailableActions([]);
+      startTransition(() => {
+        setAvailableActions([]);
+      });
     }
   }, [getItemListOrSelected, itemTemplates]);
 
-  // Update available actions when selection change
-  React.useEffect(() => {
-    updateAvailableActions();
-  }, [updateAvailableActions, selection]);
-
-  // Debounced update available actions when items change
+  // Debounced update available actions when items or selection change
   useDebouncedEffect(
-    updateAvailableActions,
-    [items, updateAvailableActions],
-    300
+    () => updateAvailableActions(),
+    [items, selection, updateAvailableActions],
+    100
   );
 
   return {

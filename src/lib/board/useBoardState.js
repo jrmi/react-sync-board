@@ -1,5 +1,8 @@
 import useMainStore from "./store/main";
 
-const useBoardState = () => useMainStore((state) => state.boardState);
+const useBoardState = () => {
+  const [boardState] = useMainStore((state) => [state.boardState]);
+  return boardState;
+};
 
 export default useBoardState;
