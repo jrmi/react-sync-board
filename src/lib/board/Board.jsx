@@ -87,10 +87,13 @@ const Board = ({
   }, [itemTemplates, boardSize, showResizeHandle, updateConfiguration]);
 
   React.useEffect(() => {
+    updateConfiguration({
+      boardWrapperRect: boardWrapperRef.current.getBoundingClientRect(),
+    });
     updateItemExtent();
     // Hack to update item extent on load
     setTimeout(updateItemExtent, 2000);
-  }, [updateItemExtent]);
+  }, [updateConfiguration, updateItemExtent]);
 
   useResizeObserver(boardWrapperRef, () => {
     if (!boardWrapperRef.current) {
