@@ -261,6 +261,7 @@ const Gesture = ({
         clientX: eventClientX,
         clientY: eventClientY,
         altKey,
+        shiftKey,
         ctrlKey,
         metaKey,
         buttons,
@@ -307,7 +308,7 @@ const Gesture = ({
       //   - any special key is no pressed
       // or on touch devices
       //   - We use only one finger
-      let altAction = altKey || ctrlKey || metaKey || buttons !== 1;
+      let altAction = shiftKey || altKey || ctrlKey || metaKey || buttons !== 1;
       if (mainAction !== "drag") {
         altAction = !altAction;
       }
@@ -334,6 +335,7 @@ const Gesture = ({
             distanceY: 0,
             button: stateRef.current.currentButton,
             altKey,
+            shiftKey,
             ctrlKey,
             metaKey,
             target: stateRef.current.target,
@@ -358,6 +360,7 @@ const Gesture = ({
           distanceY,
           button: stateRef.current.currentButton,
           altKey,
+          shiftKey,
           ctrlKey,
           metaKey,
           target: stateRef.current.target,
@@ -384,6 +387,7 @@ const Gesture = ({
           deltaY,
           button: stateRef.current.currentButton,
           altKey,
+          shiftKey,
           ctrlKey,
           metaKey,
           target,
@@ -415,8 +419,16 @@ const Gesture = ({
   };
 
   const onPointerUp = (event) => {
-    const { clientX, clientY, altKey, ctrlKey, metaKey, target, pointerId } =
-      event;
+    const {
+      clientX,
+      clientY,
+      altKey,
+      shiftKey,
+      ctrlKey,
+      metaKey,
+      target,
+      pointerId,
+    } = event;
 
     if (!stateRef.current.pointers[pointerId]) {
       // Pointer already gone previously with another event
@@ -470,6 +482,7 @@ const Gesture = ({
         distanceY: clientY - stateRef.current.startY,
         button: stateRef.current.currentButton,
         altKey,
+        shiftKey,
         ctrlKey,
         metaKey,
         event,
@@ -487,6 +500,7 @@ const Gesture = ({
           clientX,
           clientY,
           altKey,
+          shiftKey,
           ctrlKey,
           metaKey,
           target,
@@ -497,11 +511,13 @@ const Gesture = ({
   };
 
   const onDoubleTapHandler = (event) => {
-    const { clientX, clientY, altKey, ctrlKey, metaKey, target } = event;
+    const { clientX, clientY, altKey, shiftKey, ctrlKey, metaKey, target } =
+      event;
     promiseQueue.add(onDoubleTap, {
       clientX,
       clientY,
       altKey,
+      shiftKey,
       ctrlKey,
       metaKey,
       target,

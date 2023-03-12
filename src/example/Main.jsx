@@ -58,7 +58,7 @@ const defaultInitialItems = [
     y: -100,
     id: "test01",
     color: "#727456",
-    actions: ["rotate45", { name: "rotate", args: { angle: 20 } }, "remove"],
+    actions: [{ name: "rotate", args: { angle: 20 } }, "rotate45", "remove"],
   },
   { type: "round", x: 100, y: -100, id: "test", color: "#923456" },
   { type: "token", x: -100, y: 100, id: "test2", color: "#0077AA" },

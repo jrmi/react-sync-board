@@ -1,5 +1,6 @@
 import React from "react";
 import { css } from "goober";
+import { useEventListener } from "@react-hookz/web/esm/useEventListener";
 
 import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 
@@ -15,7 +16,7 @@ const defaultSelectorClass = css({
   border: "2px solid hsl(0, 55%, 40%)",
 });
 
-const findSelected = (itemMap, wrapper) => {
+const findSelected = (itemMap, wrapper, ignoreLocked = false) => {
   const selectors = wrapper.getElementsByClassName("selector");
   if (!selectors.length) {
     return [];
@@ -28,7 +29,7 @@ const findSelected = (itemMap, wrapper) => {
       const id = getIdFromElem(elem);
 
       const item = itemMap[id];
-      if (!item || item.locked) {
+      if (!item || (!ignoreLocked && item.locked)) {
         return false;
       }
       return isItemInsideElement(elem, selector);
@@ -59,10 +60,23 @@ const Selector = ({ children, moveFirst }) => {
 
   const [selector, setSelector] = React.useState({});
   const [, startTransition] = React.useTransition();
+  const [ignoreLocked, setIgnoreLocked] = React.useState(false);
 
   const wrapperRef = React.useRef(null);
   const stateRef = React.useRef({
     moving: false,
+  });
+
+  useEventListener(document, "keydown", (e) => {
+    if (e.key === "l") {
+      setIgnoreLocked(true);
+    }
+  });
+
+  useEventListener(document, "keyup", (e) => {
+    if (e.key === "l") {
+      setIgnoreLocked(false);
+    }
   });
 
   // Reset selection on board loading
@@ -77,12 +91,12 @@ const Selector = ({ children, moveFirst }) => {
     if (stateRef.current.moving) {
       const itemMap = getItems();
       const { boardWrapper } = getConfiguration();
-      const selected = findSelected(itemMap, boardWrapper);
+      const selected = findSelected(itemMap, boardWrapper, ignoreLocked);
       startTransition(() => {
         setSelection(selected);
       });
     }
-  }, [getConfiguration, getItems, selector, setSelection]);
+  }, [getConfiguration, getItems, selector, setSelection, ignoreLocked]);
 
   const onDragStart = async (event) => {
     const foundElement = await findElementUnderPointer(event);

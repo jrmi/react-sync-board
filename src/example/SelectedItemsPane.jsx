@@ -90,13 +90,10 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
 
       Object.keys(actionMap).forEach((key) => {
         const { shortcut, action, edit: whileEdit } = actionMap[key];
-        if (
-          availableActions.includes(key) &&
-          e.key === shortcut &&
-          showEdit === !!whileEdit
-        ) {
-          // here
-          action(selectedItems);
+        const foundAction = availableActions.find(({ name }) => name === key);
+
+        if (foundAction && e.key === shortcut && showEdit === !!whileEdit) {
+          action(selectedItems, foundAction.args);
         }
       });
     };
@@ -117,13 +114,18 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
         (action) => !actionMap[action.name].disableDblclick
       );
 
-      if (e.ctrlKey && filteredActions.length > 1) {
+      if (e.altKey && filteredActions.length > 1) {
         // Use second action
-        // here
-        actionMap[filteredActions[1].name].action(selectedItems);
+        actionMap[filteredActions[1].name].action(
+          selectedItems,
+          filteredActions[1].args
+        );
       } else if (filteredActions.length > 0) {
         // here
-        actionMap[filteredActions[0].name].action(selectedItems);
+        actionMap[filteredActions[0].name].action(
+          selectedItems,
+          filteredActions[0].args
+        );
       }
     },
     [actionMap, availableActions, findElementUnderPointer, selectedItems]

@@ -20,7 +20,7 @@ const usePositionNavigator = () => {
       const positionKey = e.code;
       const { translateX, translateY, scale } = getBoardState();
 
-      if (e.altKey || e.metaKey || e.ctrlKey) {
+      if (e.altKey || e.metaKey || e.ctrlKey || e.shiftKey) {
         setPositions((prev) => ({
           ...prev,
           [positionKey]: { translateX, translateY, scale },
