@@ -313,8 +313,8 @@ const Gesture = ({
         altAction = !altAction;
       }
 
-      const shouldDrag = pointerType !== "touch" ? !altAction : !twoPointers;
-      const shouldPan = pointerType !== "touch" ? altAction : twoPointers;
+      const shouldDrag = !altAction;
+      const shouldPan = altAction;
 
       if (shouldDrag) {
         // Send drag start on first move

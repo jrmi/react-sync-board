@@ -169,7 +169,7 @@ const UserList = () => {
   );
 };
 
-const Overlay = ({ children, hideMenu }) => (
+const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => (
   <div
     style={{
       position: "absolute",
@@ -189,6 +189,17 @@ const Overlay = ({ children, hideMenu }) => (
       }}
     >
       <AddItems />
+      <label>
+        <input
+          type="checkbox"
+          checked={moveFirst}
+          onChange={() => {
+            setMoveFirst((prev) => !prev);
+          }}
+        />{" "}
+        Move first ?
+      </label>
+
       <UserList />
     </div>
     <SelectedItemsPane hideMenu={hideMenu} ItemFormComponent={ItemForm} />
@@ -198,6 +209,7 @@ const Overlay = ({ children, hideMenu }) => (
 
 const OneViewContent = ({
   moveFirst,
+  setMoveFirst,
   showResizeHandle,
   hideMenu,
   room,
@@ -214,7 +226,11 @@ const OneViewContent = ({
       items={initialItems || defaultInitialItems}
       LoadingComponent={() => <Spinner />}
     >
-      <Overlay hideMenu={hideMenu}>
+      <Overlay
+        hideMenu={hideMenu}
+        moveFirst={moveFirst}
+        setMoveFirst={setMoveFirst}
+      >
         <Board
           moveFirst={moveFirst}
           showResizeHandle={showResizeHandle}

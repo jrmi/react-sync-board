@@ -34,13 +34,15 @@ function App() {
   const [room] = useState("test_room");
   const [session] = useState("test_session");
   const [view, setView] = useState("one");
+  const [moveFirst, setMoveFirst] = useState(true);
 
   return (
     <div className="App">
       <TopBar setView={setView} />
       {view === "one" && (
         <OneView
-          moveFirst={false}
+          moveFirst={moveFirst}
+          setMoveFirst={setMoveFirst}
           showResizeHandle={true}
           hideMenu={false}
           room={`${room}_one`}
@@ -49,7 +51,8 @@ function App() {
       )}
       {view === "style" && (
         <OneViewWithRoom
-          moveFirst={false}
+          moveFirst={moveFirst}
+          setMoveFirst={setMoveFirst}
           showResizeHandle={false}
           hideMenu={false}
           room={`${room}_one`}
@@ -58,7 +61,8 @@ function App() {
       )}
       {view === "custom" && (
         <OneViewWithCustomBoardElements
-          moveFirst={false}
+          moveFirst={moveFirst}
+          setMoveFirst={setMoveFirst}
           showResizeHandle={false}
           hideMenu={false}
           room={`${room}_custom`}
@@ -67,7 +71,8 @@ function App() {
       )}
       {view === "two" && (
         <TwoView
-          moveFirst={false}
+          moveFirst={moveFirst}
+          setMoveFirst={setMoveFirst}
           showResizeHandle={false}
           hideMenu={false}
           room={`${room}_two`}
@@ -76,7 +81,8 @@ function App() {
       )}
       {view === "perf" && (
         <OneViewPerf
-          moveFirst={false}
+          moveFirst={moveFirst}
+          setMoveFirst={setMoveFirst}
           showResizeHandle={false}
           hideMenu={false}
           room={`${room}_perf`}
