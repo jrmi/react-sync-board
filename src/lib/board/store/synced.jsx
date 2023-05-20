@@ -144,8 +144,6 @@ export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
     )
   );
 
-  console.log(store);
-
   React.useEffect(() => {
     let mounted = true;
     // Wait for ready event
