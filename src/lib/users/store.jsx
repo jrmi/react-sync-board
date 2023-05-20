@@ -153,7 +153,7 @@ export const SyncedUsersProvider = ({ storeName, children }) => {
         // Wait for ready event
         const unsubscribe = localStore.subscribe((newValue) => {
           if (newValue.ready) {
-            // No need to listen more
+            // No need to listen anymore
             unsubscribe();
             if (mounted) {
               setStore(localStore);

@@ -131,6 +131,7 @@ const sessionInfoStore = (set, get) => ({
 
 export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
   const { wire } = useWire("room");
+  const [ready, setReady] = React.useState(false);
   const [store] = React.useState(() =>
     createStore(
       syncMiddleware({ wire, storeName, defaultValue }, (...args) => ({
@@ -142,6 +143,30 @@ export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
       }))
     )
   );
+
+  console.log(store);
+
+  React.useEffect(() => {
+    let mounted = true;
+    // Wait for ready event
+    const unsubscribe = store.subscribe((newValue) => {
+      if (newValue.ready) {
+        // No need to listen anymore
+        unsubscribe();
+        if (mounted) {
+          setReady(true);
+        }
+      }
+    });
+    () => {
+      mounted = false;
+      unsubscribe();
+    };
+  }, [store]);
+
+  if (!ready) {
+    return null;
+  }
 
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };

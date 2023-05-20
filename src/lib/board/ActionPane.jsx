@@ -64,7 +64,7 @@ const ActionPane = ({ children }) => {
   const onDrag = ({ deltaX, deltaY, event: originalEvent }) => {
     if (actionRef.current.moving) {
       originalEvent.stopPropagation();
-      const { scale } = getBoardState();
+      const { scale, movingItems } = getBoardState();
       const moveX = actionRef.current.remainX + deltaX / scale;
       const moveY = actionRef.current.remainY + deltaY / scale;
 
@@ -77,7 +77,9 @@ const ActionPane = ({ children }) => {
         true
       );
 
-      updateBoardState({ movingItems: true });
+      if (!movingItems) {
+        updateBoardState({ movingItems: true });
+      }
     }
   };
 

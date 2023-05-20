@@ -29,6 +29,7 @@ const boardState = (set, get) => ({
     translateY: 0,
     scale: 1,
   },
+  // TODO optimize when same value as before
   updateBoardState: (toUpdate) =>
     set((state) => ({ boardState: { ...state.boardState, ...toUpdate } })),
   getBoardState: () => get().boardState,
