@@ -264,7 +264,7 @@ const Item = ({
         <div className={`corner ${itemMark} ${itemMarkTopRight}`} />
         <div className={`corner ${itemMark} ${itemMarkBottomRight}`} />
         <div className={`corner ${itemMark} ${itemMarkBottomLeft}`} />
-        <div className={`${itemMark} ${itemMarkCenter}`} />
+        <div className={`center ${itemMark} ${itemMarkCenter}`} />
         {showResizeHandle && (
           <>
             {resizeDirections.b && (
