@@ -73,13 +73,17 @@ const defaultPositionedCursorClass = css({
   pointerEvents: "none",
 });
 
-const PositionedCursor = ({ pos, ...rest }) => (
-  <div
-    className={defaultPositionedCursorClass}
-    style={{ transform: `translate(${pos.x - 5}px, ${pos.y - 3}px)` }}
-  >
-    <MemoizedCursor {...rest} />
-  </div>
-);
+const PositionedCursor = ({ pos, ...rest }) => {
+  return (
+    <div
+      className={defaultPositionedCursorClass}
+      style={{
+        transform: `translate(${pos.x - 6}px, ${pos.y - 15}px)`,
+      }}
+    >
+      <MemoizedCursor {...rest} />
+    </div>
+  );
+};
 
 export default PositionedCursor;

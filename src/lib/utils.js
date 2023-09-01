@@ -16,6 +16,79 @@ export const insideClass = (element, className) => {
   return insideClass(element.parentNode, className);
 };
 
+export const distance = ([x1, y1], [x2, y2]) => {
+  const distanceX = Math.abs(x1 - x2);
+  const distanceY = Math.abs(y1 - y2);
+
+  return Math.hypot(distanceX, distanceY);
+};
+
+export const rotateCoordinates = (x, y, angle) => {
+  const angleInRadians = (angle * Math.PI) / 180;
+
+  const xRotated = x * Math.cos(angleInRadians) - y * Math.sin(angleInRadians);
+  const yRotated = x * Math.sin(angleInRadians) + y * Math.cos(angleInRadians);
+
+  return [xRotated, yRotated];
+};
+
+export const transformFrom = (
+  [x, y],
+  { scale, rotate, translateX, translateY }
+) => {
+  const xScaled = (x - translateX) / scale;
+  const yScaled = (y - translateY) / scale;
+
+  return rotateCoordinates(xScaled, yScaled, -rotate);
+};
+
+export const transformTo = (
+  [x, y],
+  { scale, rotate, translateX, translateY }
+) => {
+  const [xInvRotated, yInvRotated] = rotateCoordinates(x, y, rotate);
+  return [xInvRotated * scale + translateX, yInvRotated * scale + translateY];
+};
+
+export const intersectSegmentCircle = (p1, p2, circle, radius) => {
+  const Ax = p1.x,
+    Ay = p1.y;
+  const Bx = p2.x,
+    By = p2.y;
+  const Cx = circle.x,
+    Cy = circle.y;
+
+  const Dx = Bx - Ax,
+    Dy = By - Ay;
+  const Ex = Ax - Cx,
+    Ey = Ay - Cy;
+
+  const a = Dx * Dx + Dy * Dy;
+  const b = 2 * (Ex * Dx + Ey * Dy);
+  const c = Ex * Ex + Ey * Ey - radius * radius;
+
+  const discriminant = b * b - 4 * a * c;
+
+  if (discriminant < 0) {
+    return []; // No intersection
+  }
+
+  const t1 = (-b + Math.sqrt(discriminant)) / (2 * a);
+  const t2 = (-b - Math.sqrt(discriminant)) / (2 * a);
+
+  const intersections = [];
+
+  if (t1 >= 0 && t1 <= 1) {
+    intersections.push({ x: Ax + t1 * Dx, y: Ay + t1 * Dy });
+  }
+
+  if (t2 >= 0 && t2 <= 1) {
+    intersections.push({ x: Ax + t2 * Dx, y: Ay + t2 * Dy });
+  }
+
+  return intersections;
+};
+
 export const getParent = (initialElem, selector) => {
   for (
     let elem = initialElem;
@@ -73,11 +146,16 @@ export const getIdFromElem = (elem) => {
   return value;
 };
 
-export const getItemBoundingBox = (itemIds, wrapper = document) => {
+export const getItemsBoundingBox = (itemIds, wrapper = document) => {
   const result = itemIds.reduce((prev, itemId) => {
     const elem = getItemElem(wrapper, itemId);
 
-    if (!elem) return null;
+    if (!elem) {
+      if (!prev) {
+        return null;
+      }
+      return prev;
+    }
 
     const { left, right, top, bottom } = elem.getBoundingClientRect();
 

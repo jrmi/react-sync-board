@@ -16,6 +16,14 @@ const defaultSelectorClass = css({
   border: "2px solid hsl(0, 55%, 40%)",
 });
 
+/**
+ * Find selected element by using their visible screen dimensions.
+ *
+ * @param {Array} itemMap
+ * @param {DomObject} wrapper
+ * @param {boolean} ignoreLocked
+ * @returns
+ */
 const findSelected = (itemMap, wrapper, ignoreLocked = false) => {
   const selectors = wrapper.getElementsByClassName("selector");
   if (!selectors.length) {
@@ -44,7 +52,6 @@ const Selector = ({ children, moveFirst }) => {
     setSelection,
     select,
     getConfiguration,
-    getBoardState,
     updateBoardState,
   ] = useMainStore((state) => [
     state.getSelection,
@@ -114,27 +121,22 @@ const Selector = ({ children, moveFirst }) => {
     if (stateRef.current.moving) {
       const { top, left } = wrapperRef.current.getBoundingClientRect();
 
-      const { scale } = getBoardState();
+      const relativeX = startX - left;
+      const relativeY = startY - top;
 
-      const displayX = (startX - left) / scale;
-      const displayY = (startY - top) / scale;
-
-      const displayDistanceX = distanceX / scale;
-      const displayDistanceY = distanceY / scale;
-
-      if (displayDistanceX > 0) {
-        stateRef.current.left = displayX;
-        stateRef.current.width = displayDistanceX;
+      if (distanceX > 0) {
+        stateRef.current.left = relativeX;
+        stateRef.current.width = distanceX;
       } else {
-        stateRef.current.left = displayX + displayDistanceX;
-        stateRef.current.width = -displayDistanceX;
+        stateRef.current.left = relativeX + distanceX;
+        stateRef.current.width = -distanceX;
       }
-      if (displayDistanceY > 0) {
-        stateRef.current.top = displayY;
-        stateRef.current.height = displayDistanceY;
+      if (distanceY > 0) {
+        stateRef.current.top = relativeY;
+        stateRef.current.height = distanceY;
       } else {
-        stateRef.current.top = displayY + displayDistanceY;
-        stateRef.current.height = -displayDistanceY;
+        stateRef.current.top = relativeY + distanceY;
+        stateRef.current.height = -distanceY;
       }
 
       setSelector({ ...stateRef.current, moving: true });

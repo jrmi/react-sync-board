@@ -7,12 +7,14 @@ import Gesture from "./Gesture";
 import useMainStore from "./store/main";
 import { useSyncedStore } from "@/board/store/synced";
 import { useEventListener } from "@react-hookz/web/esm/useEventListener";
+import useDim from "./useDim";
 
 /**
  * This component handles the move of items when dragging them or with the keyboard.
  */
 const ActionPane = ({ children }) => {
   const { moveItems, placeItems, findElementUnderPointer } = useItemActions();
+  const { vectorFromWrapperToBoard } = useDim();
 
   const [select, setSelection, getSelection, getBoardState, updateBoardState] =
     useMainStore((state) => [
@@ -55,8 +57,6 @@ const ActionPane = ({ children }) => {
 
       Object.assign(actionRef.current, {
         moving: true,
-        remainX: 0,
-        remainY: 0,
       });
     }
   };
@@ -64,15 +64,15 @@ const ActionPane = ({ children }) => {
   const onDrag = ({ deltaX, deltaY, event: originalEvent }) => {
     if (actionRef.current.moving) {
       originalEvent.stopPropagation();
-      const { scale, movingItems } = getBoardState();
-      const moveX = actionRef.current.remainX + deltaX / scale;
-      const moveY = actionRef.current.remainY + deltaY / scale;
+      const { movingItems } = getBoardState();
+
+      const [newX, newY] = vectorFromWrapperToBoard(deltaX, deltaY);
 
       moveItems(
         selectedItemRef.current.items,
         {
-          x: moveX,
-          y: moveY,
+          x: newX,
+          y: newY,
         },
         true
       );
@@ -135,11 +135,14 @@ const ActionPane = ({ children }) => {
           moveX /= 10;
           moveY /= 10;
         }
+
+        const [newX, newY] = vectorFromWrapperToBoard(moveX, moveY);
+
         moveItems(
           selectedItems,
           {
-            x: moveX,
-            y: moveY,
+            x: newX,
+            y: newY,
           },
           true
         );

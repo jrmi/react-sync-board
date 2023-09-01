@@ -20,13 +20,14 @@ const PanZoom = ({ children, moveFirst = false }) => {
       translateX: state.boardState.translateX,
       translateY: state.boardState.translateY,
       scale: state.boardState.scale,
+      rotate: state.boardState.rotate,
     },
     state.config.itemExtent,
     state.getConfiguration,
     state.updateBoardState,
     state.getSelection,
   ]);
-  const { setDim, zoomToCenter, zoomToExtent } = useDim();
+  const { zoomToCenter, zoomToExtent, moveBoard } = useDim();
 
   const [centered, setCentered] = React.useState(false);
   const timeoutRef = React.useRef({});
@@ -46,7 +47,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
   }, [getConfiguration, zoomToExtent]);
 
   React.useEffect(() => {
-    if (!centered && itemExtentGlobal.left) {
+    if (!centered && itemExtentGlobal.radius) {
       // Center board on first valid extent
       centerBoard();
       setCentered(true);
@@ -54,7 +55,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
   }, [centerBoard, centered, itemExtentGlobal]);
 
   const onZoom = ({ clientX, clientY, scale }) => {
-    zoomToCenter(1 - scale / 500, { x: clientX, y: clientY });
+    zoomToCenter({ to: { x: clientX, y: clientY }, factor: 1 - scale / 500 });
 
     // Update the board zooming state
     clearTimeout(timeoutRef.current.zoom);
@@ -65,10 +66,9 @@ const PanZoom = ({ children, moveFirst = false }) => {
   };
 
   const onPan = ({ deltaX, deltaY }) => {
-    setDim((prev) => ({
-      ...prev,
-      translateX: prev.translateX + deltaX,
-      translateY: prev.translateY + deltaY,
+    moveBoard(({ translateX, translateY }) => ({
+      translateX: translateX + deltaX,
+      translateY: translateY + deltaY,
     }));
 
     // update the board panning state
@@ -121,20 +121,20 @@ const PanZoom = ({ children, moveFirst = false }) => {
         moveX /= 5;
         moveY /= 5;
       }
-      setDim((prev) => ({
-        ...prev,
-        translateY: prev.translateY + moveY,
-        translateX: prev.translateX + moveX,
+
+      moveBoard(({ translateX, translateY }) => ({
+        translateX: translateX + moveX,
+        translateY: translateY + moveY,
       }));
 
-      zoomToCenter(zoom);
+      zoomToCenter({ factor: zoom });
 
       e.preventDefault();
     }
     // Temporary zoom
     if (e.key === " " && !e.repeat) {
       if (getMouseInfo().hover) {
-        zoomToCenter(3, getMouseInfo());
+        zoomToCenter({ factor: 3, to: getMouseInfo() });
       }
     }
   };
@@ -145,7 +145,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
 
     // Zoom out on release
     if (e.key === " " && getMouseInfo().hover) {
-      zoomToCenter(1 / 3, getMouseInfo());
+      zoomToCenter({ factor: 1 / 3, to: getMouseInfo() });
     }
   };
 
@@ -162,7 +162,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
         style={{
           display: "inline-block",
           transformOrigin: "top left",
-          transform: `translate(${dim.translateX}px, ${dim.translateY}px) scale(${dim.scale})`,
+          transform: `translate(${dim.translateX}px, ${dim.translateY}px) rotate(${dim.rotate}deg) scale(${dim.scale})`,
         }}
         className={`board-pane${dim.scale < 0.5 ? " board-pane__far" : ""}`}
         ref={wrappedRef}
