@@ -230,6 +230,8 @@ const Gesture = ({
       prevY: clientY,
       currentButton: button,
       pointerDownEvent: event,
+      startDistance: 0,
+      prevDistance: 0,
       target,
       timeStart: Date.now(),
       longTapTimeout: setTimeout(async () => {
@@ -265,7 +267,6 @@ const Gesture = ({
         ctrlKey,
         metaKey,
         buttons,
-        pointerType,
       } = event;
 
       // Update pointer coordinates in the map
@@ -281,7 +282,7 @@ const Gesture = ({
 
       let clientX;
       let clientY;
-      let distanceBetweenTwoPointers;
+      let distanceBetweenTwoPointers = 0;
 
       if (twoPointers) {
         // Find other pointerId
@@ -439,18 +440,38 @@ const Gesture = ({
     // Remove pointer from map
     delete stateRef.current.pointers[pointerId];
 
+    // If this is not the main pointer we quit here
     if (stateRef.current.mainPointer !== pointerId) {
-      // If this is not the main pointer we quit here
+      const { clientX: clientX2, clientY: clientY2 } =
+        stateRef.current.pointers[stateRef.current.mainPointer];
+      Object.assign(stateRef.current, {
+        prevX: clientX2,
+        prevY: clientY2,
+        prevDistance: 0,
+        startDistance: 0,
+      });
       return;
     }
 
+    // It was the main pointer so we need to replace it with another if any
     while (Object.keys(stateRef.current.pointers).length > 0) {
       // If was main pointer but we have another one, this one become main
       stateRef.current.mainPointer = Number(
         Object.keys(stateRef.current.pointers)[0]
       );
+
       try {
         stateRef.current.target.setPointerCapture(stateRef.current.mainPointer);
+
+        const { clientX: clientX2, clientY: clientY2 } =
+          stateRef.current.pointers[stateRef.current.mainPointer];
+        Object.assign(stateRef.current, {
+          prevX: clientX2,
+          prevY: clientY2,
+          prevDistance: 0,
+          startDistance: 0,
+        });
+
         return;
       } catch (error) {
         // eslint-disable-next-line no-console
@@ -461,6 +482,8 @@ const Gesture = ({
         ];
       }
     }
+
+    // From here we have removed the last pointer.
 
     stateRef.current.mainPointer = undefined;
     stateRef.current.pressed = false;

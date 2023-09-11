@@ -10,11 +10,11 @@ const configuration = (set, get) => ({
     itemTemplates: {},
     actions: {},
     uid: null,
-    itemExtent: {},
+    itemExtent: { x: 0, y: 0, radius: 0 },
     boardWrapperRect: {},
     boardSize: DEFAULT_BOARD_MAX_SIZE,
   },
-  // TODO optimize when same value as before
+  // TODO optimize when same values as before
   updateConfiguration: (toUpdate) =>
     set((state) => ({ config: { ...state.config, ...toUpdate } })),
   getConfiguration: () => get().config,
@@ -28,8 +28,9 @@ const boardState = (set, get) => ({
     translateX: 0,
     translateY: 0,
     scale: 1,
+    rotate: 0,
   },
-  // TODO optimize when same value as before
+  // TODO optimize when same values as before
   updateBoardState: (toUpdate) =>
     set((state) => ({ boardState: { ...state.boardState, ...toUpdate } })),
   getBoardState: () => get().boardState,

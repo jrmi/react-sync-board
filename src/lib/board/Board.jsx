@@ -112,10 +112,10 @@ const Board = ({
       id={uid}
       className={`sync-board ${boardWrapperClass}`}
     >
-      <PanZoom moveFirst={moveFirst}>
+      <CursorPane>
         <Selector moveFirst={moveFirst}>
-          <ActionPane moveFirst={moveFirst}>
-            <CursorPane>
+          <PanZoom moveFirst={moveFirst}>
+            <ActionPane moveFirst={moveFirst}>
               <Wrapper>
                 <div
                   onContextMenu={(e) => {
@@ -128,10 +128,10 @@ const Board = ({
                   {children}
                 </div>
               </Wrapper>
-            </CursorPane>
-          </ActionPane>
+            </ActionPane>
+          </PanZoom>
         </Selector>
-      </PanZoom>
+      </CursorPane>
       <Selection />
     </div>
   );

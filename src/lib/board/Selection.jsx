@@ -2,7 +2,7 @@ import React from "react";
 import { css } from "goober";
 import { useDebouncedCallback } from "@react-hookz/web/esm/useDebouncedCallback";
 
-import { getItemBoundingBox } from "@/utils";
+import { getItemsBoundingBox } from "@/utils";
 import { useSyncedStore } from "@/board/store/synced";
 import useMainStore from "./store/main";
 
@@ -52,7 +52,7 @@ const BoundingBox = () => {
       return;
     }
 
-    const boundingBox = getItemBoundingBox(currentSelectedItems, boardWrapper);
+    const boundingBox = getItemsBoundingBox(currentSelectedItems, boardWrapper);
 
     if (!boundingBox) {
       setSelectionBox(null);

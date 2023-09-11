@@ -14,6 +14,7 @@ import { itemMap, ItemForm } from "./sample";
 import SelectedItemsPane from "./SelectedItemsPane";
 
 import Spinner from "./ui/Spinner";
+import useDim from "@/board/useDim";
 
 const STORYBOOK_SOCKET_URL = "https://public.jeremiez.net";
 const SOCKET_PATH = "/wamp2/socket.io";
@@ -169,43 +170,58 @@ const UserList = () => {
   );
 };
 
-const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => (
-  <div
-    style={{
-      position: "absolute",
-      inset: 0,
-      backgroundColor: "#eee",
-    }}
-  >
-    {children}
+const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
+  const { rotateBoard: rotate } = useDim();
+  return (
     <div
       style={{
         position: "absolute",
-        top: 0,
-        left: 0,
-        bottom: 0,
-        backgroundColor: "#999999",
-        padding: "0.5em",
+        inset: 0,
+        backgroundColor: "#eee",
       }}
     >
-      <AddItems />
-      <label>
-        <input
-          type="checkbox"
-          checked={moveFirst}
-          onChange={() => {
-            setMoveFirst((prev) => !prev);
-          }}
-        />{" "}
-        Move first ?
-      </label>
+      {children}
+      <div
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          bottom: 0,
+          backgroundColor: "#999999",
+          padding: "0.5em",
+          zIndex: 215,
+          width: "145px",
+        }}
+      >
+        <AddItems />
+        <div style={{ margin: "10px 0" }}>
+          <button onClick={() => rotate((prev) => prev + 12.5)}>
+            Rotate clockwise
+          </button>
+          <button onClick={() => rotate((prev) => prev - 12.5)}>
+            Rotate counter clockwise
+          </button>
+        </div>
+        <div style={{ margin: "10px 0" }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={moveFirst}
+              onChange={() => {
+                setMoveFirst((prev) => !prev);
+              }}
+            />{" "}
+            Move first ?
+          </label>
+        </div>
 
-      <UserList />
+        <UserList />
+      </div>
+      <SelectedItemsPane hideMenu={hideMenu} ItemFormComponent={ItemForm} />
+      <div id={`portal-container-uid`} />
     </div>
-    <SelectedItemsPane hideMenu={hideMenu} ItemFormComponent={ItemForm} />
-    <div id={`portal-container-uid`} />
-  </div>
-);
+  );
+};
 
 const OneViewContent = ({
   moveFirst,
@@ -235,7 +251,7 @@ const OneViewContent = ({
           moveFirst={moveFirst}
           showResizeHandle={showResizeHandle}
           style={{
-            backgroundColor: "#EEE",
+            backgroundColor: "#EEc",
           }}
           itemTemplates={itemMap}
         >
@@ -251,7 +267,7 @@ export const OneView = (props) => (
     <div
       style={{
         width: "100vw",
-        height: "100vh",
+        height: "calc(100vh - 3rem)",
         marginTop: "3rem",
         position: "relative",
         border: "1px solid black",
