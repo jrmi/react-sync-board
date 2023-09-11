@@ -190,6 +190,7 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
           backgroundColor: "#999999",
           padding: "0.5em",
           zIndex: 215,
+          width: "145px",
         }}
       >
         <AddItems />
@@ -266,7 +267,7 @@ export const OneView = (props) => (
     <div
       style={{
         width: "100vw",
-        height: "100vh",
+        height: "calc(100vh - 3rem)",
         marginTop: "3rem",
         position: "relative",
         border: "1px solid black",
