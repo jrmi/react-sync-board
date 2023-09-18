@@ -5,9 +5,17 @@ import deleteIcon from "./images/delete.svg";
 import lockIcon from "./images/lock.svg";
 import rotateIcon from "./images/rotate.svg";
 
+const shuffleArray = (array) => {
+  return array
+    .map((value) => ({ value, random: Math.random() }))
+    .sort((a, b) => a.random - b.random)
+    .map((item) => item.value);
+};
+
 const t = (s) => s;
 const useActions = () => {
-  const { batchUpdateItems, removeItems, getItems } = useItemActions();
+  const { batchUpdateItems, removeItems, getItems, swapItems } =
+    useItemActions();
   const selectedItems = useSelectedItems();
 
   const getItemListOrSelected = React.useCallback(
@@ -50,6 +58,16 @@ const useActions = () => {
     [getItemListOrSelected, batchUpdateItems]
   );
 
+  const shuffleItems = React.useCallback(
+    async (itemIds) => {
+      const [ids] = await getItemListOrSelected(itemIds);
+
+      const shuffledItems = shuffleArray([...ids]);
+      swapItems(ids, shuffledItems);
+    },
+    [getItemListOrSelected, swapItems]
+  );
+
   const actionMap = React.useMemo(
     () => ({
       lock: {
@@ -65,6 +83,14 @@ const useActions = () => {
         edit: true,
         disableDblclick: true,
         icon: deleteIcon,
+      },
+      shuffle: {
+        action: shuffleItems,
+        label: t("Shuffle"),
+        shortcut: "z",
+        edit: false,
+        disableDblclick: false,
+        icon: rotateIcon,
       },
       rotate: {
         action: rotate,
@@ -85,7 +111,7 @@ const useActions = () => {
         icon: rotateIcon,
       },
     }),
-    [remove, rotate, toggleLock]
+    [remove, rotate, shuffleItems, toggleLock]
   );
 
   return actionMap;

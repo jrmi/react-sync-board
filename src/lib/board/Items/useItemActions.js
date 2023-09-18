@@ -16,6 +16,7 @@ import useMainStore from "../store/main";
 
 const useItemActions = () => {
   const { call: callPlaceInteractions } = useItemInteraction("place");
+  const { call: callDeleteInteractions } = useItemInteraction("delete");
   const { getCenter, updateItemExtent } = useDim();
 
   const [clearSelection, reverseSelection, unselect, getConfiguration] =
@@ -104,10 +105,18 @@ const useItemActions = () => {
 
   const moveItems = React.useCallback(
     (itemIds, posDelta) => {
-      moveStoreItems(itemIds, posDelta);
+      const prevMap = getStoreItems();
+
+      const itemIdsWithLinkedItems = itemIds
+        .map((itemId) => {
+          return [itemId, ...(prevMap[itemId].linkedItems || [])];
+        })
+        .flat();
+
+      moveStoreItems(itemIdsWithLinkedItems, posDelta);
       updateItemExtent();
     },
-    [moveStoreItems, updateItemExtent]
+    [getStoreItems, moveStoreItems, updateItemExtent]
   );
 
   const putItemsOnTop = React.useCallback(
@@ -126,13 +135,9 @@ const useItemActions = () => {
   const stickOnGrid = React.useCallback(
     (itemIds, { type: globalType, size: globalSize } = {}) => {
       const { boardWrapper } = getConfiguration();
-      const updatedItems = {};
 
-      const prevItemMap = getStoreItems();
-
-      itemIds.forEach((id) => {
-        const item = prevItemMap[id];
-        const elem = getItemElem(boardWrapper, id);
+      batchUpdateItems(itemIds, (item) => {
+        const elem = getItemElem(boardWrapper, item.id);
 
         if (!elem) {
           return;
@@ -155,25 +160,31 @@ const useItemActions = () => {
           gridConfig
         );
 
-        updatedItems[id] = { ...item, ...newPos };
+        return { ...item, ...newPos };
       });
-
-      updateItems(updatedItems);
     },
-    [getConfiguration, getStoreItems, updateItems]
+    [getConfiguration, batchUpdateItems]
   );
 
   const placeItems = React.useCallback(
     (itemIds, gridConfig) => {
+      const prevMap = getStoreItems();
+
       // Put moved items on top
-      putItemsOnTop(itemIds);
+      const itemIdsWithLinkedItems = itemIds
+        .map((itemId) => {
+          return [itemId, ...(prevMap[itemId].linkedItems || [])];
+        })
+        .flat();
+
+      putItemsOnTop(itemIdsWithLinkedItems);
       // Remove moving state
-      batchUpdateItems(itemIds, (item) => {
+      batchUpdateItems(itemIdsWithLinkedItems, (item) => {
         const newItem = { ...item };
         delete newItem.moving;
         return newItem;
       });
-      stickOnGrid(itemIds, gridConfig);
+      stickOnGrid(itemIdsWithLinkedItems, gridConfig);
       callPlaceInteractions(itemIds);
 
       updateItemExtent();
@@ -181,6 +192,7 @@ const useItemActions = () => {
     [
       batchUpdateItems,
       callPlaceInteractions,
+      getStoreItems,
       putItemsOnTop,
       stickOnGrid,
       updateItemExtent,
@@ -218,47 +230,39 @@ const useItemActions = () => {
   const swapItems = React.useCallback(
     (fromIds, toIds) => {
       const prevItemMap = getStoreItems();
-      const fromItems = fromIds.map((id) => prevItemMap[id]);
-      const toItems = toIds.map((id) => prevItemMap[id]);
 
-      const replaceMapItems = toIds.reduce((theMap, id) => {
-        // eslint-disable-next-line no-param-reassign
-        theMap[id] = fromItems.shift();
-        return theMap;
-      }, {});
+      const newCoordinatesMap = Object.fromEntries(
+        toIds.map((toItemId, index) => {
+          const replaceWith = prevItemMap[fromIds[index]];
+          return [
+            toItemId,
+            {
+              x: replaceWith.x,
+              y: replaceWith.y,
+            },
+          ];
+        })
+      );
 
-      const updatedItems = toItems.reduce((acc, toItem) => {
-        const replaceBy = replaceMapItems[toItem.id];
-        const newItem = {
-          ...toItem,
-          x: replaceBy.x,
-          y: replaceBy.y,
-        };
-        // eslint-disable-next-line no-param-reassign
-        acc[toItem.id] = newItem;
-        return acc;
-      }, {});
+      batchUpdateItems(fromIds, (item) => {
+        return { ...item, ...newCoordinatesMap[item.id] };
+      });
 
-      updateItems(updatedItems);
+      const replaceMap = Object.fromEntries(
+        fromIds.map((id, index) => [id, toIds[index]])
+      );
 
-      const replaceMap = fromIds.reduce((theMap, id) => {
-        // eslint-disable-next-line no-param-reassign
-        theMap[id] = toIds.shift();
-        return theMap;
-      }, {});
-
-      const prevItemIds = getItemIds();
-
-      const newItemIds = prevItemIds.map((itemId) => {
+      // swap also the item order
+      const reorderedItemIds = getItemIds().map((itemId) => {
         if (fromIds.includes(itemId)) {
           return replaceMap[itemId];
         }
         return itemId;
       });
 
-      setItemIds(newItemIds);
+      setItemIds(reorderedItemIds);
     },
-    [getStoreItems, updateItems, getItemIds, setItemIds]
+    [getStoreItems, batchUpdateItems, getItemIds, setItemIds]
   );
 
   const pushItems = React.useCallback(
@@ -292,8 +296,9 @@ const useItemActions = () => {
       unselect(itemsIdToRemove);
 
       removeItemsById(itemsIdToRemove);
+      callDeleteInteractions(itemsIdToRemove);
     },
-    [unselect, removeItemsById]
+    [unselect, removeItemsById, callDeleteInteractions]
   );
 
   const getItems = React.useCallback(

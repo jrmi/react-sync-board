@@ -44,7 +44,7 @@ const itemInteractions = (set, get) => ({
       const nextInteraction = [...(state.interactions[interaction] || [])];
       nextInteraction.push(callback);
       return {
-        interactions: { ...state.interaction, [interaction]: nextInteraction },
+        interactions: { ...state.interactions, [interaction]: nextInteraction },
       };
     }),
   unregister: (interaction, callback) =>
@@ -53,7 +53,7 @@ const itemInteractions = (set, get) => ({
         (c) => c !== callback
       );
       return {
-        interactions: { ...state.interaction, [interaction]: nextInteraction },
+        interactions: { ...state.interactions, [interaction]: nextInteraction },
       };
     }),
   callInteractions: (interaction, items) => {

@@ -102,6 +102,38 @@ const defaultInitialItems = [
     height: 100,
     grid: { type: "hexH", size: 50 },
   },
+
+  {
+    type: "rect",
+    x: 300,
+    y: 300,
+    id: "test30",
+    color: "#AA770055",
+    width: 300,
+    height: 300,
+    linkedItems: ["test010", "test011", "test012"],
+  },
+  {
+    type: "cube",
+    x: 310,
+    y: 340,
+    id: "test010",
+    color: "#721456",
+  },
+  {
+    type: "cube",
+    x: 310,
+    y: 370,
+    id: "test011",
+    color: "#727416",
+  },
+  {
+    type: "cube",
+    x: 310,
+    y: 400,
+    id: "test012",
+    color: "#127456",
+  },
 ];
 
 const AddItems = () => {
