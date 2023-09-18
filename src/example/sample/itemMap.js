@@ -89,7 +89,7 @@ const itemTemplates = {
   },
   cube: {
     component: Cube,
-    defaultActions: ["rotate45", "lock", "remove"],
+    defaultActions: ["rotate45", "shuffle", "lock", "remove"],
     availableActions: [
       "rotate",
       "rotate45",
