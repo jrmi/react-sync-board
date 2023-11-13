@@ -6,7 +6,10 @@ import { isPointInsideRect } from "@/utils";
 import useMainStore from "@/board/store/main";
 
 const CursorPane = ({ children }) => {
-  const [getConfiguration] = useMainStore((state) => [state.getConfiguration]);
+  const [getConfiguration] = useMainStore((state) => [
+    state.getConfiguration,
+    state.boardState.scale, // We want to update this component when the scale changes
+  ]);
   const { fromWrapperToBoard, fromBoardToWrapper } = useDim();
   const [currentUser, localUsers, cursors, usersById] = useSyncedUsers(
     (state) => [
