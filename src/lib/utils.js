@@ -190,6 +190,38 @@ export const getItemsBoundingBox = (itemIds, wrapper = document) => {
   return result;
 };
 
+const getLinkedItemsRecursive = (itemMap, itemIds, alreadyMet = null) => {
+  if (alreadyMet === null) {
+    alreadyMet = new Set();
+  }
+
+  if (!itemIds || itemIds.length === 0) {
+    return [];
+  }
+  return itemIds
+    .map((itemId) => {
+      if (alreadyMet.has(itemId)) {
+        return [];
+      } else {
+        alreadyMet.add(itemId);
+        return [
+          itemId,
+          ...getLinkedItemsRecursive(
+            itemMap,
+            itemMap[itemId].linkedItems,
+            alreadyMet
+          ),
+        ];
+      }
+    })
+    .flat();
+};
+
+export const getLinkedItems = (itemMap, orderedItemIds, itemIds) => {
+  const linkedItems = new Set(getLinkedItemsRecursive(itemMap, itemIds));
+  return orderedItemIds.filter((itemId) => linkedItems.has(itemId));
+};
+
 export const snapToGrid = (
   { x, y, width, height },
   { type = "grid", size = 1, offset = { x: 0, y: 0 } }

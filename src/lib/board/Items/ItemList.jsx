@@ -29,6 +29,7 @@ const ItemList = () => {
     top: `${boardSize / 2}px`,
     left: `${boardSize / 2}px`,
     display: "inline-block",
+    lineHeight: 0,
   });
 
   return itemList.map((itemId) => (

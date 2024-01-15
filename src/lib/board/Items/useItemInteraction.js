@@ -21,8 +21,8 @@ const useItemInteraction = (interaction) => {
   );
 
   const call = React.useCallback(
-    (items) => {
-      callInteractions(interaction, items);
+    (itemIds) => {
+      callInteractions(interaction, itemIds);
     },
     [callInteractions, interaction]
   );

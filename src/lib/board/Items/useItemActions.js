@@ -9,6 +9,7 @@ import {
   insideClass,
   hasClass,
   snapToGrid,
+  getLinkedItems,
 } from "@/utils";
 
 import useItemInteraction from "./useItemInteraction";
@@ -105,18 +106,14 @@ const useItemActions = () => {
 
   const moveItems = React.useCallback(
     (itemIds, posDelta) => {
-      const prevMap = getStoreItems();
+      moveStoreItems(
+        getLinkedItems(getStoreItems(), getItemIds(), itemIds),
+        posDelta
+      );
 
-      const itemIdsWithLinkedItems = itemIds
-        .map((itemId) => {
-          return [itemId, ...(prevMap[itemId].linkedItems || [])];
-        })
-        .flat();
-
-      moveStoreItems(itemIdsWithLinkedItems, posDelta);
       updateItemExtent();
     },
-    [getStoreItems, moveStoreItems, updateItemExtent]
+    [getItemIds, getStoreItems, moveStoreItems, updateItemExtent]
   );
 
   const putItemsOnTop = React.useCallback(
@@ -168,16 +165,15 @@ const useItemActions = () => {
 
   const placeItems = React.useCallback(
     (itemIds, gridConfig) => {
-      const prevMap = getStoreItems();
-
-      // Put moved items on top
-      const itemIdsWithLinkedItems = itemIds
-        .map((itemId) => {
-          return [itemId, ...(prevMap[itemId].linkedItems || [])];
-        })
-        .flat();
+      // Put all moved items on top
+      const itemIdsWithLinkedItems = getLinkedItems(
+        getStoreItems(),
+        getItemIds(),
+        itemIds
+      );
 
       putItemsOnTop(itemIdsWithLinkedItems);
+
       // Remove moving state
       batchUpdateItems(itemIdsWithLinkedItems, (item) => {
         const newItem = { ...item };
@@ -192,6 +188,7 @@ const useItemActions = () => {
     [
       batchUpdateItems,
       callPlaceInteractions,
+      getItemIds,
       getStoreItems,
       putItemsOnTop,
       stickOnGrid,

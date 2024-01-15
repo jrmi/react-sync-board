@@ -56,10 +56,10 @@ const itemInteractions = (set, get) => ({
         interactions: { ...state.interactions, [interaction]: nextInteraction },
       };
     }),
-  callInteractions: (interaction, items) => {
+  callInteractions: (interaction, itemIds) => {
     if (!get().interactions[interaction]) return;
     get().interactions[interaction].forEach((callback) => {
-      callback(items);
+      callback(itemIds);
     });
   },
 });
