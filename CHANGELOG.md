@@ -1,4 +1,10 @@
 
+1.2.4 / 2024-02-18
+==================
+
+  * Allow to patch item instead of full update
+  * Update github action
+
 1.2.3 / 2024-01-15
 ==================
 
