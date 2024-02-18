@@ -30,10 +30,13 @@ const useActions = () => {
 
   const toggleLock = React.useCallback(
     (itemIds) => {
-      batchUpdateItems(itemIds, (item) => ({
-        ...item,
-        locked: !item.locked,
-      }));
+      batchUpdateItems(
+        itemIds,
+        (item) => ({
+          locked: !item.locked,
+        }),
+        true
+      );
     },
     [batchUpdateItems]
   );
@@ -50,10 +53,13 @@ const useActions = () => {
     async (itemIds, { angle }) => {
       const [ids] = await getItemListOrSelected(itemIds);
 
-      batchUpdateItems(ids, (item) => ({
-        ...item,
-        rotation: (item.rotation || 0) + angle,
-      }));
+      batchUpdateItems(
+        ids,
+        (item) => ({
+          rotation: (item.rotation || 0) + angle,
+        }),
+        true
+      );
     },
     [getItemListOrSelected, batchUpdateItems]
   );

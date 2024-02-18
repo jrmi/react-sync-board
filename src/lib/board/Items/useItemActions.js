@@ -63,7 +63,7 @@ const useItemActions = () => {
   );
 
   const batchUpdateItems = React.useCallback(
-    (itemIds, callbackOrItem) => {
+    (itemIds, callbackOrItem, patch = false) => {
       let callback = callbackOrItem;
       if (typeof callbackOrItem === "object") {
         callback = () => callbackOrItem;
@@ -75,11 +75,16 @@ const useItemActions = () => {
 
       const toUpdate = Object.fromEntries(
         orderedItemIds.map((id) => {
-          return [id, callback({ ...prevMap[id] })];
+          const prevItem = prevMap[id];
+          if (patch) {
+            return [id, callback(prevItem)];
+          } else {
+            return [id, callback({ ...prevItem })];
+          }
         })
       );
 
-      updateItems(toUpdate);
+      updateItems(toUpdate, patch);
 
       updateItemExtent();
     },
@@ -98,8 +103,8 @@ const useItemActions = () => {
   );
 
   const updateItem = React.useCallback(
-    (id, callbackOrItem) => {
-      batchUpdateItems([id], callbackOrItem);
+    (id, callbackOrItem, patch = false) => {
+      batchUpdateItems([id], callbackOrItem, patch);
     },
     [batchUpdateItems]
   );
@@ -133,32 +138,36 @@ const useItemActions = () => {
     (itemIds, { type: globalType, size: globalSize } = {}) => {
       const { boardWrapper } = getConfiguration();
 
-      batchUpdateItems(itemIds, (item) => {
-        const elem = getItemElem(boardWrapper, item.id);
+      batchUpdateItems(
+        itemIds,
+        (item) => {
+          const elem = getItemElem(boardWrapper, item.id);
 
-        if (!elem) {
-          return;
-        }
+          if (!elem) {
+            return;
+          }
 
-        const gridConfig = {
-          type: globalType || "grid",
-          size: globalSize || 1,
-          offset: { x: 0, y: 0 },
-          ...item.grid,
-        };
+          const gridConfig = {
+            type: globalType || "grid",
+            size: globalSize || 1,
+            offset: { x: 0, y: 0 },
+            ...item.grid,
+          };
 
-        const newPos = snapToGrid(
-          {
-            x: item.x,
-            y: item.y,
-            width: elem.clientWidth,
-            height: elem.clientHeight,
-          },
-          gridConfig
-        );
+          const newPos = snapToGrid(
+            {
+              x: item.x,
+              y: item.y,
+              width: elem.clientWidth,
+              height: elem.clientHeight,
+            },
+            gridConfig
+          );
 
-        return { ...item, ...newPos };
-      });
+          return newPos;
+        },
+        true
+      );
     },
     [getConfiguration, batchUpdateItems]
   );
@@ -180,6 +189,7 @@ const useItemActions = () => {
         delete newItem.moving;
         return newItem;
       });
+
       stickOnGrid(itemIdsWithLinkedItems, gridConfig);
       callPlaceInteractions(itemIds);
 

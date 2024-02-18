@@ -11,8 +11,23 @@ const itemsStore = (set, get) => ({
   items: {},
   getItems: () => get().items,
   setItems: (newItems) => set({ items: newItems }),
-  updateItems: (toUpdate) =>
-    set((state) => ({ items: { ...state.items, ...toUpdate } })),
+  updateItems: (toUpdate, patch = false) =>
+    set((state) => {
+      if (patch) {
+        const newItems = Object.fromEntries(
+          Object.entries(state.items).map(([id, item]) => {
+            if (toUpdate[id]) {
+              return [id, { ...item, ...toUpdate[id] }];
+            } else {
+              return [id, item];
+            }
+          })
+        );
+        return { items: newItems };
+      } else {
+        return { items: { ...state.items, ...toUpdate } };
+      }
+    }),
   moveItems: (itemIds, posDelta) =>
     set(({ items: prevItems }) => {
       const newItems = { ...prevItems };
@@ -30,6 +45,7 @@ const itemsStore = (set, get) => ({
           moving: true,
         };
       });
+
       return { items: newItems };
     }),
 });

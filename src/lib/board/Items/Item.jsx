@@ -192,7 +192,7 @@ const Item = ({
   } = itemMap[type];
 
   const updateState = React.useCallback(
-    (callbackOrItem) => setState(id, callbackOrItem),
+    (callbackOrItem, patch = false) => setState(id, callbackOrItem, patch),
     [setState, id]
   );
 

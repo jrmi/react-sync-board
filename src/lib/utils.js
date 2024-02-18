@@ -195,9 +195,10 @@ const getLinkedItemsRecursive = (itemMap, itemIds, alreadyMet = null) => {
     alreadyMet = new Set();
   }
 
-  if (!itemIds || itemIds.length === 0) {
+  if (!Array.isArray(itemIds) || itemIds.length === 0) {
     return [];
   }
+
   return itemIds
     .map((itemId) => {
       if (alreadyMet.has(itemId)) {
