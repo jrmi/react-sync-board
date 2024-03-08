@@ -73,8 +73,8 @@ const useItemActions = () => {
 
       const prevMap = getStoreItems();
 
-      const toUpdate = Object.fromEntries(
-        orderedItemIds.map((id) => {
+      const updateList = orderedItemIds
+        .map((id) => {
           const prevItem = prevMap[id];
           if (patch) {
             return [id, callback(prevItem)];
@@ -82,7 +82,15 @@ const useItemActions = () => {
             return [id, callback({ ...prevItem })];
           }
         })
-      );
+        .filter(([, value]) => value);
+
+      // If the update list is empty then we are patching and no modifications are
+      // applied
+      if (updateList.length === 0) {
+        return;
+      }
+
+      const toUpdate = Object.fromEntries(updateList);
 
       updateItems(toUpdate, patch);
 
@@ -184,11 +192,7 @@ const useItemActions = () => {
       putItemsOnTop(itemIdsWithLinkedItems);
 
       // Remove moving state
-      batchUpdateItems(itemIdsWithLinkedItems, (item) => {
-        const newItem = { ...item };
-        delete newItem.moving;
-        return newItem;
-      });
+      batchUpdateItems(itemIdsWithLinkedItems, { moving: false }, true);
 
       stickOnGrid(itemIdsWithLinkedItems, gridConfig);
       callPlaceInteractions(itemIds);
@@ -251,9 +255,13 @@ const useItemActions = () => {
         })
       );
 
-      batchUpdateItems(fromIds, (item) => {
-        return { ...item, ...newCoordinatesMap[item.id] };
-      });
+      batchUpdateItems(
+        fromIds,
+        (item) => {
+          return newCoordinatesMap[item.id];
+        },
+        true
+      );
 
       const replaceMap = Object.fromEntries(
         fromIds.map((id, index) => [id, toIds[index]])

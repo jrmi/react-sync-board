@@ -59,7 +59,7 @@ const itemInteractions = (set, get) => ({
   callInteractions: (interaction, itemIds) => {
     if (!get().interactions[interaction]) return;
     get().interactions[interaction].forEach((callback) => {
-      callback(itemIds);
+      setTimeout(() => callback(itemIds), 0);
     });
   },
 });
