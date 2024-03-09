@@ -329,17 +329,19 @@ const useDim = () => {
       (boundingBox, item) => {
         const elem = getItemElem(boardWrapper, item.id);
 
-        boundingBox.left = Math.min(item.x, boundingBox.left);
-        boundingBox.top = Math.min(item.y, boundingBox.top);
+        if (elem) {
+          boundingBox.left = Math.min(item.x, boundingBox.left);
+          boundingBox.top = Math.min(item.y, boundingBox.top);
 
-        boundingBox.right = Math.max(
-          item.x + elem.offsetWidth,
-          boundingBox.right
-        );
-        boundingBox.bottom = Math.max(
-          item.y + elem.offsetHeight,
-          boundingBox.bottom
-        );
+          boundingBox.right = Math.max(
+            item.x + elem.offsetWidth,
+            boundingBox.right
+          );
+          boundingBox.bottom = Math.max(
+            item.y + elem.offsetHeight,
+            boundingBox.bottom
+          );
+        }
 
         return boundingBox;
       },

@@ -123,13 +123,20 @@ export const isItemInsideElement = (itemElement, otherElem) => {
 };
 
 export const getItemElem = (wrapper, itemId) => {
-  const elems = wrapper.getElementsByClassName(`item ${itemId}`);
-  const elem = elems[0];
-  if (!elem) {
-    // eslint-disable-next-line no-console
-    console.error(`Missing item ${itemId}`);
+  try {
+    const elems = wrapper.getElementsByClassName(`item ${itemId}`);
+    const elem = elems[0];
+    if (!elem) {
+      console.error(`Missing item ${itemId}`);
+    }
+    return elem;
+  } catch (e) {
+    console.error(
+      `Error while getting item with id ${itemId} with wrapper`,
+      wrapper
+    );
+    return undefined;
   }
-  return elem;
 };
 
 export const getIdFromElem = (elem) => {
