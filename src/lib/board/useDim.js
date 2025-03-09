@@ -15,6 +15,8 @@ const TOLERANCE = 100;
 const MIN_SIZE = 1000;
 const SCALE_TOLERANCE = 0.8;
 
+let debug = false;
+
 /**
  * Return new board positions fixed to fit inside the board and not too far from the
  * item extent.
@@ -185,6 +187,8 @@ const useDim = () => {
         ...fn(prev),
       };
 
+      if (debug) console.log("New expected values: ", translateX, translateY, scale, newRotate);
+
       const newScale = clampScale(scale);
 
       let [newX, newY] = [translateX, translateY];
@@ -200,6 +204,9 @@ const useDim = () => {
           boardSize,
         });
       }
+
+      if (debug) console.log("New fixed values: ", newX, newY, newScale, newRotate);
+
 
       updateBoardState({
         translateX: newX,
@@ -396,6 +403,9 @@ const useDim = () => {
     window.debugUpdateExtent = () => updateItemExtent();
     window.debugDisplayExtent = () =>
       console.log(getConfiguration().itemExtent);
+    window.debugSetDebug = () => {
+      debug = true;
+    }
   }, [getConfiguration, updateItemExtent]);
 
   return {
