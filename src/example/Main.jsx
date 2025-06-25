@@ -202,7 +202,14 @@ const UserList = () => {
   );
 };
 
-const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
+const Overlay = ({
+  children,
+  hideMenu,
+  moveFirst,
+  setMoveFirst,
+  pulsing,
+  setPulsing,
+}) => {
   const { rotateBoard: rotate } = useDim();
   return (
     <div
@@ -243,7 +250,18 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
                 setMoveFirst((prev) => !prev);
               }}
             />{" "}
-            Move first ?
+            Move first?
+          </label>
+          <br />
+          <label>
+            <input
+              type="checkbox"
+              checked={pulsing}
+              onChange={() => {
+                setPulsing((prev) => !prev);
+              }}
+            />{" "}
+            Pulse items?
           </label>
         </div>
 
@@ -258,6 +276,8 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
 const OneViewContent = ({
   moveFirst,
   setMoveFirst,
+  pulsing,
+  setPulsing,
   showResizeHandle,
   hideMenu,
   room,
@@ -278,10 +298,13 @@ const OneViewContent = ({
         hideMenu={hideMenu}
         moveFirst={moveFirst}
         setMoveFirst={setMoveFirst}
+        pulsing={pulsing}
+        setPulsing={setPulsing}
       >
         <Board
           moveFirst={moveFirst}
           showResizeHandle={showResizeHandle}
+          itemPulsing={pulsing}
           style={{
             backgroundColor: "#EEc",
           }}
@@ -334,6 +357,8 @@ linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
 };
 const OneViewWithRoomContent = ({
   moveFirst,
+  pulsing,
+  setPulsing,
   showResizeHandle,
   hideMenu,
   room,

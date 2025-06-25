@@ -4,7 +4,19 @@ import useItemActions from "./useItemActions";
 import { useSyncedStore } from "@/board/store/synced";
 import useMainStore from "../store/main";
 import { useSyncedUsers } from "@/users/store";
-import { css } from "goober";
+import { css, keyframes } from "goober";
+
+const pulsingAnimation = keyframes`
+ 0% { 
+   filter: brightness(1) contrast(1) saturate(1) invert(0);
+ }
+ 50% { 
+   filter: brightness(1.3) contrast(1) saturate(1.3) invert(0);
+ }
+ 100% { 
+   filter: brightness(1) contrast(1) saturate(1) invert(0);
+ }
+`;
 
 const ItemList = () => {
   const { updateItem } = useItemActions();
@@ -14,23 +26,30 @@ const ItemList = () => {
     state.items,
   ]);
 
-  const [boardSize, showResizeHandle, itemTemplates, selection] = useMainStore(
-    (state) => [
+  const [boardSize, showResizeHandle, itemTemplates, pulsing, selection] =
+    useMainStore((state) => [
       state.config.boardSize,
       state.config.showResizeHandle,
       state.config.itemTemplates,
+      state.config.pulsing,
       state.selection,
-    ]
-  );
+    ]);
+
   const [getCurrentUser] = useSyncedUsers((state) => [state.getUser]);
 
-  const itemClassName = css({
+  const baseCSS = {
     position: "absolute",
     top: `${boardSize / 2}px`,
     left: `${boardSize / 2}px`,
     display: "inline-block",
     lineHeight: 0,
-  });
+  };
+
+  if (pulsing) {
+    baseCSS.animation = `${pulsingAnimation} 1s infinite ease-in-out`;
+  }
+
+  const itemClassName = css(baseCSS);
 
   return itemList.map((itemId) => (
     <Item

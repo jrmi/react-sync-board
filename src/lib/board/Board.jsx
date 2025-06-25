@@ -28,6 +28,7 @@ const Board = ({
   style,
   wrapperStyle,
   itemTemplates = {},
+  itemPulsing = false,
   boardSize = DEFAULT_BOARD_MAX_SIZE,
   children,
   showResizeHandle = false,
@@ -83,8 +84,15 @@ const Board = ({
       itemTemplates,
       boardSize,
       showResizeHandle,
+      pulsing: itemPulsing,
     });
-  }, [itemTemplates, boardSize, showResizeHandle, updateConfiguration]);
+  }, [
+    itemTemplates,
+    boardSize,
+    showResizeHandle,
+    itemPulsing,
+    updateConfiguration,
+  ]);
 
   React.useEffect(() => {
     updateConfiguration({

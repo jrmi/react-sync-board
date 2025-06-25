@@ -13,6 +13,7 @@ const configuration = (set, get) => ({
     itemExtent: { x: 0, y: 0, radius: 0 },
     boardWrapperRect: {},
     boardSize: DEFAULT_BOARD_MAX_SIZE,
+    pulsing: false,
   },
   // TODO optimize when same values as before
   updateConfiguration: (toUpdate) =>
