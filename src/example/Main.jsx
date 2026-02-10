@@ -16,8 +16,8 @@ import SelectedItemsPane from "./SelectedItemsPane";
 import Spinner from "./ui/Spinner";
 import useDim from "@/board/useDim";
 
-const STORYBOOK_SOCKET_URL = "https://public.jeremiez.net";
-const SOCKET_PATH = "/wamp2/socket.io";
+const STORYBOOK_SOCKET_URL = "https://wireio1.filai.re";
+const SOCKET_PATH = "/socket.io";
 
 const SOCKET_OPTIONS = {
   forceNew: true,

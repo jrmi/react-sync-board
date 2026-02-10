@@ -20,7 +20,7 @@ const cursorLabelClass = css({
   textOverflow: "ellipsis",
   marginLeft: "-0.5em",
   marginTop: "1.7em",
-  whitespace: "nowrap",
+  whiteSpace: "nowrap",
   pointerEvents: "none",
 });
 

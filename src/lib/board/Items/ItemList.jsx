@@ -11,7 +11,7 @@ const pulsingAnimation = keyframes`
    filter: brightness(1) contrast(1) saturate(1) invert(0);
  }
  50% { 
-   filter: brightness(1.3) contrast(1) saturate(1.3) invert(0);
+   filter: brightness(1.6) contrast(1) saturate(1.5)  invert(0);
  }
  100% { 
    filter: brightness(1) contrast(1) saturate(1) invert(0);
