@@ -1,4 +1,5 @@
 import React from "react";
+import useMainStore from "../lib/board/store/main";
 import {
   Provider as SocketIOProvider,
   useSocket,
@@ -136,6 +137,18 @@ const defaultInitialItems = [
   },
 ];
 
+function handleCenterBoard(center, scale) {
+  center(prev => ({
+    ...prev,
+    translateX: -25000 * scale + window.innerWidth / 2,
+    translateY: -25000 * scale + window.innerHeight / 2,
+  }));
+}
+
+function handleLimitPan(updateBoardState, limitPan) {
+  updateBoardState({ limitPan: !limitPan });
+}
+
 const AddItems = () => {
   const { pushItem } = useItemActions();
 
@@ -203,7 +216,17 @@ const UserList = () => {
 };
 
 const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
-  const { rotateBoard: rotate } = useDim();
+  //const { lockView, setLockView } = useLockView();
+  //const { rotateBoard: rotate } = useDim();
+  //const { centerBoard: center } = useDim();
+  const { rotateBoard: rotate, centerBoard: center } = useDim();
+  const { scale } = useMainStore((state) => state.getBoardState());
+  const [getBoardState, updateBoardState] =
+    useMainStore((state) => [
+      state.getBoardState,
+      state.updateBoardState,
+    ]);
+  const limitPan = useMainStore((state) => state.boardState.limitPan);
   return (
     <div
       style={{
@@ -233,6 +256,9 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
           <button onClick={() => rotate((prev) => prev - 12.5)}>
             Rotate counter clockwise
           </button>
+          <button onClick={() => handleCenterBoard(center, scale)}>
+            Center Board
+          </button>
         </div>
         <div style={{ margin: "10px 0" }}>
           <label>
@@ -246,7 +272,16 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
             Move first ?
           </label>
         </div>
-
+        <div style={{ margin: "10px 0" }}>
+          <label>
+            <input
+              type="checkbox"
+              checked={limitPan}
+              onChange={() => updateBoardState({ limitPan: !limitPan })}
+            />
+            Limit Pan
+          </label>
+        </div>
         <UserList />
       </div>
       <SelectedItemsPane hideMenu={hideMenu} ItemFormComponent={ItemForm} />

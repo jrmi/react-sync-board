@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   OneView,
   TwoView,
@@ -6,6 +6,7 @@ import {
   OneViewWithCustomBoardElements,
   OneViewWithRoom,
 } from "./example/Main.jsx";
+
 
 const TopBar = ({ setView }: { setView: (viewName: string) => void }) => {
   return (

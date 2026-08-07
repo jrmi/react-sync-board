@@ -29,6 +29,7 @@ const boardState = (set, get) => ({
     translateY: 0,
     scale: 1,
     rotate: 0,
+    limitPan: false,
   },
   // TODO optimize when same values as before
   updateBoardState: (toUpdate) =>

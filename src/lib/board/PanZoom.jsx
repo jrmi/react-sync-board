@@ -41,6 +41,7 @@ const PanZoom = ({ children, moveFirst = false }) => {
   /**
    * Center board on startup
    */
+   
   const centerBoard = React.useCallback(() => {
     const { itemExtent } = getConfiguration();
     zoomToExtent(itemExtent);

@@ -29,6 +29,7 @@ const translateBoundaries = ({
   itemExtent,
   boardWrapperRect,
   boardSize,
+  lockView,
 }) => {
   let [newX, newY] = [x, y];
 
@@ -48,58 +49,57 @@ const translateBoundaries = ({
   };
 
   const distToExtent = distance(screenCenter, [extentPos.x, extentPos.y]);
-
   // Limit moves to extent
   const minDim = Math.min(boardWrapperRect.width, boardWrapperRect.height);
   const maxDistToExtent =
     itemExtent.radius + minDim / 2 / scale - TOLERANCE / scale;
 
-  if (distToExtent > maxDistToExtent) {
-    const inter = intersectSegmentCircle(
-      { x: screenCenter[0], y: screenCenter[1] },
-      extentPos,
-      extentPos,
-      maxDistToExtent - 1 / scale
-    )[0];
+  if (lockView) {
+    if (distToExtent > maxDistToExtent) {
+      const inter = intersectSegmentCircle(
+        { x: screenCenter[0], y: screenCenter[1] },
+        extentPos,
+        extentPos,
+        maxDistToExtent - 1 / scale
+      )[0];
 
-    const [translateX, translateY] = transformTo([-inter.x, -inter.y], {
-      translateX: boardWrapperRect.width / 2,
-      translateY: boardWrapperRect.height / 2,
-      scale,
-      rotate,
-    });
-
-    newX = translateX;
-    newY = translateY;
-  }
-
-  // Limit move to board limit
-  const distToCenter = distance(screenCenter, [boardCenter.x, boardCenter.y]);
-  const maxDistToCenter =
-    boardSize / 2 -
-    distance([0, 0], [boardWrapperRect.width, boardWrapperRect.height]) / scale;
-
-  if (distToCenter > maxDistToCenter) {
-    const inter = intersectSegmentCircle(
-      { x: screenCenter[0], y: screenCenter[1] },
-      boardCenter,
-      boardCenter,
-      maxDistToCenter - 1 / scale
-    )[0];
-
-    if (inter) {
       const [translateX, translateY] = transformTo([-inter.x, -inter.y], {
         translateX: boardWrapperRect.width / 2,
         translateY: boardWrapperRect.height / 2,
         scale,
         rotate,
       });
-
       newX = translateX;
       newY = translateY;
     }
-  }
 
+    // Limit move to board limit
+    const distToCenter = distance(screenCenter, [boardCenter.x, boardCenter.y]);
+    const maxDistToCenter =
+      boardSize / 2 -
+      distance([0, 0], [boardWrapperRect.width, boardWrapperRect.height]) / scale;
+
+    if (distToCenter > maxDistToCenter) {
+      const inter = intersectSegmentCircle(
+        { x: screenCenter[0], y: screenCenter[1] },
+        boardCenter,
+        boardCenter,
+        maxDistToCenter - 1 / scale
+      )[0];
+
+      if (inter) {
+        const [translateX, translateY] = transformTo([-inter.x, -inter.y], {
+          translateX: boardWrapperRect.width / 2,
+          translateY: boardWrapperRect.height / 2,
+          scale,
+          rotate,
+        });
+
+        newX = translateX;
+        newY = translateY;
+      }
+    }
+  }
   return [newX, newY];
 };
 
@@ -153,7 +153,7 @@ const useDim = () => {
     },
     [getBoardState]
   );
-
+0
   /**
    * Clamp scale to boundaries limits.
    */
@@ -202,15 +202,16 @@ const useDim = () => {
           itemExtent,
           boardWrapperRect,
           boardSize,
+          lockView: prev.limitPan,
         });
       }
 
       if (debug) console.log("New fixed values: ", newX, newY, newScale, newRotate);
 
       updateBoardState({
-        translateX: isNaN(newX)? 0: newX,
-        translateY: isNaN(newY)? 0: newY,
-        scale: isNaN(newScale)? clampScale(1): newScale,
+        translateX: isNaN(newX) ? 0 : newX,
+        translateY: isNaN(newY) ? 0 : newY,
+        scale: isNaN(newScale) ? clampScale(1) : newScale,
         rotate: isNaN(newRotate) ? 0 : newRotate,
       });
     },
@@ -221,17 +222,38 @@ const useDim = () => {
    * Move the board to the given coordinates.
    */
   const moveBoard = React.useCallback(
+    (newTranslateOrFn) => {
+      setDimSafe((prev) => {
+
+        const translateFn =
+          typeof newTranslateOrFn === "function"
+            ? newTranslateOrFn
+            : () => newTranslateOrFn;
+
+        return {
+          ...prev,
+          ...translateFn(prev),
+        };
+      });
+    },
+    [setDimSafe]
+  );
+
+  /**
+     * Center the board at 0,0
+     */
+  const centerBoard = React.useCallback(
     (newTranslatOrFn) => {
       let translateFn = (prev) => ({ ...prev, ...newTranslatOrFn });
       if (typeof newTranslatOrFn === "function") {
         translateFn = newTranslatOrFn;
       }
-
       setDimSafe((prev) => ({
         ...prev,
         ...translateFn({
-          translateX: prev.translateX,
-          translateY: prev.translateY,
+          translateX: 0,
+          translateY: 0,
+          rotate: 0,
         }),
       }));
     },
@@ -286,7 +308,7 @@ const useDim = () => {
       const { rotate } = getBoardState();
       const { boardWrapperRect, boardSize } = getConfiguration();
 
-      const [safeX, safeY, safeRadius] = [x || 0, y||0, radius || 2000]
+      const [safeX, safeY, safeRadius] = [x || 0, y || 0, radius || 2000]
 
       const scaleX = boardWrapperRect.width / (safeRadius * 2);
       const scaleY = boardWrapperRect.height / (safeRadius * 2);
@@ -414,6 +436,7 @@ const useDim = () => {
     setDim: setDimSafe,
     rotateBoard,
     moveBoard,
+    centerBoard,
     getDim,
     zoomTo: zoomToCenter,
     zoomToCenter,

@@ -31,12 +31,14 @@ const Board = ({
   boardSize = DEFAULT_BOARD_MAX_SIZE,
   children,
   showResizeHandle = false,
+  limitPan = false,
   Wrapper = NullWrapper,
 }) => {
   const boardWrapperRef = React.useRef(null);
-  const [uid, updateConfiguration] = useMainStore((state) => [
+  const [uid, updateConfiguration, updateBoardState] = useMainStore((state) => [
     state.config.uid,
     state.updateConfiguration,
+    state.updateBoardState,
   ]);
   const { updateItemExtent } = useDim();
 
@@ -85,6 +87,10 @@ const Board = ({
       showResizeHandle,
     });
   }, [itemTemplates, boardSize, showResizeHandle, updateConfiguration]);
+
+  React.useEffect(() => {
+    updateBoardState({ limitPan });
+  }, [limitPan, updateBoardState]);
 
   React.useEffect(() => {
     updateConfiguration({

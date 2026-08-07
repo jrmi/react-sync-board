@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: [{ find: "@", replacement: resolve(projectRootDir, "src/lib") }],
     },
+    server: {
+      open: false,
+    },
     build: {
       chunkSizeWarningLimit: "1Mb",
       lib: {

@@ -4,7 +4,6 @@ node_modules
 src
 public
 example
-test
 *.iml
 *.ipr
 *.iws
@@ -12,3 +11,8 @@ test
 target
 build
 coverage
+
+
+
+
+
