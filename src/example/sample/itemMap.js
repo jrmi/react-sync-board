@@ -79,13 +79,9 @@ const itemTemplates = {
     ],
     form: ScreenFormFields,
     name: i18n.t("Screen"),
-    template: { layer: -2 },
-    stateHook: (state, { currentUser }) => {
-      if (state.claimedBy && state.claimedBy !== currentUser?.uid) {
-        return { ...state, layer: 3.6 };
-      }
-      return state;
-    },
+    // Keep the screen above the content so its button remains clickable.
+    template: { layer: 3.6 },
+    stateHook: (state) => ({ ...state, layer: 3.6 }),
   },
   cube: {
     component: Cube,

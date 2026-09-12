@@ -125,9 +125,6 @@ export const isItemInsideElement = (itemElement, otherElem) => {
 export const getItemElem = (uid, itemId) => {
   try {
     const elem = document.getElementById(`${uid}__${itemId}`);
-    if (!elem) {
-      console.error(`Missing item ${itemId}`);
-    }
     return elem;
   } catch {
     console.error(

@@ -3,13 +3,14 @@ import styled, { css } from "styled-components";
 import { useUsers } from "@/users";
 
 const StyledShape = styled.div`
-  ${({ width, height, color }) => css`
+  ${({ width, height, color, $revealed }) => css`
     width: ${width}px;
     height: ${height}px;
     box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
       rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
     border: 5px dashed ${color};
-    position: relative
+    background-color: ${$revealed ? "transparent" : color};
+    position: relative;
 
     display: flex;
     justify-content: center;
@@ -22,7 +23,7 @@ const StyledShape = styled.div`
   `}
 `;
 
-const Zone = ({
+const Screen = ({
   width = 300,
   height = 200,
   color = "#ccc",
@@ -30,6 +31,7 @@ const Zone = ({
   setState,
 }) => {
   const { currentUser } = useUsers();
+  const revealed = claimedBy === currentUser.uid;
 
   const onClaim = useCallback(() => {
     setState((prev) => {
@@ -52,7 +54,12 @@ const Zone = ({
     }
   }
   return (
-    <StyledShape width={width} height={height} color={color}>
+    <StyledShape
+      width={width}
+      height={height}
+      color={color}
+      $revealed={revealed}
+    >
       <button onClick={onClaim} className="screen__claim-button">
         {buttonLabel}
       </button>
@@ -60,4 +67,4 @@ const Zone = ({
   );
 };
 
-export default memo(Zone);
+export default memo(Screen);
