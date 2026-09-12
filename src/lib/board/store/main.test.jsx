@@ -1,8 +1,7 @@
 /** @vitest-environment jsdom */
 import React from "react";
-import { act } from "react";
-import { createRoot } from "react-dom/client";
-import { describe, expect, it } from "vitest";
+import { cleanup, fireEvent, render } from "@testing-library/react";
+import { afterEach, describe, expect, it } from "vitest";
 
 import useMainStore, { MainStoreProvider } from "./main";
 
@@ -38,46 +37,34 @@ function SelectionProbe() {
 }
 
 describe("MainStoreProvider", () => {
-  it("keeps array selectors stable and responds to updates", () => {
-    const container = document.createElement("div");
-    const root = createRoot(container);
+  afterEach(() => cleanup());
 
-    act(() => {
-      root.render(
-        <MainStoreProvider>
-          <Probe />
-        </MainStoreProvider>
-      );
-    });
+  it("keeps array selectors stable and responds to updates", () => {
+    const { container } = render(
+      <MainStoreProvider>
+        <Probe />
+      </MainStoreProvider>
+    );
 
     expect(container.textContent).toBe("1");
 
-    act(() => {
-      container.querySelector("button").click();
-    });
+    fireEvent.click(container.querySelector("button"));
 
     expect(container.textContent).toBe("2");
-    act(() => root.unmount());
   });
 
   it("supports selecting, unselecting, and reversing items", () => {
-    const container = document.createElement("div");
-    const root = createRoot(container);
+    const { container } = render(
+      <MainStoreProvider>
+        <SelectionProbe />
+      </MainStoreProvider>
+    );
 
-    act(() => {
-      root.render(
-        <MainStoreProvider>
-          <SelectionProbe />
-        </MainStoreProvider>
-      );
-    });
-
-    act(() => container.querySelector("button").click());
+    fireEvent.click(container.querySelector("button"));
     expect(container.querySelector("output").textContent).toBe("a,b");
-    act(() => container.querySelectorAll("button")[1].click());
+    fireEvent.click(container.querySelectorAll("button")[1]);
     expect(container.querySelector("output").textContent).toBe("b");
-    act(() => container.querySelectorAll("button")[2].click());
+    fireEvent.click(container.querySelectorAll("button")[2]);
     expect(container.querySelector("output").textContent).toBe("b");
-    act(() => root.unmount());
   });
 });

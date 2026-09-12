@@ -50,6 +50,7 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@scripters/use-socket.io": "github:jrmi/use-socket.io#updated-v2",
+    "@testing-library/react": "^16.3.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@typescript-eslint/eslint-plugin": "^8.70.0",
