@@ -65,11 +65,6 @@ export default function WorldBackground({ style, tileSizeOverride }) {
   }, [background.layers]);
 
   const grid = visibleTiles(width, height, camera, tileSizeOverride);
-  // Adjacent transformed elements can land on different device pixels after
-  // scaling. Overlap their edges so rounding cannot reveal a seam. The bleed
-  // is measured in world pixels and therefore stays roughly two screen pixels
-  // wide at every zoom level.
-  const tileBleed = Math.min(32, 2 / camera.scale);
   const layers = background.layers.map((layer) => {
     const [w, h] = tileSize(layer.size, width, height, images[layer.image]);
     const repeatX =
@@ -121,16 +116,14 @@ export default function WorldBackground({ style, tileSizeOverride }) {
             data-tile={tile.key}
             style={{
               position: "absolute",
-              left: tile.left - grid.left - tileBleed,
-              top: tile.top - grid.top - tileBleed,
-              width: grid.size + tileBleed * 2,
-              height: grid.size + tileBleed * 2,
+              left: tile.left - grid.left,
+              top: tile.top - grid.top,
+              width: grid.size,
+              height: grid.size,
               backgroundImage: layers.map((l) => l.image).join(", "),
               backgroundSize: layers.map((l) => l.size).join(", "),
               backgroundPosition: layers
-                .map((l) =>
-                  l.position(tile.left - tileBleed, tile.top - tileBleed)
-                )
+                .map((l) => l.position(tile.left, tile.top))
                 .join(", "),
               backgroundRepeat: layers.map((l) => l.repeat).join(", "),
               backgroundBlendMode: layers.map((l) => l.blend).join(", "),

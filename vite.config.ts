@@ -42,6 +42,11 @@ export default defineConfig(({ mode }) => {
           // for externalized deps
           globals: {
             react: "React",
+            "react/jsx-runtime": "ReactJSXRuntime",
+            zustand: "zustand",
+            "zustand/traditional": "zustandTraditional",
+            "zustand/shallow": "zustandShallow",
+            "@react-hookz/web": "ReactHookzWeb",
           },
         },
       },
