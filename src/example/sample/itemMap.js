@@ -81,7 +81,7 @@ const itemTemplates = {
     name: i18n.t("Screen"),
     template: { layer: -2 },
     stateHook: (state, { currentUser }) => {
-      if (state.claimedBy && state.claimedBy !== currentUser.uid) {
+      if (state.claimedBy && state.claimedBy !== currentUser?.uid) {
         return { ...state, layer: 3.6 };
       }
       return state;

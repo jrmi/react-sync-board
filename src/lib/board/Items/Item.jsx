@@ -336,7 +336,9 @@ const PositionedItem = ({ state = {}, getCurrentUser, className, ...rest }) => {
     layer = 0,
     moving,
     ...stateRest
-  } = stateHook(state, { getCurrentUser });
+  } = stateHook(state, {
+    currentUser: getCurrentUser?.(),
+  });
 
   const zIndex = (layer + 4) * 10 + 100 + (moving ? 5 : 0); // Items z-index between 100 and 200
 

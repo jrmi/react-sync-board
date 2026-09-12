@@ -8,7 +8,7 @@ import { syncMiddleware } from "@/utils";
 
 const Context = React.createContext();
 
-const itemsStore = (set, get) => ({
+export const itemsStore = (set, get) => ({
   items: {},
   getItems: () => get().items,
   setItems: (newItems) => set({ items: newItems }),

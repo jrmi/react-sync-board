@@ -290,7 +290,11 @@ const useItemActions = () => {
       });
 
       insertItems(itemsWithPosition, beforeId);
-      placeItems(itemsToInsert.map(({ id }) => id));
+      // Wait for React to render the inserted items before measuring their DOM
+      // elements in placeItems/stickOnGrid.
+      requestAnimationFrame(() => {
+        placeItems(itemsToInsert.map(({ id }) => id));
+      });
     },
     [getCenter, insertItems, placeItems]
   );
