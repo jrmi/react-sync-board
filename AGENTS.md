@@ -32,3 +32,9 @@ Recent commits use short, imperative summaries such as `Update socket url`, `Fix
 ## Security & Configuration Tips
 
 Do not commit credentials, private socket endpoints, or local environment files. Treat the `wire.io` server URL and synchronization payloads as deployment configuration, and verify changes do not expose board or session data unnecessarily.
+
+## npm Publishing Recap
+
+Before publishing, run `npm run lint`, `npm run build`, and `npm pack --dry-run` to verify the package contents. The package is published as `react-sync-board`; update the version in `package.json` before publishing a new release.
+
+Publishing requires either interactive npm 2FA or a granular access token with package read/write access and **Bypass two-factor authentication** enabled. For token-based publishing, configure the token locally with `npm config set //registry.npmjs.org/:_authToken=YOUR_TOKEN`, verify with `npm whoami`, then run `npm publish`. Never commit or share the token.
