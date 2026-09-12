@@ -1,4 +1,11 @@
 
+1.3.0 / 2026-09-12
+==================
+
+  * Update deps and add tests (#15)
+  * Improve perfs and other bug fixes (#13)
+  * Update socket url
+
 1.2.11 / 2026-02-11
 ===================
 
