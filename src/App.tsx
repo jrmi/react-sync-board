@@ -7,6 +7,7 @@ import {
   OneViewWithRoom,
 } from "./example/Main.jsx";
 
+// eslint-disable-next-line no-unused-vars
 const TopBar = ({ setView }: { setView: (viewName: string) => void }) => {
   return (
     <div

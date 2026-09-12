@@ -125,11 +125,8 @@ export const isItemInsideElement = (itemElement, otherElem) => {
 export const getItemElem = (uid, itemId) => {
   try {
     const elem = document.getElementById(`${uid}__${itemId}`);
-    if (!elem) {
-      console.error(`Missing item ${itemId}`);
-    }
     return elem;
-  } catch (e) {
+  } catch {
     console.error(
       `Error while getting item with id ${itemId} inside wrapper`,
       uid
@@ -358,7 +355,7 @@ export const syncMiddleware =
       try {
         // Try to get the initial value from a peer
         const newValue = await wire.call(`${storeName}_getValue`);
-        debug && console.log("init from peer with value", newValue);
+        if (debug) console.log("init from peer with value", newValue);
         set((state) => ({ ...state, ...newValue }));
       } catch {
         //console.log(`No peers for ${storeName}...`);
@@ -383,7 +380,7 @@ export const syncMiddleware =
       // Register the sync callback
       unsubs.push(
         wire.subscribe(`${storeName}_call`, ([methodName, args]) => {
-          debug && console.log("receive", methodName, args);
+          if (debug) console.log("receive", methodName, args);
           previousFn[methodName](...args);
         })
       );
@@ -403,7 +400,7 @@ export const syncMiddleware =
           !noSync.includes(key)
         ) {
           const newFn = (...args) => {
-            debug && console.log("call", key, args);
+            if (debug) console.log("call", key, args);
             const result = fn(...args);
             wire.publish(`${storeName}_call`, [key, args]);
             return result;

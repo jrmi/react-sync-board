@@ -1,5 +1,5 @@
 import React from "react";
-import { useDebouncedCallback } from "@react-hookz/web/esm/useDebouncedCallback";
+import { useDebouncedCallback } from "@react-hookz/web";
 
 import { useSyncedStore } from "@/board/store/synced";
 import {

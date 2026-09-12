@@ -1,13 +1,14 @@
 import React, { useContext } from "react";
-import { createStore, useStore } from "zustand";
+import { createStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
+import { shallow } from "zustand/shallow";
 
 import useWire from "@/hooks/useWire";
 import { syncMiddleware } from "@/utils";
-import { shallow } from "zustand/shallow";
 
 const Context = React.createContext();
 
-const itemsStore = (set, get) => ({
+export const itemsStore = (set, get) => ({
   items: {},
   getItems: () => get().items,
   setItems: (newItems) => set({ items: newItems }),
@@ -50,7 +51,7 @@ const itemsStore = (set, get) => ({
     }),
 });
 
-const itemIdsStore = (set, get) => ({
+export const itemIdsStore = (set, get) => ({
   itemIds: [],
   setItemIds: (newValue) => set({ itemIds: newValue }),
   getItemIds: () => get().itemIds,
@@ -70,12 +71,12 @@ const itemIdsStore = (set, get) => ({
     set((state) => {
       const newValue = [...state.itemIds];
       newValue[position] = value;
-      return { items: newValue };
+      return { itemIds: newValue };
     }),
   updateManyItemIds: (toUpdate) =>
     set((state) => {
       return {
-        items: state.itemIds.map((value, index) => {
+        itemIds: state.itemIds.map((value, index) => {
           if (toUpdate[index] !== undefined) {
             return toUpdate[index];
           } else {
@@ -185,7 +186,7 @@ export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useSyncedStore = (selector, equalityFn) => {
+export const useSyncedStore = (selector) => {
   const store = useContext(Context);
-  return useStore(store, selector, equalityFn ? equalityFn : shallow);
+  return useStoreWithEqualityFn(store, selector, shallow);
 };

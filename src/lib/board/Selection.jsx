@@ -1,6 +1,6 @@
 import React from "react";
 import { css } from "goober";
-import { useDebouncedCallback } from "@react-hookz/web/esm/useDebouncedCallback";
+import { useDebouncedCallback } from "@react-hookz/web";
 
 import { getItemsBoundingBox } from "@/utils";
 import { useSyncedStore } from "@/board/store/synced";

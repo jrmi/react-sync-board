@@ -6,7 +6,7 @@ import { getIdFromElem } from "@/utils";
 import Gesture from "./Gesture";
 import useMainStore from "./store/main";
 import { useSyncedStore } from "@/board/store/synced";
-import { useEventListener } from "@react-hookz/web/esm/useEventListener";
+import { useEventListener } from "@react-hookz/web";
 import useDim from "./useDim";
 
 /**

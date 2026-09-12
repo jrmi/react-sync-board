@@ -11,7 +11,7 @@ import useDim from "./useDim";
 import useMainStore from "./store/main";
 
 import { insideClass } from "@/utils";
-import { useResizeObserver } from "@react-hookz/web/esm/useResizeObserver";
+import { useResizeObserver } from "@react-hookz/web";
 import { css } from "goober";
 import CursorPane from "./Cursors/CursorPane";
 

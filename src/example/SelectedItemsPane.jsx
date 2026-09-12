@@ -21,7 +21,7 @@ const ActionPane = styled.div`
   border-radius: 4px;
   padding: 0.1em 0.5em;
   transition: opacity 100ms;
-  opacity: ${({ hide }) => (hide ? 0 : 0.9)};
+  opacity: ${({ $hide }) => ($hide ? 0 : 0.9)};
   
   box-shadow: 2px 2px 10px 0.3px rgba(0, 0, 0, 0.5);
 
@@ -169,7 +169,7 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
         <ActionPane
           left="50%"
           top="5px"
-          hide={
+          $hide={
             boardState.zooming || boardState.panning || boardState.movingItems
           }
         >

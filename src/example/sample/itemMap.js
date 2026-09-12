@@ -79,12 +79,13 @@ const itemTemplates = {
     ],
     form: ScreenFormFields,
     name: i18n.t("Screen"),
-    template: { layer: -2 },
+    template: { layer: 3.6 },
     stateHook: (state, { currentUser }) => {
-      if (state.claimedBy && state.claimedBy !== currentUser.uid) {
-        return { ...state, layer: 3.6 };
+      if (state.claimedBy === currentUser?.uid) {
+        return { ...state, layer: -2 };
       }
-      return state;
+
+      return { ...state, layer: 3.6 };
     },
   },
   cube: {
