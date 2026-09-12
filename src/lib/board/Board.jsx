@@ -10,12 +10,13 @@ import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 import useDim from "./useDim";
 import useMainStore from "./store/main";
 
-import { insideClass } from "@/utils";
 import { useResizeObserver } from "@react-hookz/web";
 import { css } from "goober";
 import CursorPane from "./Cursors/CursorPane";
+import WorldBackground from "./WorldBackground";
 
 const NullWrapper = ({ children }) => children;
+const emptyTemplates = {};
 
 const defaultStyle = {
   overflow: "hidden",
@@ -27,8 +28,10 @@ const Board = ({
   moveFirst = true,
   style,
   wrapperStyle,
-  itemTemplates = {},
+  itemTemplates = emptyTemplates,
+  // Deprecated compatibility prop. The logical canvas is unbounded.
   boardSize = DEFAULT_BOARD_MAX_SIZE,
+  backgroundTileSize,
   children,
   showResizeHandle = false,
   Wrapper = NullWrapper,
@@ -38,15 +41,27 @@ const Board = ({
     state.config.uid,
     state.updateConfiguration,
   ]);
+  const [translateX, translateY, scale, rotate] = useMainStore(
+    (state) => [
+      state.boardState.translateX,
+      state.boardState.translateY,
+      state.boardState.scale,
+      state.boardState.rotate,
+    ]
+  );
   const { updateItemExtent } = useDim();
 
   const boardStyle = {
     userSelect: "none",
-    width: `${boardSize}px`,
-    height: `${boardSize}px`,
-    backgroundColor: "#333",
-    ...style,
+    position: "absolute",
+    inset: 0,
+    width: "100%",
+    height: "100%",
+    transformOrigin: "0 0",
+    transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scale})`,
+    pointerEvents: "none",
   };
+
 
   React.useEffect(() => {
     // Chrome-related issue.
@@ -54,7 +69,7 @@ const Board = ({
     // the browser original zoom  and therefore allowing our custom one.
     // More detail at https://github.com/facebook/react/issues/14856
     const cancelWheel = (event) => {
-      if (insideClass(event.target, "board")) event.preventDefault();
+      if (boardWrapperRef.current?.contains(event.target)) event.preventDefault();
     };
 
     document.body.addEventListener("wheel", cancelWheel, { passive: false });
@@ -112,6 +127,7 @@ const Board = ({
       id={uid}
       className={`sync-board ${boardWrapperClass}`}
     >
+      <WorldBackground style={style} tileSizeOverride={backgroundTileSize} />
       <CursorPane>
         <Selector moveFirst={moveFirst}>
           <PanZoom moveFirst={moveFirst}>
@@ -122,10 +138,10 @@ const Board = ({
                     e.preventDefault();
                   }}
                   style={boardStyle}
-                  className="board"
+                  className={`board-pane${scale < 0.5 ? " board-pane__far" : ""}`}
                 >
                   <ItemList />
-                  {children}
+                  <div style={{ pointerEvents: "auto" }}>{children}</div>
                 </div>
               </Wrapper>
             </ActionPane>

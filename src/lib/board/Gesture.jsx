@@ -90,6 +90,7 @@ const Gesture = ({
   onDoubleTap = empty,
   onZoom,
   mainAction = "drag",
+  fill = false,
 }) => {
   const wrapperRef = React.useRef(null);
   const stateRef = React.useRef({
@@ -249,6 +250,8 @@ const Gesture = ({
     });
 
     try {
+      // Nested handlers capture the same target so events continue to bubble
+      // through item, pan and selection handlers.
       target.setPointerCapture(pointerId);
     } catch (e) {
       // eslint-disable-next-line no-console
@@ -554,11 +557,12 @@ const Gesture = ({
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
-      onPointerOut={onPointerUp}
-      onPointerLeave={onPointerUp}
       onPointerCancel={onPointerUp}
       onDoubleClick={onDoubleTapHandler}
-      style={{ touchAction: "none" }}
+      style={{
+        touchAction: "none",
+        ...(fill ? { position: "absolute", inset: 0 } : {}),
+      }}
       ref={wrapperRef}
     >
       {children}

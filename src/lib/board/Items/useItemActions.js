@@ -283,7 +283,7 @@ const useItemActions = () => {
       const center = getCenter();
 
       const itemsWithPosition = itemsToInsert.map((item, index) => {
-        if (!item.x || !item.y) {
+        if (item.x === undefined || item.x === null || item.y === undefined || item.y === null) {
           return { ...item, x: center.x + 2 * index, y: center.y + 2 * index };
         }
         return item;

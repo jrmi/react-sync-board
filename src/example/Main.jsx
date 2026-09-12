@@ -15,6 +15,7 @@ import SelectedItemsPane from "./SelectedItemsPane";
 
 import Spinner from "./ui/Spinner";
 import useDim from "@/board/useDim";
+import useMainStore from "@/board/store/main";
 
 const STORYBOOK_SOCKET_URL = "https://wireio1.filai.re";
 const SOCKET_PATH = "/socket.io";
@@ -203,7 +204,8 @@ const UserList = () => {
 };
 
 const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
-  const { rotateBoard: rotate } = useDim();
+  const { rotateBoard: rotate, zoomToExtent } = useDim();
+  const itemExtent = useMainStore((state) => state.config.itemExtent);
   return (
     <div
       style={{
@@ -214,6 +216,7 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
     >
       {children}
       <div
+        className="demo-controls"
         style={{
           position: "absolute",
           top: 0,
@@ -222,10 +225,17 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
           backgroundColor: "#999999",
           padding: "0.5em",
           zIndex: 215,
-          width: "145px",
+          width: "min(145px, 40%)",
+          overflowY: "auto",
+          overscrollBehavior: "contain",
         }}
       >
         <AddItems />
+        <div style={{ margin: "10px 0" }}>
+          <button onClick={() => zoomToExtent(itemExtent)}>
+            Center on items
+          </button>
+        </div>
         <div style={{ margin: "10px 0" }}>
           <button onClick={() => rotate((prev) => prev + 12.5)}>
             Rotate clockwise
@@ -298,9 +308,8 @@ export const OneView = (props) => (
   <WithSocketIO>
     <div
       style={{
-        width: "100vw",
-        height: "calc(100vh - 3rem)",
-        marginTop: "3rem",
+        width: "100%",
+        height: "100%",
         position: "relative",
         border: "1px solid black",
       }}
@@ -334,6 +343,7 @@ linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
 };
 const OneViewWithRoomContent = ({
   moveFirst,
+  setMoveFirst,
   showResizeHandle,
   hideMenu,
   room,
@@ -353,7 +363,7 @@ const OneViewWithRoomContent = ({
         LoadingComponent={() => <Spinner />}
         items={initialItems || defaultInitialItems}
       >
-        <Overlay hideMenu={hideMenu}>
+        <Overlay hideMenu={hideMenu} moveFirst={moveFirst} setMoveFirst={setMoveFirst}>
           <Board
             moveFirst={moveFirst}
             itemTemplates={itemMap}
@@ -370,9 +380,8 @@ export const OneViewWithRoom = (props) => (
   <WithSocketIO>
     <div
       style={{
-        width: "100vw",
-        height: "100vh",
-        marginTop: "3rem",
+        width: "100%",
+        height: "100%",
         position: "relative",
         border: "1px solid black",
       }}
@@ -382,22 +391,13 @@ export const OneViewWithRoom = (props) => (
   </WithSocketIO>
 );
 
-<div
-  style={{
-    width: "100vw",
-    height: "100vh",
-    marginTop: "3rem",
-    position: "relative",
-    border: "1px solid black",
-  }}
-></div>;
 export const TwoView = (props) => {
   return (
     <div
+      className="demo-two-views"
       style={{
         width: "100%",
-        height: "100vh",
-        marginTop: "3rem",
+        height: "100%",
         display: "flex",
       }}
     >
@@ -406,6 +406,8 @@ export const TwoView = (props) => {
           style={{
             position: "relative",
             height: "100%",
+            minWidth: 0,
+            minHeight: 0,
             flex: 1,
             border: "1px solid grey",
           }}
@@ -418,6 +420,8 @@ export const TwoView = (props) => {
           style={{
             position: "relative",
             height: "100%",
+            minWidth: 0,
+            minHeight: 0,
             flex: 1,
             border: "1px solid grey",
           }}
@@ -434,8 +438,8 @@ export const OneViewWithCustomBoardElements = (props) => (
     <div
       style={{
         width: "100%",
-        height: "100vh",
-        marginTop: "3rem",
+        height: "100%",
+        position: "relative",
         display: "flex",
       }}
     >
