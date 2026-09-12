@@ -1,5 +1,6 @@
 import React, { useContext } from "react";
-import { createStore, useStore } from "zustand";
+import { createStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
 import { shallow } from "zustand/shallow";
 import { DEFAULT_BOARD_MAX_SIZE } from "@/settings";
 
@@ -127,9 +128,9 @@ export const MainStoreProvider = ({ children }) => {
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useMainStore = (selector, equalityFn) => {
+export const useMainStore = (selector) => {
   const store = useContext(Context);
-  return useStore(store, selector, equalityFn ? equalityFn : shallow);
+  return useStoreWithEqualityFn(store, selector, shallow);
 };
 
 export default useMainStore;

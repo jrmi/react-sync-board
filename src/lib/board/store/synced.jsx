@@ -1,9 +1,10 @@
 import React, { useContext } from "react";
-import { createStore, useStore } from "zustand";
+import { createStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
+import { shallow } from "zustand/shallow";
 
 import useWire from "@/hooks/useWire";
 import { syncMiddleware } from "@/utils";
-import { shallow } from "zustand/shallow";
 
 const Context = React.createContext();
 
@@ -185,7 +186,7 @@ export const SyncedStoreProvider = ({ storeName, children, defaultValue }) => {
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useSyncedStore = (selector, equalityFn) => {
+export const useSyncedStore = (selector) => {
   const store = useContext(Context);
-  return useStore(store, selector, equalityFn ? equalityFn : shallow);
+  return useStoreWithEqualityFn(store, selector, shallow);
 };

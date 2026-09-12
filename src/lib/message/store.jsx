@@ -1,10 +1,11 @@
 import React, { useContext } from "react";
-import { createStore, useStore } from "zustand";
+import { createStore } from "zustand";
+import { useStoreWithEqualityFn } from "zustand/traditional";
+import { shallow } from "zustand/shallow";
 import { nanoid } from "nanoid";
 
 import useWire from "@/hooks/useWire";
 import { syncMiddleware } from "@/utils";
-import { shallow } from "zustand/shallow";
 
 const Context = React.createContext();
 
@@ -64,7 +65,7 @@ export const SyncedMessageProvider = ({
   return <Context.Provider value={store}>{children}</Context.Provider>;
 };
 
-export const useSyncedMessage = (selector, equalityFn) => {
+export const useSyncedMessage = (selector) => {
   const store = useContext(Context);
-  return useStore(store, selector, equalityFn ? equalityFn : shallow);
+  return useStoreWithEqualityFn(store, selector, shallow);
 };
