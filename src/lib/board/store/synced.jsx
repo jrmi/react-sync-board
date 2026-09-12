@@ -51,7 +51,7 @@ const itemsStore = (set, get) => ({
     }),
 });
 
-const itemIdsStore = (set, get) => ({
+export const itemIdsStore = (set, get) => ({
   itemIds: [],
   setItemIds: (newValue) => set({ itemIds: newValue }),
   getItemIds: () => get().itemIds,
@@ -71,12 +71,12 @@ const itemIdsStore = (set, get) => ({
     set((state) => {
       const newValue = [...state.itemIds];
       newValue[position] = value;
-      return { items: newValue };
+      return { itemIds: newValue };
     }),
   updateManyItemIds: (toUpdate) =>
     set((state) => {
       return {
-        items: state.itemIds.map((value, index) => {
+        itemIds: state.itemIds.map((value, index) => {
           if (toUpdate[index] !== undefined) {
             return toUpdate[index];
           } else {
