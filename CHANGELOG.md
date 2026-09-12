@@ -1,4 +1,12 @@
 
+1.4.0 / 2026-09-12
+==================
+
+  * Update tools
+  * Fix background and external deps
+  * Switch to infinite pane
+  * Update deps for ABG (#17)
+
 1.3.0 / 2026-09-12
 ==================
 
