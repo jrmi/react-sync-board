@@ -10,24 +10,16 @@ import {
 // eslint-disable-next-line no-unused-vars
 const TopBar = ({ setView }: { setView: (viewName: string) => void }) => {
   return (
-    <div
-      className="top-bar"
-      style={{
-        height: "3rem",
-        width: "100%",
-        position: "fixed",
-        top: 0,
-        backgroundColor: "#999999",
-        display: "flex",
-      }}
-    >
+    <header className="top-bar">
       <h1 style={{ padding: 0, margin: 0 }}>ReactSyncBoard demo</h1>
-      <button onClick={() => setView("one")}>One view</button>
-      <button onClick={() => setView("style")}>One view with style</button>
-      <button onClick={() => setView("custom")}>One view with custom</button>
-      <button onClick={() => setView("two")}>Two views</button>
-      <button onClick={() => setView("perf")}>Perf</button>
-    </div>
+      <nav aria-label="Demo views">
+        <button onClick={() => setView("one")}>One view</button>
+        <button onClick={() => setView("style")}>One view with style</button>
+        <button onClick={() => setView("custom")}>One view with custom</button>
+        <button onClick={() => setView("two")}>Two views</button>
+        <button onClick={() => setView("perf")}>Perf</button>
+      </nav>
+    </header>
   );
 };
 
@@ -40,56 +32,58 @@ function App() {
   return (
     <div className="App">
       <TopBar setView={setView} />
-      {view === "one" && (
-        <OneView
-          moveFirst={moveFirst}
-          setMoveFirst={setMoveFirst}
-          showResizeHandle={true}
-          hideMenu={false}
-          room={`${room}_one`}
-          session={`${session}_one`}
-        />
-      )}
-      {view === "style" && (
-        <OneViewWithRoom
-          moveFirst={moveFirst}
-          setMoveFirst={setMoveFirst}
-          showResizeHandle={false}
-          hideMenu={false}
-          room={`${room}_one`}
-          session={`${session}_one`}
-        />
-      )}
-      {view === "custom" && (
-        <OneViewWithCustomBoardElements
-          moveFirst={moveFirst}
-          setMoveFirst={setMoveFirst}
-          showResizeHandle={false}
-          hideMenu={false}
-          room={`${room}_custom`}
-          session={`${session}_custom`}
-        />
-      )}
-      {view === "two" && (
-        <TwoView
-          moveFirst={moveFirst}
-          setMoveFirst={setMoveFirst}
-          showResizeHandle={false}
-          hideMenu={false}
-          room={`${room}_two`}
-          session={`${session}_two`}
-        />
-      )}
-      {view === "perf" && (
-        <OneViewPerf
-          moveFirst={moveFirst}
-          setMoveFirst={setMoveFirst}
-          showResizeHandle={false}
-          hideMenu={false}
-          room={`${room}_perf`}
-          session={`${session}_perf`}
-        />
-      )}
+      <main className="demo-content">
+        {view === "one" && (
+          <OneView
+            moveFirst={moveFirst}
+            setMoveFirst={setMoveFirst}
+            showResizeHandle={true}
+            hideMenu={false}
+            room={`${room}_one`}
+            session={`${session}_one`}
+          />
+        )}
+        {view === "style" && (
+          <OneViewWithRoom
+            moveFirst={moveFirst}
+            setMoveFirst={setMoveFirst}
+            showResizeHandle={false}
+            hideMenu={false}
+            room={`${room}_one`}
+            session={`${session}_one`}
+          />
+        )}
+        {view === "custom" && (
+          <OneViewWithCustomBoardElements
+            moveFirst={moveFirst}
+            setMoveFirst={setMoveFirst}
+            showResizeHandle={false}
+            hideMenu={false}
+            room={`${room}_custom`}
+            session={`${session}_custom`}
+          />
+        )}
+        {view === "two" && (
+          <TwoView
+            moveFirst={moveFirst}
+            setMoveFirst={setMoveFirst}
+            showResizeHandle={false}
+            hideMenu={false}
+            room={`${room}_two`}
+            session={`${session}_two`}
+          />
+        )}
+        {view === "perf" && (
+          <OneViewPerf
+            moveFirst={moveFirst}
+            setMoveFirst={setMoveFirst}
+            showResizeHandle={false}
+            hideMenu={false}
+            room={`${room}_perf`}
+            session={`${session}_perf`}
+          />
+        )}
+      </main>
     </div>
   );
 }

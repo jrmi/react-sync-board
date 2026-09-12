@@ -10,18 +10,11 @@ import useMainStore from "./store/main";
 const PanZoom = ({ children, moveFirst = false }) => {
   const wrappedRef = React.useRef(null);
   const [
-    dim,
     itemExtentGlobal,
     getConfiguration,
     updateBoardState,
     getSelection,
   ] = useMainStore((state) => [
-    {
-      translateX: state.boardState.translateX,
-      translateY: state.boardState.translateY,
-      scale: state.boardState.scale,
-      rotate: state.boardState.rotate,
-    },
     state.config.itemExtent,
     state.getConfiguration,
     state.updateBoardState,
@@ -154,17 +147,21 @@ const PanZoom = ({ children, moveFirst = false }) => {
 
   return (
     <Gesture
+      fill
       onPan={onPan}
       onZoom={onZoom}
       mainAction={moveFirst ? "pan" : "drag"}
     >
       <div
         style={{
-          display: "inline-block",
-          transformOrigin: "top left",
-          transform: `translate(${dim.translateX}px, ${dim.translateY}px) rotate(${dim.rotate}deg) scale(${dim.scale})`,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          display: "block",
+          width: "100%",
+          height: "100%",
         }}
-        className={`board-pane${dim.scale < 0.5 ? " board-pane__far" : ""}`}
+        className="board"
         ref={wrappedRef}
       >
         {children}

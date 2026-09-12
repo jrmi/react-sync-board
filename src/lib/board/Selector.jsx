@@ -59,7 +59,6 @@ const Selector = ({ children, moveFirst }) => {
     state.setSelection,
     state.select,
     state.getConfiguration,
-    state.getBoardState,
     state.updateBoardState,
   ]);
   const { findElementUnderPointer } = useItemActions();
@@ -163,11 +162,11 @@ const Selector = ({ children, moveFirst }) => {
   };
 
   const onTap = (event) => {
-    const { target, ctrlKey, metaKey } = event;
+    const { ctrlKey, metaKey } = event;
 
     const foundElement = findElementUnderPointer(event);
 
-    if (!foundElement && insideClass(target, "board")) {
+    if (!foundElement) {
       clearSelection();
     } else {
       const itemId = getIdFromElem(foundElement);
@@ -191,6 +190,7 @@ const Selector = ({ children, moveFirst }) => {
 
   return (
     <Gesture
+      fill
       onDragStart={onDragStart}
       onDrag={onDrag}
       onDragEnd={onDragEnd}
@@ -198,7 +198,7 @@ const Selector = ({ children, moveFirst }) => {
       onLongTap={onLongTap}
       mainAction={moveFirst ? "pan" : "drag"}
     >
-      <div ref={wrapperRef}>
+      <div ref={wrapperRef} style={{ position: "absolute", inset: 0 }}>
         {selector.moving && (
           <div
             style={{

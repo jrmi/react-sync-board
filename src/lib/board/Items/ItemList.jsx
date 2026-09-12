@@ -14,9 +14,8 @@ const ItemList = () => {
     state.items,
   ]);
 
-  const [boardSize, showResizeHandle, itemTemplates, selection] = useMainStore(
+  const [showResizeHandle, itemTemplates, selection] = useMainStore(
     (state) => [
-      state.config.boardSize,
       state.config.showResizeHandle,
       state.config.itemTemplates,
       state.selection,
@@ -26,8 +25,9 @@ const ItemList = () => {
 
   const itemClassName = css({
     position: "absolute",
-    top: `${boardSize / 2}px`,
-    left: `${boardSize / 2}px`,
+    top: 0,
+    left: 0,
+    pointerEvents: "auto",
     display: "inline-block",
     lineHeight: 0,
   });
@@ -39,7 +39,6 @@ const ItemList = () => {
       setState={updateItem}
       isSelected={selection.includes(itemId)}
       itemMap={itemTemplates}
-      boardSize={boardSize}
       getCurrentUser={getCurrentUser}
       showResizeHandle={showResizeHandle}
       className={itemClassName}

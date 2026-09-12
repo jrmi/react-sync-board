@@ -160,7 +160,7 @@ const ActionPane = ({ children }) => {
   useEventListener(document, "keydown", onKeyDown);
 
   return (
-    <Gesture onDragStart={onDragStart} onDrag={onDrag} onDragEnd={onDragEnd}>
+    <Gesture fill onDragStart={onDragStart} onDrag={onDrag} onDragEnd={onDragEnd}>
       {children}
     </Gesture>
   );

@@ -5,13 +5,11 @@ import { useSyncedStore } from "@/board/store/synced";
 import {
   distance,
   getItemElem,
-  intersectSegmentCircle,
   transformFrom,
   transformTo,
 } from "@/utils";
 import useMainStore from "./store/main";
 
-const TOLERANCE = 100;
 const MIN_SIZE = 1000;
 const SCALE_TOLERANCE = 0.8;
 
@@ -21,88 +19,6 @@ let debug = false;
  * Return new board positions fixed to fit inside the board and not too far from the
  * item extent.
  */
-const translateBoundaries = ({
-  x,
-  y,
-  scale,
-  rotate,
-  itemExtent,
-  boardWrapperRect,
-  boardSize,
-}) => {
-  let [newX, newY] = [x, y];
-
-  const screenCenter = transformFrom(
-    [boardWrapperRect.width / 2, boardWrapperRect.height / 2],
-    { translateX: newX, translateY: newY, scale, rotate }
-  );
-
-  const extentPos = {
-    x: itemExtent.x + boardSize / 2,
-    y: itemExtent.y + boardSize / 2,
-  };
-
-  const boardCenter = {
-    x: boardSize / 2,
-    y: boardSize / 2,
-  };
-
-  const distToExtent = distance(screenCenter, [extentPos.x, extentPos.y]);
-
-  // Limit moves to extent
-  const minDim = Math.min(boardWrapperRect.width, boardWrapperRect.height);
-  const maxDistToExtent =
-    itemExtent.radius + minDim / 2 / scale - TOLERANCE / scale;
-
-  if (distToExtent > maxDistToExtent) {
-    const inter = intersectSegmentCircle(
-      { x: screenCenter[0], y: screenCenter[1] },
-      extentPos,
-      extentPos,
-      maxDistToExtent - 1 / scale
-    )[0];
-
-    const [translateX, translateY] = transformTo([-inter.x, -inter.y], {
-      translateX: boardWrapperRect.width / 2,
-      translateY: boardWrapperRect.height / 2,
-      scale,
-      rotate,
-    });
-
-    newX = translateX;
-    newY = translateY;
-  }
-
-  // Limit move to board limit
-  const distToCenter = distance(screenCenter, [boardCenter.x, boardCenter.y]);
-  const maxDistToCenter =
-    boardSize / 2 -
-    distance([0, 0], [boardWrapperRect.width, boardWrapperRect.height]) / scale;
-
-  if (distToCenter > maxDistToCenter) {
-    const inter = intersectSegmentCircle(
-      { x: screenCenter[0], y: screenCenter[1] },
-      boardCenter,
-      boardCenter,
-      maxDistToCenter - 1 / scale
-    )[0];
-
-    if (inter) {
-      const [translateX, translateY] = transformTo([-inter.x, -inter.y], {
-        translateX: boardWrapperRect.width / 2,
-        translateY: boardWrapperRect.height / 2,
-        scale,
-        rotate,
-      });
-
-      newX = translateX;
-      newY = translateY;
-    }
-  }
-
-  return [newX, newY];
-};
-
 const useDim = () => {
   const [
     getBoardState,
@@ -173,8 +89,6 @@ const useDim = () => {
    */
   const setDimSafe = React.useCallback(
     (fn) => {
-      const { itemExtent, boardWrapperRect, boardSize } = getConfiguration();
-
       const prev = getBoardState();
 
       const {
@@ -191,30 +105,19 @@ const useDim = () => {
 
       const newScale = clampScale(scale);
 
-      let [newX, newY] = [translateX, translateY];
-
-      if (translateX !== prev.translateX || translateY !== prev.translateY) {
-        [newX, newY] = translateBoundaries({
-          x: translateX,
-          y: translateY,
-          scale: newScale,
-          rotate: newRotate,
-          itemExtent,
-          boardWrapperRect,
-          boardSize,
-        });
-      }
+      const newX = translateX;
+      const newY = translateY;
 
       if (debug) console.log("New fixed values: ", newX, newY, newScale, newRotate);
 
       updateBoardState({
-        translateX: isNaN(newX)? 0: newX,
-        translateY: isNaN(newY)? 0: newY,
-        scale: isNaN(newScale)? clampScale(1): newScale,
-        rotate: isNaN(newRotate) ? 0 : newRotate,
+        translateX: Number.isFinite(newX) ? newX : prev.translateX,
+        translateY: Number.isFinite(newY) ? newY : prev.translateY,
+        scale: Number.isFinite(newScale) ? newScale : clampScale(1),
+        rotate: Number.isFinite(newRotate) ? newRotate : prev.rotate,
       });
     },
-    [clampScale, getBoardState, getConfiguration, updateBoardState]
+    [clampScale, getBoardState, updateBoardState]
   );
 
   /**
@@ -284,7 +187,7 @@ const useDim = () => {
   const zoomToExtent = React.useCallback(
     ({ x, y, radius }) => {
       const { rotate } = getBoardState();
-      const { boardWrapperRect, boardSize } = getConfiguration();
+      const { boardWrapperRect } = getConfiguration();
 
       const [safeX, safeY, safeRadius] = [x || 0, y||0, radius || 2000]
 
@@ -297,7 +200,7 @@ const useDim = () => {
 
       // We apply the board transformations
       const [translateX, translateY] = transformTo(
-        [-boardSize / 2 - safeX, -boardSize / 2 - safeY],
+        [-safeX, -safeY],
         {
           translateX: boardWrapperRect.width / 2,
           translateY: boardWrapperRect.height / 2,
@@ -315,14 +218,14 @@ const useDim = () => {
    * Get the board coordinates pointed by the center of the screen.
    */
   const getCenterCoordinates = React.useCallback(() => {
-    const { boardWrapperRect, boardSize } = getConfiguration();
+    const { boardWrapperRect } = getConfiguration();
     const [x, y] = fromWrapperToBoard(
       boardWrapperRect.width / 2,
       boardWrapperRect.height / 2
     );
     return {
-      x: x - boardSize / 2,
-      y: y - boardSize / 2,
+      x,
+      y,
     };
   }, [fromWrapperToBoard, getConfiguration]);
 
@@ -332,7 +235,7 @@ const useDim = () => {
   const updateItemExtent = React.useCallback(() => {
     // Update item extent
     const items = getItemList();
-    const { boardSize, uid } = getConfiguration();
+    const { uid } = getConfiguration();
 
     const newRes = items.reduce(
       (boundingBox, item) => {
@@ -355,12 +258,17 @@ const useDim = () => {
         return boundingBox;
       },
       {
-        left: boardSize / 2,
-        top: boardSize / 2,
-        right: -boardSize / 2,
-        bottom: -boardSize / 2,
+        left: Infinity,
+        top: Infinity,
+        right: -Infinity,
+        bottom: -Infinity,
       }
     );
+
+    if (!Number.isFinite(newRes.left)) {
+      updateConfiguration({ itemExtent: { x: 0, y: 0, radius: MIN_SIZE } });
+      return;
+    }
 
     const final = {
       x: (newRes.right + newRes.left) / 2,
