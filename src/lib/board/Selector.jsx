@@ -1,6 +1,6 @@
 import React from "react";
 import { css } from "goober";
-import { useEventListener } from "@react-hookz/web/esm/useEventListener";
+import { useEventListener } from "@react-hookz/web";
 
 import { insideClass, isItemInsideElement, getIdFromElem } from "@/utils";
 

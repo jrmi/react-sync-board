@@ -1,5 +1,5 @@
 import React from "react";
-import { useEventListener } from "@react-hookz/web/esm/useEventListener";
+import { useEventListener } from "@react-hookz/web";
 
 import useMainStore from "./store/main";
 

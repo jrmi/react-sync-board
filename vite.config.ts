@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
       alias: [{ find: "@", replacement: resolve(projectRootDir, "src/lib") }],
     },
     build: {
-      chunkSizeWarningLimit: "1Mb",
+      chunkSizeWarningLimit: 1000,
       lib: {
         // Could also be a dictionary or array of multiple entry points
         entry: resolve(__dirname, "src/lib/index.js"),

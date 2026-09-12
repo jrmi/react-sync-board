@@ -1,7 +1,7 @@
 import React, { useCallback } from "react";
 import deepEqual from "fast-deep-equal/es6";
 
-import { useDebouncedEffect } from "@react-hookz/web/esm/useDebouncedEffect";
+import { useDebouncedEffect } from "@react-hookz/web";
 
 import { useSyncedStore } from "@/board/store/synced";
 import useMainStore from "../store/main";

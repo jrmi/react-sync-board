@@ -1,4 +1,4 @@
-import { useEventListener } from "@react-hookz/web/esm/useEventListener";
+import { useEventListener } from "@react-hookz/web";
 import React from "react";
 
 const useMousePosition = (ref) => {
