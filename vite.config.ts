@@ -26,7 +26,17 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         // make sure to externalize deps that shouldn't be bundled
         // into your library
-        external: ["react", "react-dom", "@scripters/use-socket.io"],
+        external: [
+          "react",
+          "react-dom",
+          "react/jsx-runtime",
+          "react/jsx-dev-runtime",
+          "@scripters/use-socket.io",
+          "zustand",
+          "zustand/traditional",
+          "zustand/shallow",
+          "@react-hookz/web",
+        ],
         output: {
           // Provide global variables to use in the UMD build
           // for externalized deps
