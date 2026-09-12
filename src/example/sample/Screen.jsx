@@ -20,6 +20,13 @@ const StyledShape = styled.div`
       z-index: 0;
     }
 
+    & .screen__claim-button {
+      position: absolute;
+      top: 4px;
+      right: 4px;
+      z-index: 1;
+    }
+
   `}
 `;
 
@@ -31,7 +38,7 @@ const Screen = ({
   setState,
 }) => {
   const { currentUser } = useUsers();
-  const revealed = claimedBy === currentUser.uid;
+  const revealed = claimedBy === currentUser?.uid;
 
   const onClaim = useCallback(() => {
     setState((prev) => {
