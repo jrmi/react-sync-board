@@ -6,6 +6,7 @@ import useDim from "./useDim";
 import useMousePosition from "./useMousePosition";
 import usePositionNavigator from "./usePositionNavigator";
 import useMainStore from "./store/main";
+import { hasClass, insideClass } from "@/utils";
 
 const PanZoom = ({ children, moveFirst = false }) => {
   const wrappedRef = React.useRef(null);
@@ -58,7 +59,12 @@ const PanZoom = ({ children, moveFirst = false }) => {
     updateBoardState({ zooming: true });
   };
 
-  const onPan = ({ deltaX, deltaY }) => {
+  const onPan = ({ deltaX, deltaY, target }) => {
+    const item = insideClass(target, "item");
+    if (item && hasClass(item, "selected")) {
+      return;
+    }
+
     moveBoard(({ translateX, translateY }) => ({
       translateX: translateX + deltaX,
       translateY: translateY + deltaY,

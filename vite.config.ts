@@ -31,7 +31,7 @@ export default defineConfig(({ mode }) => {
           "react-dom",
           "react/jsx-runtime",
           "react/jsx-dev-runtime",
-          "@scripters/use-socket.io",
+          "@jrmi/use-socket.io",
           "zustand",
           "zustand/traditional",
           "zustand/shallow",
