@@ -1,4 +1,10 @@
 
+1.4.2 / 2026-09-13
+==================
+
+  * Fix bad return value for provider
+  * Minor package fix
+
 1.4.1 / 2026-09-13
 ==================
 
