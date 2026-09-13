@@ -2,7 +2,7 @@ import React from "react";
 import {
   Provider as SocketIOProvider,
   useSocket,
-} from "@scripters/use-socket.io";
+} from "@jrmi/use-socket.io";
 import { nanoid } from "nanoid";
 
 import "./index.css";
