@@ -45,7 +45,7 @@ export const WireProvider = ({
 
   React.useEffect(() => {
     if (!socket) {
-      return null;
+      return;
     }
 
     const disconnect = () => {
@@ -64,7 +64,7 @@ export const WireProvider = ({
   React.useEffect(() => {
     // Connect
     if (!socket) {
-      return null;
+      return;
     }
     if (!socket.connected) {
       socket.connect();
