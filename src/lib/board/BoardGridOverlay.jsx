@@ -9,7 +9,7 @@ import {
   gridGeometry,
   measureGridItem,
   normalizeGrid,
-  resolveGridConfig,
+  resolveDisplayGrid,
 } from "./grid";
 
 export const GridOverlay = ({ grid, item, uid }) => {
@@ -56,10 +56,16 @@ export const GridOverlay = ({ grid, item, uid }) => {
       height={diameter}
       style={{
         position: "absolute",
-        left,
-        top,
+        left: 0,
+        top: 0,
+        // Keep the overlay on the compositor path, like positioned items. A
+        // layout left/top update makes the SVG pattern shimmer while dragging.
+        transform: `translate3d(${left}px, ${top}px, 0)`,
+        willChange: "transform",
         pointerEvents: "none",
-        zIndex: 90,
+        // Keep the grid above stationary items at the same layer, while the
+        // moving selected item remains above its own grid.
+        zIndex: item.moving ? ((item.layer ?? 0) + 4) * 10 + 101 : 90,
         opacity,
         maskImage: "radial-gradient(circle, #000 35%, transparent 72%)",
       }}
@@ -88,19 +94,19 @@ export const GridOverlay = ({ grid, item, uid }) => {
 };
 
 // Render inside Board so overlay positions share the board's camera transform.
-const BoardGridOverlay = ({ preview = false }) => {
+const BoardGridOverlay = ({ preview = false, enabled = true }) => {
   const items = useItems();
   const selected = useSelectedItems();
   const [board] = useBoardConfig();
   const { movingItems } = useBoardState();
   const uid = useMainStore((state) => state.config.uid);
   const moving = movingItems || items.some((item) => item.moving);
-  if (!preview && !moving) return null;
+  if (!enabled || (!preview && !moving)) return null;
   return items
     .filter((item) => selected.includes(item.id))
     .map((item) => {
       const custom = normalizeGrid(item.grid);
-      const grid = resolveGridConfig(board.grid, item.grid);
+      const grid = resolveDisplayGrid(board.grid, item.grid);
       const force = preview && custom;
       if (!grid || (!force && (!moving || !grid.show))) return null;
       return <GridOverlay key={item.id} grid={grid} item={item} uid={uid} />;

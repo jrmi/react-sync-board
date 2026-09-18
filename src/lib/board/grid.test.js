@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   gridGeometry,
   normalizeGrid,
+  resolveDisplayGrid,
   resolveGridConfig,
   snapToGrid,
 } from "./grid";
@@ -13,7 +14,7 @@ describe("canonical grid geometry", () => {
         { x: 13, y: 17, width: 4, height: 6 },
         { type: "grid", size: "10", offset: { x: "3" } },
       ),
-    ).toEqual({ x: 11, y: 17 });
+    ).toEqual({ x: 16, y: 22 });
     expect(
       normalizeGrid({ type: "grid", size: Infinity, offset: { y: "bad" } }),
     ).toMatchObject({ size: 1, offset: { x: 0, y: 0 } });
@@ -24,11 +25,31 @@ describe("canonical grid geometry", () => {
       expect(normalizeGrid({ type: "grid", size }).size).toBe(1);
     },
   );
+  it("shows grids when show is omitted, while honoring an explicit false", () => {
+    expect(normalizeGrid({ type: "hexH", size: 10 }).show).toBe(true);
+    expect(normalizeGrid({ type: "hexH", size: 10, show: false }).show).toBe(
+      false,
+    );
+  });
   it("does not activate a grid without a canonical active type", () => {
     expect(resolveGridConfig({ size: 5 }, { type: "none" })).toBeNull();
     expect(
       resolveGridConfig({ type: "none" }, { type: "grid", size: 2 }).size,
     ).toBe(2);
+  });
+  it("lets an inheriting item opt into display when the board hides it", () => {
+    const board = { type: "grid", size: 20, show: false };
+    expect(resolveDisplayGrid(board, { type: "none", show: true })).toMatchObject({
+      type: "grid",
+      size: 20,
+      show: true,
+    });
+    expect(resolveDisplayGrid(board, { type: "none", show: false }).show).toBe(
+      false,
+    );
+    expect(resolveDisplayGrid(board, { type: "grid", size: 5 }).show).toBe(
+      true,
+    );
   });
   it.each(["grid", "hexH", "hexV"])(
     "aligns negative and fractional %s centers with overlay geometry",

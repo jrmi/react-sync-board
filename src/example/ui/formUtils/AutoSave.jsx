@@ -18,22 +18,26 @@ const diff = (o1, o2) => {
   return result;
 };
 
-const AutoSaveIn = ({ values, save }) => {
+const AutoSaveIn = ({ values, dirtyFields, save }) => {
   const [prevValues, setPrevValues] = React.useState(values);
 
   React.useEffect(() => {
     const differences = diff(prevValues, values);
     if (differences) {
       setPrevValues(values);
-      save(differences);
+      save(differences, dirtyFields);
     }
-  }, [values, save, prevValues]);
+  }, [values, dirtyFields, save, prevValues]);
 
   return null;
 };
 
 const AutoSave = (props) => (
-  <FormSpy {...props} subscription={{ values: true }} component={AutoSaveIn} />
+  <FormSpy
+    {...props}
+    subscription={{ values: true, dirtyFields: true }}
+    component={AutoSaveIn}
+  />
 );
 
 export default AutoSave;

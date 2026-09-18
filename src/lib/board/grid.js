@@ -10,7 +10,7 @@ export const normalizeGrid = (grid) => {
     ...grid,
     size: size > 0 ? size : 1,
     offset: { x: finite(grid.offset?.x), y: finite(grid.offset?.y) },
-    show: grid.show === true,
+    show: grid.show !== false,
     color: grid.color || "#000000",
     opacity: Math.max(0, Math.min(1, finite(grid.opacity ?? 0.2, 0.2))),
   };
@@ -18,6 +18,17 @@ export const normalizeGrid = (grid) => {
 
 export const resolveGridConfig = (boardGrid, itemGrid) =>
   normalizeGrid(itemGrid) || normalizeGrid(boardGrid);
+
+// An inherited item's display preference may override the board's visibility
+// without changing the grid used for placement.
+export const resolveDisplayGrid = (boardGrid, itemGrid) => {
+  const grid = resolveGridConfig(boardGrid, itemGrid);
+  const itemHasCustomGrid = normalizeGrid(itemGrid);
+  if (!grid || itemHasCustomGrid || typeof itemGrid?.show !== "boolean") {
+    return grid;
+  }
+  return { ...grid, show: itemGrid.show };
+};
 
 // Board units, independent of zoom/rotation. Include selection borders so the
 // measured center is the visible center both before and after selection.
@@ -41,11 +52,12 @@ export const measureGridItem = (element) => {
   };
 };
 
-// A hex size is its circumradius; hexH has horizontal rows of centers.
+// Grid centers are in cell space, while a hex size is its circumradius.
+// hexH has horizontal rows of centers.
 export const gridGeometry = ({ type, size }) => {
   const h = (Math.sqrt(3) * size) / 2;
   return type === "grid"
-    ? { width: size, height: size, centers: [[0, 0]] }
+    ? { width: size, height: size, centers: [[size / 2, size / 2]] }
     : type === "hexH"
       ? {
           width: 2 * h,

@@ -16,6 +16,7 @@ const NumberField = ({ name, initialValue }) => (
 const GridFields = ({ initialValues = {}, title = true }) => {
   const { t } = useTranslation();
   const grid = initialValues.grid || {};
+  const hasCustomGrid = ["grid", "hexH", "hexV"].includes(grid.type);
 
   return (
     <>
@@ -32,6 +33,15 @@ const GridFields = ({ initialValues = {}, title = true }) => {
           <option value="hexH">{t("Horizontal hexagons")}</option>
           <option value="hexV">{t("Vertical hexagons")}</option>
         </Field>
+      </Label>
+      <Label>
+        <Field
+          name="grid.show"
+          component="input"
+          type="checkbox"
+          initialValue={grid.show ?? (hasCustomGrid ? true : undefined)}
+        />{" "}
+        {t("Display grid while moving")}
       </Label>
       <Label>
         {t("Size")}

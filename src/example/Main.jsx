@@ -246,7 +246,12 @@ const UserList = () => {
   );
 };
 
-const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
+const Overlay = ({
+  children,
+  hideMenu,
+  moveFirst,
+  setMoveFirst,
+}) => {
   const { rotateBoard: rotate, zoomToExtent } = useDim();
   const itemExtent = useMainStore((state) => state.config.itemExtent);
   return (

@@ -17,10 +17,20 @@ const ItemFormFactory = ({ ItemFormComponent }) => {
   const selectedItems = useSelectedItems();
 
   const onSubmitHandler = React.useCallback(
-    (formValues) => {
+    (formValues, dirtyFields = {}) => {
+      const gridWasEdited = Object.keys(dirtyFields).some(
+        (field) => field === "grid" || field.startsWith("grid."),
+      );
+      const values =
+        selectedItems.length > 1 && !gridWasEdited
+          ? Object.fromEntries(
+              Object.entries(formValues).filter(([key]) => key !== "grid"),
+            )
+          : formValues;
+
       batchUpdateItems(selectedItems, (item) => ({
         ...item,
-        ...formValues,
+        ...values,
       }));
     },
     [batchUpdateItems, selectedItems]
