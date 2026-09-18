@@ -108,7 +108,7 @@ class ItemErrorBoundary extends React.Component {
   }
 
   componentDidCatch(error) {
-    // eslint-disable-next-line no-console
+     
     console.error(
       `Error for item ${this.state.itemId}`,
       error,

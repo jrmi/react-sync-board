@@ -1,13 +1,17 @@
 import React from "react";
-import {
-  Provider as SocketIOProvider,
-  useSocket,
-} from "@jrmi/use-socket.io";
+import { Provider as SocketIOProvider, useSocket } from "@jrmi/use-socket.io";
 import { nanoid } from "nanoid";
 
 import "./index.css";
 
-import { BoardWrapper, RoomWrapper, useUsers, useItemActions, Board } from "@/";
+import {
+  BoardWrapper,
+  RoomWrapper,
+  useUsers,
+  useItemActions,
+  Board,
+  BoardGridOverlay,
+} from "@/";
 import { Form } from "react-final-form";
 
 import { itemMap, ItemForm } from "./sample";
@@ -181,15 +185,15 @@ const BoardGridForm = () => {
         ...current,
         grid: values.grid,
       })),
-    [setBoardConfig]
+    [setBoardConfig],
   );
 
   return (
     <Form
       initialValues={{
         grid: boardConfig.grid || {
-          type: boardConfig.gridType || "none",
-          size: boardConfig.gridSize || 50,
+          type: "none",
+          size: 50,
         },
       }}
       onSubmit={save}
@@ -199,8 +203,8 @@ const BoardGridForm = () => {
           <GridFields
             initialValues={{
               grid: boardConfig.grid || {
-                type: boardConfig.gridType || "none",
-                size: boardConfig.gridSize || 50,
+                type: "none",
+                size: 50,
               },
             }}
             title={false}
@@ -341,6 +345,7 @@ const OneViewContent = ({
           itemTemplates={itemMap}
         >
           {children}
+          <BoardGridOverlay />
         </Board>
       </Overlay>
     </BoardWrapper>
@@ -406,13 +411,19 @@ const OneViewWithRoomContent = ({
         LoadingComponent={() => <Spinner />}
         items={initialItems || defaultInitialItems}
       >
-        <Overlay hideMenu={hideMenu} moveFirst={moveFirst} setMoveFirst={setMoveFirst}>
+        <Overlay
+          hideMenu={hideMenu}
+          moveFirst={moveFirst}
+          setMoveFirst={setMoveFirst}
+        >
           <Board
             moveFirst={moveFirst}
             itemTemplates={itemMap}
             style={style}
             showResizeHandle={showResizeHandle}
-          />
+          >
+            <BoardGridOverlay />
+          </Board>
         </Overlay>
       </BoardWrapper>
     </RoomWrapper>

@@ -59,7 +59,7 @@ const protect =
     try {
       await fn(...args);
     } catch (e) {
-      // eslint-disable-next-line no-console
+       
       console.error(e);
     }
   };
@@ -207,9 +207,9 @@ const Gesture = ({
             prevDistance: distance,
           });
         } catch (e) {
-          // eslint-disable-next-line no-console
+           
           console.log("Error while getting other pointer. Ignoring", e);
-          // eslint-disable-next-line no-unused-expressions
+           
           stateRef.current.mainPointer === undefined;
         }
       }
@@ -254,7 +254,7 @@ const Gesture = ({
       // through item, pan and selection handlers.
       target.setPointerCapture(pointerId);
     } catch (e) {
-      // eslint-disable-next-line no-console
+       
       console.log("Fail to capture pointer", e);
     }
   };
@@ -477,7 +477,7 @@ const Gesture = ({
 
         return;
       } catch (error) {
-        // eslint-disable-next-line no-console
+         
         console.log("Fails to set pointer capture", error);
         stateRef.current.mainPointer = undefined;
         delete stateRef.current.pointers[

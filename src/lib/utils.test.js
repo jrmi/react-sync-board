@@ -1,3 +1,4 @@
+import { normalizeGrid } from "./board/grid";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -21,21 +22,47 @@ describe("geometry utilities", () => {
   it("round-trips board transforms", () => {
     const boardState = { scale: 2, rotate: 30, translateX: 10, translateY: -4 };
     const point = [7, 12];
-    expect(transformFrom(transformTo(point, boardState), boardState)[0]).toBeCloseTo(point[0]);
-    expect(transformFrom(transformTo(point, boardState), boardState)[1]).toBeCloseTo(point[1]);
+    expect(
+      transformFrom(transformTo(point, boardState), boardState)[0],
+    ).toBeCloseTo(point[0]);
+    expect(
+      transformFrom(transformTo(point, boardState), boardState)[1],
+    ).toBeCloseTo(point[1]);
   });
 
   it("snaps item centers to a grid while preserving dimensions", () => {
-    expect(snapToGrid({ x: 3, y: 7, width: 4, height: 4 }, { size: 10 })).toEqual({ x: 8, y: 8 });
+    expect(
+      snapToGrid(
+        { x: 3, y: 7, width: 4, height: 4 },
+        { type: "grid", size: 10 },
+      ),
+    ).toEqual({ x: 8, y: 8 });
   });
 
   it.each([
     ["no grid", null, null, null],
-    ["board grid only", { type: "hexH", size: 10 }, undefined, { type: "hexH", size: 10 }],
-    ["item grid only", null, { type: "grid", size: 5 }, { type: "grid", size: 5 }],
-    ["item grid takes precedence", { type: "hexH", size: 10 }, { type: "grid", size: 5 }, { type: "grid", size: 5 }],
+    [
+      "board grid only",
+      { type: "hexH", size: 10 },
+      undefined,
+      { type: "hexH", size: 10 },
+    ],
+    [
+      "item grid only",
+      null,
+      { type: "grid", size: 5 },
+      { type: "grid", size: 5 },
+    ],
+    [
+      "item grid takes precedence",
+      { type: "hexH", size: 10 },
+      { type: "grid", size: 5 },
+      { type: "grid", size: 5 },
+    ],
   ])("resolves %s", (_name, boardGrid, itemGrid, expected) => {
-    expect(resolveGridConfig(boardGrid, itemGrid)).toEqual(expected);
+    expect(resolveGridConfig(boardGrid, itemGrid)).toEqual(
+      normalizeGrid(expected),
+    );
   });
 
   it("uses the board grid when the item has no custom grid", () => {
@@ -58,17 +85,14 @@ describe("geometry utilities", () => {
       { type: "grid", size: 5 },
       { x: 3, y: 8 },
     ],
-  ])(
-    "snaps with %s",
-    (_name, boardGrid, itemGrid, expectedPosition) => {
-      const item = { x: 3, y: 7, width: 4, height: 4 };
-      const grid = resolveGridConfig(boardGrid, itemGrid);
+  ])("snaps with %s", (_name, boardGrid, itemGrid, expectedPosition) => {
+    const item = { x: 3, y: 7, width: 4, height: 4 };
+    const grid = resolveGridConfig(boardGrid, itemGrid);
 
-      expect(grid ? snapToGrid(item, grid) : item).toMatchObject(
-        expectedPosition
-      );
-    }
-  );
+    expect(grid ? snapToGrid(item, grid) : item).toMatchObject(
+      expectedPosition,
+    );
+  });
 
   it.each([
     ["hexH", { x: 6.660258075690654, y: 12 }],
@@ -76,7 +100,7 @@ describe("geometry utilities", () => {
   ])("snaps to a %s grid", (type, expectedPosition) => {
     const position = snapToGrid(
       { x: 13, y: 17, width: 4, height: 6 },
-      { type, size: 10 }
+      { type, size: 10 },
     );
 
     expect(position.x).toBeCloseTo(expectedPosition.x);
@@ -86,17 +110,20 @@ describe("geometry utilities", () => {
   it.each([
     ["hexH", { x: 6.660258075690654, y: 12 }],
     ["hexV", { x: 13, y: 22.98077422707196 }],
-  ])("gives an item %s grid precedence over the board grid", (type, expectedPosition) => {
-    const item = { x: 13, y: 17, width: 4, height: 6 };
-    const grid = resolveGridConfig(
-      { type: "grid", size: 10 },
-      { type, size: 10 }
-    );
-    const position = snapToGrid(item, grid);
+  ])(
+    "gives an item %s grid precedence over the board grid",
+    (type, expectedPosition) => {
+      const item = { x: 13, y: 17, width: 4, height: 6 };
+      const grid = resolveGridConfig(
+        { type: "grid", size: 10 },
+        { type, size: 10 },
+      );
+      const position = snapToGrid(item, grid);
 
-    expect(position.x).toBeCloseTo(expectedPosition.x);
-    expect(position.y).toBeCloseTo(expectedPosition.y);
-  });
+      expect(position.x).toBeCloseTo(expectedPosition.x);
+      expect(position.y).toBeCloseTo(expectedPosition.y);
+    },
+  );
 
   it.each([
     ["hexH", { x: 8, y: 22 }],
@@ -104,7 +131,7 @@ describe("geometry utilities", () => {
   ])("applies offsets to a %s grid", (type, expectedPosition) => {
     const position = snapToGrid(
       { x: 13, y: 17, width: 4, height: 6 },
-      { type, size: 10, offset: { x: 10, y: -5 } }
+      { type, size: 10, offset: { x: 10, y: -5 } },
     );
 
     expect(position.x).toBeCloseTo(expectedPosition.x);
@@ -115,8 +142,8 @@ describe("geometry utilities", () => {
     expect(
       snapToGrid(
         { x: 13, y: 17, width: 4, height: 6 },
-        { type: "grid", size: 10, offset: { x: 10, y: -5 } }
-      )
+        { type: "grid", size: 10, offset: { x: 10, y: -5 } },
+      ),
     ).toEqual({ x: 18, y: 22 });
   });
 
@@ -142,25 +169,36 @@ describe("geometry utilities", () => {
   ])("uses the correct %s", (_name, boardGrid, itemGrid, expectedPosition) => {
     const grid = resolveGridConfig(boardGrid, itemGrid);
 
-    expect(
-      snapToGrid({ x: 13, y: 17, width: 4, height: 6 }, grid)
-    ).toEqual(expectedPosition);
+    expect(snapToGrid({ x: 13, y: 17, width: 4, height: 6 }, grid)).toEqual(
+      expectedPosition,
+    );
   });
 
   it.each([
     ["disabled board grid", { type: "none", size: 10 }, undefined],
-    ["disabled item grid", { type: "grid", size: 10 }, { type: "none", size: 5 }],
-    ["invalid item grid", { type: "grid", size: 10 }, { type: "invalid", size: 5 }],
+    [
+      "disabled item grid",
+      { type: "grid", size: 10 },
+      { type: "none", size: 5 },
+    ],
+    [
+      "invalid item grid",
+      { type: "grid", size: 10 },
+      { type: "invalid", size: 5 },
+    ],
   ])("falls back correctly for %s", (_name, boardGrid, itemGrid) => {
     expect(resolveGridConfig(boardGrid, itemGrid)).toEqual(
-      boardGrid.type === "grid" ? boardGrid : null
+      normalizeGrid(boardGrid),
     );
   });
 
   it("ignores a legacy item grid when resolving the board grid", () => {
     expect(
-      resolveGridConfig({ type: "hexV", size: 10 }, { size: 5, offset: { x: 2, y: 3 } })
-    ).toEqual({ type: "hexV", size: 10 });
+      resolveGridConfig(
+        { type: "hexV", size: 10 },
+        { size: 5, offset: { x: 2, y: 3 } },
+      ),
+    ).toEqual(normalizeGrid({ type: "hexV", size: 10 }));
   });
 
   it("checks strict rectangle boundaries", () => {

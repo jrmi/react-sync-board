@@ -70,3 +70,41 @@ npm start
 ```
 
 Remember to start a `wire.io` instance as explained above.
+
+### Movement grids
+
+Set `boardConfig.grid` through `useBoardConfig()` and optionally set `item.grid`:
+
+```js
+{ type: "grid", size: 50, offset: { x: 0, y: 0 }, show: true,
+  color: "#000000", opacity: 0.2 }
+```
+
+Types are `grid` (square intersections), `hexH` (horizontal rows of hex centers),
+and `hexV` (vertical columns of hex centers). Square size is the spacing; hex size
+is the circumradius. Sizes must be positive and finite (invalid/missing sizes
+use 1). Offsets are board-relative and each missing/invalid axis uses zero.
+Numeric strings are accepted. A recognized item grid overrides the board grid;
+otherwise the item inherits it. No active type on either means no snapping.
+Legacy board fields are not interpreted; applications should migrate saved data
+before loading the board.
+
+`useItemActions().placeItems(itemIds)` resolves the current board grid internally.
+Dragging snaps on release; keyboard placement and insertion use the same path.
+Item centers use measured border-box dimensions, independent of camera zoom.
+Linked-item placement behavior is unchanged.
+
+Render the overlay inside the board:
+
+```jsx
+<Board itemTemplates={itemTemplates}>
+  <BoardGridOverlay preview={editingItems} />
+</Board>
+```
+
+Import `BoardGridOverlay` from `react-sync-board`. With `preview={false}` (the
+default), selected items show their effective grid while moving only when
+`grid.show` is true. Preview forces custom item grids visible, including when
+stationary or `show` is false. Inherited grids continue to follow board visibility.
+
+See [the browser regressions](tests/browser/README.md) for local verification.

@@ -4,8 +4,12 @@ import Label from "./ui/Label";
 import useTranslation from "../useTranslation";
 
 const NumberField = ({ name, initialValue }) => (
-  <Field name={name} initialValue={initialValue}>
-    {(props) => <input {...props.input} type="number" />}
+  <Field
+    name={name}
+    initialValue={initialValue}
+    parse={(value) => Number(value)}
+  >
+    {(props) => <input {...props.input} type="number" step="any" />}
   </Field>
 );
 
@@ -23,7 +27,7 @@ const GridFields = ({ initialValues = {}, title = true }) => {
           component="select"
           initialValue={grid.type || "none"}
         >
-          <option value="none">{t("None")}</option>
+          <option value="none">{t(title ? "Use board grid" : "None")}</option>
           <option value="grid">{t("Grid")}</option>
           <option value="hexH">{t("Horizontal hexagons")}</option>
           <option value="hexV">{t("Vertical hexagons")}</option>

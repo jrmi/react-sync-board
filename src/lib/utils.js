@@ -138,7 +138,7 @@ export const getItemElem = (uid, itemId) => {
 export const getIdFromElem = (elem) => {
   const value = elem?.dataset?.id;
   if (!value) {
-    // eslint-disable-next-line no-console
+     
     console.error(
       "getIdFromElem call fails",
       elem,
@@ -231,96 +231,7 @@ export const getLinkedItems = (itemMap, orderedItemIds, itemIds) => {
   return orderedItemIds.filter((itemId) => linkedItems.has(itemId));
 };
 
-export const snapToGrid = (
-  { x, y, width, height },
-  { type = "grid", size = 1, offset = { x: 0, y: 0 } }
-) => {
-  const [centerX, centerY] = [
-    x + width / 2 - offset.x,
-    y + height / 2 - offset.y,
-  ];
-
-  let newX;
-  let newY;
-  let sizeX;
-  let sizeY;
-  let px1;
-  let px2;
-  let py1;
-  let py2;
-  let diff1;
-  let diff2;
-  const h = size / 1.1547;
-
-  switch (type) {
-    case "grid":
-      newX = Math.round(centerX / size) * size;
-      newY = Math.round(centerY / size) * size;
-      break;
-    case "hexH":
-      sizeX = 2 * h;
-      sizeY = 3 * size;
-      px1 = Math.round(centerX / sizeX) * sizeX;
-      py1 = Math.round(centerY / sizeY) * sizeY;
-
-      px2 = px1 > centerX ? px1 - h : px1 + h;
-      py2 = py1 > centerY ? py1 - 1.5 * size : py1 + 1.5 * size;
-
-      diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
-      diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
-
-      if (diff1 < diff2) {
-        newX = px1;
-        newY = py1;
-      } else {
-        newX = px2;
-        newY = py2;
-      }
-      break;
-    case "hexV":
-      sizeX = 3 * size;
-      sizeY = 2 * h;
-      px1 = Math.round(centerX / sizeX) * sizeX;
-      py1 = Math.round(centerY / sizeY) * sizeY;
-
-      px2 = px1 > centerX ? px1 - 1.5 * size : px1 + 1.5 * size;
-      py2 = py1 > centerY ? py1 - h : py1 + h;
-
-      diff1 = Math.hypot(...[px1 - centerX, py1 - centerY]);
-      diff2 = Math.hypot(...[px2 - centerX, py2 - centerY]);
-
-      if (diff1 < diff2) {
-        newX = px1;
-        newY = py1;
-      } else {
-        newX = px2;
-        newY = py2;
-      }
-      break;
-    default:
-      newX = x + width / 2;
-      newY = y + height / 2;
-  }
-
-  return {
-    x: newX + offset.x - width / 2,
-    y: newY + offset.y - height / 2,
-  };
-};
-
-export const gridTypes = new Set(["grid", "hexH", "hexV"]);
-
-export const resolveGridConfig = (boardGrid, itemGrid) => {
-  if (itemGrid && gridTypes.has(itemGrid.type)) {
-    return itemGrid;
-  }
-
-  if (boardGrid && gridTypes.has(boardGrid.type)) {
-    return boardGrid;
-  }
-
-  return null;
-};
+export { snapToGrid, resolveGridConfig, gridTypes } from "./board/grid";
 
 const colors = [
   "#037758",

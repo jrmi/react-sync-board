@@ -46,8 +46,8 @@ describe("ItemForm", () => {
 
     expect(submittedValues.grid).toEqual({
       type: "hexV",
-      size: "30",
-      offset: { x: "4", y: "-2" },
+      size: 30,
+      offset: { x: 4, y: -2 },
     });
   });
 });

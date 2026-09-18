@@ -2,6 +2,7 @@ import React from "react";
 import { useSyncedStore } from "@/board/store/synced";
 
 import useDim from "../useDim";
+import { measureGridItem } from "../grid";
 
 import {
   getItemElem,
@@ -30,6 +31,7 @@ const useItemActions = () => {
     ]);
 
   const {
+    getBoardConfig,
     getItems: getStoreItems,
     getItemIds,
     setItemIds,
@@ -41,6 +43,7 @@ const useItemActions = () => {
     setItemList,
   } = useSyncedStore(
     ({
+      getBoardConfig,
       getItems,
       getItemIds,
       setItemIds,
@@ -51,6 +54,7 @@ const useItemActions = () => {
       insertItems,
       setItemList,
     }) => ({
+      getBoardConfig,
       getItems,
       getItemIds,
       setItemIds,
@@ -60,7 +64,7 @@ const useItemActions = () => {
       getItemList,
       insertItems,
       setItemList,
-    })
+    }),
   );
 
   const batchUpdateItems = React.useCallback(
@@ -97,7 +101,7 @@ const useItemActions = () => {
 
       updateItemExtent();
     },
-    [getItemIds, getStoreItems, updateItemExtent, updateItems]
+    [getItemIds, getStoreItems, updateItemExtent, updateItems],
   );
 
   const setItemListFull = React.useCallback(
@@ -108,24 +112,24 @@ const useItemActions = () => {
       clearSelection();
       updateItemExtent();
     },
-    [clearSelection, setItemList, updateItemExtent]
+    [clearSelection, setItemList, updateItemExtent],
   );
 
   const updateItem = React.useCallback(
     (id, callbackOrItem, patch = false) => {
       batchUpdateItems([id], callbackOrItem, patch);
     },
-    [batchUpdateItems]
+    [batchUpdateItems],
   );
 
   const moveItems = React.useCallback(
     (itemIds, posDelta) => {
       moveStoreItems(
         getLinkedItems(getStoreItems(), getItemIds(), itemIds),
-        posDelta
+        posDelta,
       );
     },
-    [getItemIds, getStoreItems, moveStoreItems]
+    [getItemIds, getStoreItems, moveStoreItems],
   );
 
   const putItemsOnTop = React.useCallback(
@@ -133,12 +137,12 @@ const useItemActions = () => {
       const prevItemIds = getItemIds();
       const filtered = prevItemIds.filter((id) => !itemIdsToMove.includes(id));
       const toBePutOnTop = prevItemIds.filter((id) =>
-        itemIdsToMove.includes(id)
+        itemIdsToMove.includes(id),
       );
 
       setItemIds([...filtered, ...toBePutOnTop]);
     },
-    [getItemIds, setItemIds]
+    [getItemIds, setItemIds],
   );
 
   const stickOnGrid = React.useCallback(
@@ -164,27 +168,26 @@ const useItemActions = () => {
             {
               x: item.x,
               y: item.y,
-              width: elem.clientWidth,
-              height: elem.clientHeight,
+              ...measureGridItem(elem),
             },
-            gridConfig
+            gridConfig,
           );
 
           return newPos;
         },
-        true
+        true,
       );
     },
-    [getConfiguration, batchUpdateItems]
+    [getConfiguration, batchUpdateItems],
   );
 
   const placeItems = React.useCallback(
-    (itemIds, gridConfig) => {
+    (itemIds) => {
       // Put all moved items on top
       const itemIdsWithLinkedItems = getLinkedItems(
         getStoreItems(),
         getItemIds(),
-        itemIds
+        itemIds,
       );
 
       putItemsOnTop(itemIdsWithLinkedItems);
@@ -192,7 +195,7 @@ const useItemActions = () => {
       // Remove moving state
       batchUpdateItems(itemIdsWithLinkedItems, { moving: false }, true);
 
-      stickOnGrid(itemIdsWithLinkedItems, gridConfig);
+      stickOnGrid(itemIdsWithLinkedItems, getBoardConfig().grid);
       callPlaceInteractions(itemIds);
 
       updateItemExtent();
@@ -200,19 +203,20 @@ const useItemActions = () => {
     [
       batchUpdateItems,
       callPlaceInteractions,
+      getBoardConfig,
       getItemIds,
       getStoreItems,
       putItemsOnTop,
       stickOnGrid,
       updateItemExtent,
-    ]
+    ],
   );
 
   const updateItemOrder = React.useCallback(
     (newOrder) => {
       setItemIds(newOrder);
     },
-    [setItemIds]
+    [setItemIds],
   );
 
   const reverseItemsOrder = React.useCallback(
@@ -220,7 +224,7 @@ const useItemActions = () => {
       const prevItemIds = getItemIds();
 
       const toBeReversed = prevItemIds.filter((id) =>
-        itemIdsToReverse.includes(id)
+        itemIdsToReverse.includes(id),
       );
       const newOrder = prevItemIds.map((itemId) => {
         if (itemIdsToReverse.includes(itemId)) {
@@ -233,7 +237,7 @@ const useItemActions = () => {
 
       reverseSelection();
     },
-    [getItemIds, reverseSelection, setItemIds]
+    [getItemIds, reverseSelection, setItemIds],
   );
 
   const swapItems = React.useCallback(
@@ -250,7 +254,7 @@ const useItemActions = () => {
               y: replaceWith.y,
             },
           ];
-        })
+        }),
       );
 
       batchUpdateItems(
@@ -258,11 +262,11 @@ const useItemActions = () => {
         (item) => {
           return newCoordinatesMap[item.id];
         },
-        true
+        true,
       );
 
       const replaceMap = Object.fromEntries(
-        fromIds.map((id, index) => [id, toIds[index]])
+        fromIds.map((id, index) => [id, toIds[index]]),
       );
 
       // swap also the item order
@@ -275,7 +279,7 @@ const useItemActions = () => {
 
       setItemIds(reorderedItemIds);
     },
-    [getStoreItems, batchUpdateItems, getItemIds, setItemIds]
+    [getStoreItems, batchUpdateItems, getItemIds, setItemIds],
   );
 
   const pushItems = React.useCallback(
@@ -283,7 +287,12 @@ const useItemActions = () => {
       const center = getCenter();
 
       const itemsWithPosition = itemsToInsert.map((item, index) => {
-        if (item.x === undefined || item.x === null || item.y === undefined || item.y === null) {
+        if (
+          item.x === undefined ||
+          item.x === null ||
+          item.y === undefined ||
+          item.y === null
+        ) {
           return { ...item, x: center.x + 2 * index, y: center.y + 2 * index };
         }
         return item;
@@ -296,14 +305,14 @@ const useItemActions = () => {
         placeItems(itemsToInsert.map(({ id }) => id));
       });
     },
-    [getCenter, insertItems, placeItems]
+    [getCenter, insertItems, placeItems],
   );
 
   const pushItem = React.useCallback(
     (itemToInsert, beforeId) => {
       pushItems([itemToInsert], beforeId);
     },
-    [pushItems]
+    [pushItems],
   );
 
   const removeItems = React.useCallback(
@@ -314,7 +323,7 @@ const useItemActions = () => {
       removeItemsById(itemsIdToRemove);
       callDeleteInteractions(itemsIdToRemove);
     },
-    [unselect, removeItemsById, callDeleteInteractions]
+    [unselect, removeItemsById, callDeleteInteractions],
   );
 
   const getItems = React.useCallback(
@@ -322,13 +331,13 @@ const useItemActions = () => {
       const itemMap = getStoreItems();
       return itemIds.map((id) => itemMap[id]);
     },
-    [getStoreItems]
+    [getStoreItems],
   );
 
   const findElementUnderPointer = React.useCallback(
     (
       { target, clientX, clientY },
-      { returnLocked = false, passLocked = false } = {}
+      { returnLocked = false, passLocked = false } = {},
     ) => {
       // Allow text selection instead of moving
       if (["INPUT", "TEXTAREA"].includes(target.tagName)) return null;
@@ -380,7 +389,7 @@ const useItemActions = () => {
       }
       return foundElement;
     },
-    [getConfiguration, getItemIds]
+    [getConfiguration, getItemIds],
   );
 
   return {

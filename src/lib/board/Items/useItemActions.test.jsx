@@ -4,6 +4,8 @@ import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 const mockSyncedState = vi.hoisted(() => ({
+  boardGrid: null,
+  getBoardConfig: () => ({ grid: mockSyncedState.boardGrid }),
   items: {},
   itemIds: [],
   getItems: () => mockSyncedState.items,
@@ -20,7 +22,7 @@ const mockSyncedState = vi.hoisted(() => ({
             ? { ...item, ...toUpdate[id] }
             : toUpdate[id]
           : item,
-      ])
+      ]),
     );
   },
 }));
@@ -46,19 +48,24 @@ vi.mock("@/utils", async (importOriginal) => {
   const actual = await importOriginal();
   return {
     ...actual,
-    getItemElem: () => ({ clientWidth: 4, clientHeight: 4 }),
+    getItemElem: () => document.createElement("div"),
   };
 });
 
-import useMainStore, { MainStoreProvider } from "../store/main";
+import { MainStoreProvider } from "../store/main";
 import useItemActions from "./useItemActions";
 
-const PlacementProbe = ({ boardGrid }) => {
+vi.mock("../grid", async (importOriginal) => ({
+  ...(await importOriginal()),
+  measureGridItem: () => ({ width: 4, height: 4 }),
+}));
+
+const PlacementProbe = () => {
   const { placeItems } = useItemActions();
 
   return (
     <>
-      <button onClick={() => placeItems(["item"], boardGrid)}>Place</button>
+      <button onClick={() => placeItems(["item"])}>Place</button>
       <output>{JSON.stringify(mockSyncedState.items.item)}</output>
     </>
   );
@@ -84,6 +91,7 @@ describe("item placement grid integration", () => {
   ])(
     "places an item with %s",
     (_name, boardGrid, itemGrid, expectedPosition) => {
+      mockSyncedState.boardGrid = boardGrid;
       mockSyncedState.items = {
         item: { id: "item", x: 3, y: 7, grid: itemGrid },
       };
@@ -92,7 +100,7 @@ describe("item placement grid integration", () => {
       const { getByText } = render(
         <MainStoreProvider>
           <PlacementProbe boardGrid={boardGrid} />
-        </MainStoreProvider>
+        </MainStoreProvider>,
       );
 
       act(() => {
@@ -100,6 +108,6 @@ describe("item placement grid integration", () => {
       });
 
       expect(mockSyncedState.items.item).toMatchObject(expectedPosition);
-    }
+    },
   );
 });

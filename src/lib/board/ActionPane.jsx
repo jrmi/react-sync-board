@@ -5,7 +5,6 @@ import { getIdFromElem } from "@/utils";
 
 import Gesture from "./Gesture";
 import useMainStore from "./store/main";
-import { useSyncedStore } from "@/board/store/synced";
 import { useEventListener } from "@react-hookz/web";
 import useDim from "./useDim";
 
@@ -24,25 +23,6 @@ const ActionPane = ({ children }) => {
       state.getBoardState,
       state.updateBoardState,
     ]);
-  const [getBoardConfig] = useSyncedStore((state) => [state.getBoardConfig]);
-
-  const getBoardGrid = () => {
-    const { grid, gridType, gridSize = 1 } = getBoardConfig();
-    const configuredGrid = grid || {
-      type: gridType === undefined ? (gridSize ? "grid" : "none") : gridType,
-      size: gridSize,
-    };
-
-    return {
-      type: configuredGrid.type || "none",
-      size: Number(configuredGrid.size) || 1,
-      offset: {
-        x: Number(configuredGrid.offset?.x) || 0,
-        y: Number(configuredGrid.offset?.y) || 0,
-      },
-    };
-  };
-
   const actionRef = React.useRef({});
 
   // Use ref because pointer events are faster than react state management
@@ -91,7 +71,7 @@ const ActionPane = ({ children }) => {
           x: newX,
           y: newY,
         },
-        true
+        true,
       );
 
       if (!movingItems) {
@@ -103,7 +83,7 @@ const ActionPane = ({ children }) => {
   const onDragEnd = () => {
     if (actionRef.current.moving) {
       actionRef.current = { moving: false };
-      placeItems(selectedItemRef.current.items, getBoardGrid());
+      placeItems(selectedItemRef.current.items);
       updateBoardState({ movingItems: false });
     }
   };
@@ -154,9 +134,9 @@ const ActionPane = ({ children }) => {
             x: newX,
             y: newY,
           },
-          true
+          true,
         );
-        placeItems(selectedItems, getBoardGrid());
+        placeItems(selectedItems);
         e.preventDefault();
       }
     }
@@ -165,7 +145,12 @@ const ActionPane = ({ children }) => {
   useEventListener(document, "keydown", onKeyDown);
 
   return (
-    <Gesture fill onDragStart={onDragStart} onDrag={onDrag} onDragEnd={onDragEnd}>
+    <Gesture
+      fill
+      onDragStart={onDragStart}
+      onDrag={onDrag}
+      onDragEnd={onDragEnd}
+    >
       {children}
     </Gesture>
   );
