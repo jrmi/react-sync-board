@@ -308,6 +308,20 @@ export const snapToGrid = (
   };
 };
 
+export const gridTypes = new Set(["grid", "hexH", "hexV"]);
+
+export const resolveGridConfig = (boardGrid, itemGrid) => {
+  if (itemGrid && gridTypes.has(itemGrid.type)) {
+    return itemGrid;
+  }
+
+  if (boardGrid && gridTypes.has(boardGrid.type)) {
+    return boardGrid;
+  }
+
+  return null;
+};
+
 const colors = [
   "#037758",
   "#99092a",

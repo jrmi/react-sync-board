@@ -8,6 +8,7 @@ import { nanoid } from "nanoid";
 import "./index.css";
 
 import { BoardWrapper, RoomWrapper, useUsers, useItemActions, Board } from "@/";
+import { Form } from "react-final-form";
 
 import { itemMap, ItemForm } from "./sample";
 
@@ -16,6 +17,9 @@ import SelectedItemsPane from "./SelectedItemsPane";
 import Spinner from "./ui/Spinner";
 import useDim from "@/board/useDim";
 import useMainStore from "@/board/store/main";
+import useBoardConfig from "@/board/useBoardConfig";
+import AutoSave from "./ui/formUtils/AutoSave";
+import GridFields from "./sample/GridFields";
 
 const STORYBOOK_SOCKET_URL = "https://wireio1.filai.re";
 const SOCKET_PATH = "/socket.io";
@@ -139,36 +143,71 @@ const defaultInitialItems = [
 
 const AddItems = () => {
   const { pushItem } = useItemActions();
+  const itemTypes = Object.keys(itemMap).filter((key) => key !== "error");
+  const [selectedType, setSelectedType] = React.useState(itemTypes[0]);
 
-  const addItem = (key, tpl) => {
-    pushItem({ type: key, ...tpl, id: nanoid() });
+  const addItem = () => {
+    const itemTemplate = itemMap[selectedType];
+    pushItem({ type: selectedType, ...itemTemplate.template, id: nanoid() });
   };
 
   return (
     <>
       <h2>Add item</h2>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "start",
-        }}
+      <select
+        value={selectedType}
+        onChange={(event) => setSelectedType(event.target.value)}
+        style={{ width: "100%" }}
       >
-        {Object.entries(itemMap).map(
-          ([key, itemTpl]) =>
-            key !== "error" && (
-              <div key={key} style={{ width: "100%" }}>
-                <button
-                  style={{ width: "100%" }}
-                  onClick={() => addItem(key, itemTpl.template)}
-                >
-                  Add {key}
-                </button>
-              </div>
-            )
-        )}
-      </div>
+        {itemTypes.map((key) => (
+          <option key={key} value={key}>
+            {key}
+          </option>
+        ))}
+      </select>
+      <button style={{ width: "100%" }} onClick={addItem}>
+        Add item
+      </button>
     </>
+  );
+};
+
+const BoardGridForm = () => {
+  const [boardConfig, setBoardConfig] = useBoardConfig();
+
+  const save = React.useCallback(
+    (values) =>
+      setBoardConfig((current) => ({
+        ...current,
+        grid: values.grid,
+      })),
+    [setBoardConfig]
+  );
+
+  return (
+    <Form
+      initialValues={{
+        grid: boardConfig.grid || {
+          type: boardConfig.gridType || "none",
+          size: boardConfig.gridSize || 50,
+        },
+      }}
+      onSubmit={save}
+      render={() => (
+        <>
+          <AutoSave save={save} />
+          <GridFields
+            initialValues={{
+              grid: boardConfig.grid || {
+                type: boardConfig.gridType || "none",
+                size: boardConfig.gridSize || 50,
+              },
+            }}
+            title={false}
+          />
+        </>
+      )}
+    />
   );
 };
 
@@ -224,13 +263,17 @@ const Overlay = ({ children, hideMenu, moveFirst, setMoveFirst }) => {
           bottom: 0,
           backgroundColor: "#999999",
           padding: "0.5em",
+          display: "flex",
+          flexDirection: "column",
+          gap: "10px",
           zIndex: 215,
-          width: "min(145px, 40%)",
+          width: "min(260px, 35%)",
           overflowY: "auto",
           overscrollBehavior: "contain",
         }}
       >
         <AddItems />
+        <BoardGridForm />
         <div style={{ margin: "10px 0" }}>
           <button onClick={() => zoomToExtent(itemExtent)}>
             Center on items

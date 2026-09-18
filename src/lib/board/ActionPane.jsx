@@ -26,6 +26,23 @@ const ActionPane = ({ children }) => {
     ]);
   const [getBoardConfig] = useSyncedStore((state) => [state.getBoardConfig]);
 
+  const getBoardGrid = () => {
+    const { grid, gridType, gridSize = 1 } = getBoardConfig();
+    const configuredGrid = grid || {
+      type: gridType === undefined ? (gridSize ? "grid" : "none") : gridType,
+      size: gridSize,
+    };
+
+    return {
+      type: configuredGrid.type || "none",
+      size: Number(configuredGrid.size) || 1,
+      offset: {
+        x: Number(configuredGrid.offset?.x) || 0,
+        y: Number(configuredGrid.offset?.y) || 0,
+      },
+    };
+  };
+
   const actionRef = React.useRef({});
 
   // Use ref because pointer events are faster than react state management
@@ -85,14 +102,8 @@ const ActionPane = ({ children }) => {
 
   const onDragEnd = () => {
     if (actionRef.current.moving) {
-      const { gridSize: boardGridSize = 1 } = getBoardConfig();
-      const gridSize = boardGridSize || 1; // avoid 0 grid size
-
       actionRef.current = { moving: false };
-      placeItems(selectedItemRef.current.items, {
-        type: "grid",
-        size: gridSize,
-      });
+      placeItems(selectedItemRef.current.items, getBoardGrid());
       updateBoardState({ movingItems: false });
     }
   };
@@ -104,7 +115,6 @@ const ActionPane = ({ children }) => {
     const selectedItems = getSelection();
 
     if (selectedItems.length) {
-      const { gridSize: boardGridSize = 1 } = getBoardConfig();
       let moveX = 0;
       let moveY = 0;
       switch (e.key) {
@@ -146,12 +156,7 @@ const ActionPane = ({ children }) => {
           },
           true
         );
-        const gridSize = boardGridSize || 1; // avoid 0 grid size
-
-        placeItems(selectedItems, {
-          type: "grid",
-          size: gridSize,
-        });
+        placeItems(selectedItems, getBoardGrid());
         e.preventDefault();
       }
     }

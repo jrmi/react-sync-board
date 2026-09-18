@@ -7,6 +7,7 @@ import Slider from "./ui/Slider";
 import useTranslation from "../useTranslation";
 
 import itemMap from "./itemMap";
+import GridFields from "./GridFields";
 
 const getDefaultActionsFromItem = (item) => {
   if (item.type in itemMap) {
@@ -22,7 +23,7 @@ const getDefaultActionsFromItem = (item) => {
 
 export const getFormFieldComponent = (type) => {
   if (type in itemMap) {
-    return itemMap[type].form;
+    return itemMap[type].form || (() => null);
   }
   return () => null;
 };
@@ -125,30 +126,7 @@ const ItemForm = ({ items }) => {
         </Field>
       </Label>
       <FieldsComponent initialValues={initialValues} />
-      <h3>{t("Snap to grid")}</h3>
-      <Label>
-        {t("Grid type")}
-        <Field
-          name="grid.type"
-          initialValue={initialValues.grid?.type || "none"}
-          component="select"
-        >
-          <option value="none">{t("None")}</option>
-          <option value="grid">{t("Grid")}</option>
-          <option value="hexH">{t("Horizontal hexagons")}</option>
-          <option value="hexV">{t("Vertical hexagons")}</option>
-        </Field>
-      </Label>
-      <Label>
-        {t("Size")}
-        <Field
-          name="grid.size"
-          component="input"
-          initialValue={initialValues.grid?.size}
-        >
-          {(props) => <input {...props.input} type="number" />}
-        </Field>
-      </Label>
+      <GridFields initialValues={initialValues} />
     </>
   );
 };

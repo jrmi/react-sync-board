@@ -9,6 +9,7 @@ import {
   insideClass,
   hasClass,
   snapToGrid,
+  resolveGridConfig,
   getLinkedItems,
 } from "@/utils";
 
@@ -141,7 +142,7 @@ const useItemActions = () => {
   );
 
   const stickOnGrid = React.useCallback(
-    (itemIds, { type: globalType, size: globalSize } = {}) => {
+    (itemIds, boardGrid) => {
       const { uid } = getConfiguration();
 
       batchUpdateItems(
@@ -153,12 +154,11 @@ const useItemActions = () => {
             return;
           }
 
-          const gridConfig = {
-            type: globalType || "grid",
-            size: globalSize || 1,
-            offset: { x: 0, y: 0 },
-            ...item.grid,
-          };
+          const gridConfig = resolveGridConfig(boardGrid, item.grid);
+
+          if (!gridConfig) {
+            return;
+          }
 
           const newPos = snapToGrid(
             {
