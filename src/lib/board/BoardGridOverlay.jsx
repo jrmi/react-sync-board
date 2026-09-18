@@ -28,8 +28,6 @@ export const GridOverlay = ({ grid, item, uid }) => {
 
   const { type, size, offset, color, opacity } = grid;
   const { width, height, centers } = gridGeometry(grid);
-  const patternOffsetX = offset.x - (type === "grid" ? size / 2 : 0);
-  const patternOffsetY = offset.y - (type === "grid" ? size / 2 : 0);
   const diameter = Math.max(360, Math.min(size * 12, 960));
   const left = item.x + dimensions.width / 2 - diameter / 2;
   const top = item.y + dimensions.height / 2 - diameter / 2;
@@ -78,8 +76,8 @@ export const GridOverlay = ({ grid, item, uid }) => {
           patternUnits="userSpaceOnUse"
           width={width}
           height={height}
-          x={patternOffsetX - left}
-          y={patternOffsetY - top}
+          x={offset.x - left}
+          y={offset.y - top}
         >
           <g fill="none" stroke={color} strokeWidth="1">
             {type === "grid" ? (

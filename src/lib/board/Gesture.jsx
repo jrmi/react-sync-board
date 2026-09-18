@@ -551,6 +551,13 @@ const Gesture = ({
     });
   };
 
+  // Items can contain images, which are draggable by the browser by default.
+  // The board has its own pointer-based drag handling, so prevent the native
+  // drag operation from starting when it bubbles up from an item.
+  const onNativeDragStart = (event) => {
+    event.preventDefault();
+  };
+
   return (
     <div
       onWheel={onWheel}
@@ -559,6 +566,7 @@ const Gesture = ({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onDoubleClick={onDoubleTapHandler}
+      onDragStart={onNativeDragStart}
       style={{
         touchAction: "none",
         ...(fill ? { position: "absolute", inset: 0 } : {}),

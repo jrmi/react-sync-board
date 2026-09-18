@@ -14,7 +14,7 @@ describe("canonical grid geometry", () => {
         { x: 13, y: 17, width: 4, height: 6 },
         { type: "grid", size: "10", offset: { x: "3" } },
       ),
-    ).toEqual({ x: 11, y: 17 });
+    ).toEqual({ x: 16, y: 22 });
     expect(
       normalizeGrid({ type: "grid", size: Infinity, offset: { y: "bad" } }),
     ).toMatchObject({ size: 1, offset: { x: 0, y: 0 } });

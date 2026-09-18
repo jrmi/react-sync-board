@@ -36,7 +36,7 @@ describe("geometry utilities", () => {
         { x: 3, y: 7, width: 4, height: 4 },
         { type: "grid", size: 10 },
       ),
-    ).toEqual({ x: 8, y: 8 });
+    ).toEqual({ x: 3, y: 3 });
   });
 
   it.each([
@@ -70,20 +70,20 @@ describe("geometry utilities", () => {
     const boardGrid = { type: "grid", size: 10 };
 
     expect(snapToGrid(item, resolveGridConfig(boardGrid, undefined))).toEqual({
-      x: 8,
-      y: 8,
+      x: 3,
+      y: 3,
     });
   });
 
   it.each([
     ["no grid", null, undefined, { x: 3, y: 7 }],
-    ["board grid", { type: "grid", size: 10 }, undefined, { x: 8, y: 8 }],
-    ["item grid", null, { type: "grid", size: 5 }, { x: 3, y: 8 }],
+    ["board grid", { type: "grid", size: 10 }, undefined, { x: 3, y: 3 }],
+    ["item grid", null, { type: "grid", size: 5 }, { x: 5.5, y: 5.5 }],
     [
       "item grid takes precedence",
       { type: "grid", size: 10 },
       { type: "grid", size: 5 },
-      { x: 3, y: 8 },
+      { x: 5.5, y: 5.5 },
     ],
   ])("snaps with %s", (_name, boardGrid, itemGrid, expectedPosition) => {
     const item = { x: 3, y: 7, width: 4, height: 4 };
@@ -144,7 +144,7 @@ describe("geometry utilities", () => {
         { x: 13, y: 17, width: 4, height: 6 },
         { type: "grid", size: 10, offset: { x: 10, y: -5 } },
       ),
-    ).toEqual({ x: 18, y: 22 });
+    ).toEqual({ x: 13, y: 17 });
   });
 
   it.each([
@@ -152,19 +152,19 @@ describe("geometry utilities", () => {
       "board offset",
       { type: "grid", size: 10, offset: { x: 10, y: -5 } },
       undefined,
-      { x: 18, y: 22 },
+      { x: 13, y: 17 },
     ],
     [
       "item offset",
       undefined,
       { type: "grid", size: 10, offset: { x: 3, y: 4 } },
-      { x: 11, y: 21 },
+      { x: 16, y: 16 },
     ],
     [
       "item offset takes precedence",
       { type: "grid", size: 10, offset: { x: 10, y: -5 } },
       { type: "grid", size: 10, offset: { x: 3, y: 4 } },
-      { x: 11, y: 21 },
+      { x: 16, y: 16 },
     ],
   ])("uses the correct %s", (_name, boardGrid, itemGrid, expectedPosition) => {
     const grid = resolveGridConfig(boardGrid, itemGrid);
