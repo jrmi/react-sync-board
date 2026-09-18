@@ -56,7 +56,7 @@ export const measureGridItem = (element) => {
 export const gridGeometry = ({ type, size }) => {
   const h = (Math.sqrt(3) * size) / 2;
   return type === "grid"
-    ? { width: size, height: size, centers: [[size / 2, size / 2]] }
+    ? { width: size, height: size, centers: [[0, 0]] }
     : type === "hexH"
       ? {
           width: 2 * h,
