@@ -1,4 +1,10 @@
 
+1.4.4 / 2026-09-18
+==================
+
+  * Enable grid overlay in demo
+  * Improve grid system again
+
 1.4.3 / 2026-09-18
 ==================
 
