@@ -80,13 +80,13 @@ describe("item placement grid integration", () => {
 
   it.each([
     ["no grid", null, undefined, { x: 3, y: 7 }],
-    ["board grid", { type: "grid", size: 10 }, undefined, { x: 3, y: 3 }],
-    ["item grid", null, { type: "grid", size: 5 }, { x: 5.5, y: 5.5 }],
+    ["board grid", { type: "grid", size: 10 }, undefined, { x: 8, y: 8 }],
+    ["item grid", null, { type: "grid", size: 5 }, { x: 3, y: 8 }],
     [
       "item grid takes precedence",
       { type: "grid", size: 10 },
       { type: "grid", size: 5 },
-      { x: 5.5, y: 5.5 },
+      { x: 3, y: 8 },
     ],
   ])(
     "places an item with %s",

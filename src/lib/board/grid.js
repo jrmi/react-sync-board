@@ -52,12 +52,11 @@ export const measureGridItem = (element) => {
   };
 };
 
-// Grid centers are in cell space, while a hex size is its circumradius.
-// hexH has horizontal rows of centers.
+// A hex size is its circumradius; hexH has horizontal rows of centers.
 export const gridGeometry = ({ type, size }) => {
   const h = (Math.sqrt(3) * size) / 2;
   return type === "grid"
-    ? { width: size, height: size, centers: [[size / 2, size / 2]] }
+    ? { width: size, height: size, centers: [[0, 0]] }
     : type === "hexH"
       ? {
           width: 2 * h,
