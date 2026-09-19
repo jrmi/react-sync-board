@@ -34,6 +34,7 @@ const Screen = ({
   width = 300,
   height = 200,
   color = "#ccc",
+  text = "",
   claimedBy,
   setState,
 }) => {
@@ -67,6 +68,7 @@ const Screen = ({
       color={color}
       $revealed={revealed}
     >
+      {text && <span>{text}</span>}
       <button onClick={onClaim} className="screen__claim-button">
         {buttonLabel}
       </button>

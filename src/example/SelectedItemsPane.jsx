@@ -11,46 +11,68 @@ import { useItemActions } from "@/board/Items";
 const ActionPane = styled.div`
   top: ${({ top }) => top};
   left: ${({ left }) => left};
+  transform: translateX(-50%);
   user-select: none;
   touch-action: none;
   position: absolute;
   display: flex;
-  background-color: var(--color-blueGrey);
+  gap: 3px;
+  color: white;
+  background: #111827;
   justify-content: center;
   align-items: center;
-  border-radius: 4px;
-  padding: 0.1em 0.5em;
-  transition: opacity 100ms;
+  border: 1px solid rgb(255 255 255 / 14%);
+  border-radius: 12px;
+  padding: 5px;
+  transition: opacity 100ms, transform 160ms ease;
   opacity: ${({ $hide }) => ($hide ? 0 : 0.9)};
-  
-  box-shadow: 2px 2px 10px 0.3px rgba(0, 0, 0, 0.5);
+  pointer-events: ${({ $hide }) => ($hide ? "none" : "auto")};
+  box-shadow: 0 10px 25px rgb(15 23 42 / 30%);
 
-  &:hover{
+  &:hover {
     opacity: 1;
+    transform: translateX(-50%) translateY(1px);
   }
 
-  & button{
-    margin 0 4px;
-    padding: 0em;
-    height: 50px
+  & button {
+    display: grid;
+    place-items: center;
+    width: 38px;
+    height: 38px;
+    min-height: 38px;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: 8px;
   }
-  & .button.icon-only{
-    padding: 0em;
-    opacity: 0.5;
+  & button:hover {
+    background: rgb(255 255 255 / 12%);
   }
-  & button.icon-only:hover{
-    opacity: 1;
+  & button img {
+    width: 22px !important;
+    height: 22px !important;
+    object-fit: contain;
   }
-  & .count{
+  & .count {
+    min-width: 38px;
+    padding: 0 5px;
     color: var(--color-secondary);
     display: flex;
     flex-direction: column;
     align-items: center;
     line-height: 0.8em;
   }
-  & .number{
-    font-size: 1.5em;
+  & .number {
+    font-size: 16px;
+    font-weight: 700;
     line-height: 1em;
+  }
+
+  @media (max-width: 720px) {
+    top: 8px;
+    max-width: calc(100vw - 24px);
+    overflow-x: auto;
   }
 `;
 
@@ -159,7 +181,8 @@ const SelectedItemsPane = ({ hideMenu = false, ItemFormComponent }) => {
           setShowEdit(false);
         }}
         title={title}
-        width="25%"
+        position="right"
+        width="360px"
       >
         <CardContent>
           <ItemFormFactory ItemFormComponent={ItemFormComponent} />
