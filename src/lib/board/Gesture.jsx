@@ -1,72 +1,52 @@
 import React from "react";
 
-export const isMacOS = () => {
-  const userAgent = navigator.userAgent.toLowerCase();
-  return /mac os ?x 10/.test(userAgent);
-};
-
 // From https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
 const getScrollLineHeight = () => {
   const iframe = document.createElement("iframe");
   iframe.src = "#";
   document.body.appendChild(iframe);
-
-  // Write content in Iframe
   const idoc = iframe.contentWindow.document;
   idoc.open();
-  idoc.write(
-    "<!DOCTYPE html><html><head></head><body><span>a</span></body></html>"
-  );
+  idoc.write("<!DOCTYPE html><html><body><span>a</span></body></html>");
   idoc.close();
-
-  const scrollLineHeight = idoc.body.firstElementChild.offsetHeight;
+  const lineHeight = idoc.body.firstElementChild.offsetHeight;
   document.body.removeChild(iframe);
-
-  return scrollLineHeight;
+  return lineHeight;
 };
 
 const LINE_HEIGHT = getScrollLineHeight();
-// Reasonable default from https://github.com/facebookarchive/fixed-data-table/blob/master/src/vendor_upstream/dom/normalizeWheel.js
 const PAGE_HEIGHT = 800;
-
-const otherPointer = (pointers, currentPointer) => {
-  const p2 = Object.keys(pointers)
-    .map((p) => Number(p))
-    .find((pointer) => pointer !== currentPointer);
-  return pointers[p2];
-};
-
-const computeDistance = ([x1, y1], [x2, y2]) => {
-  const distanceX = Math.abs(x1 - x2);
-  const distanceY = Math.abs(y1 - y2);
-
-  return Math.hypot(distanceX, distanceY);
-};
-
+const TOUCH_DRAG_THRESHOLD = 5;
+const GESTURE_SWITCH_RATIO = 1.5;
 const empty = () => {};
+const getMainAction = (mainAction, pointerType, navigationMode) => {
+  if (mainAction !== "auto") return mainAction;
+  return pointerType === "touch" || navigationMode === "trackpad"
+    ? "drag"
+    : "pan";
+};
+const distance = ([x1, y1], [x2, y2]) => Math.hypot(x1 - x2, y1 - y2);
+const centerOf = (first, second) => ({
+  clientX: (first.clientX + second.clientX) / 2,
+  clientY: (first.clientY + second.clientY) / 2,
+});
 
 const stopPropagation = (fn) => (arg) => {
-  const { event } = arg;
-  if (!event.isPropagationStopped()) {
+  if (!arg.event.isPropagationStopped || !arg.event.isPropagationStopped())
     return fn(arg);
-  }
   return null;
 };
-
 const protect =
   (fn) =>
   async (...args) => {
     try {
       await fn(...args);
-    } catch (e) {
-       
-      console.error(e);
+    } catch (error) {
+      console.error(error);
     }
   };
-
 class PromiseQueue {
   lastPromise = Promise.resolve(true);
-
   add(operation, ...args) {
     return new Promise((resolve, reject) => {
       this.lastPromise = this.lastPromise
@@ -76,7 +56,6 @@ class PromiseQueue {
     });
   }
 }
-
 const promiseQueue = new PromiseQueue();
 
 const Gesture = ({
@@ -85,488 +64,445 @@ const Gesture = ({
   onDragStart = empty,
   onDragEnd = empty,
   onPan = empty,
+  onPanEnd = empty,
+  onZoomEnd = empty,
   onTap = empty,
   onLongTap = empty,
   onDoubleTap = empty,
   onZoom,
   mainAction = "drag",
+  navigationMode,
+  zoomMultiplier = 1,
   fill = false,
 }) => {
   const wrapperRef = React.useRef(null);
-  const stateRef = React.useRef({
-    moving: false,
-    pointers: {},
-    mainPointer: undefined,
-  });
+  const stateRef = React.useRef({ pointers: {}, activePair: [] });
 
-  const onWheel = (event) => {
-    const {
-      deltaX,
-      deltaY,
-      clientX,
-      clientY,
-      deltaMode,
-      ctrlKey,
-      altKey,
-      metaKey,
-      target,
-    } = event;
+  const queueDragEnd = (event) => {
+    const state = stateRef.current;
+    if (state.gestureAction !== "drag") return;
+    promiseQueue.add(onDragEnd, {
+      deltaX: 0,
+      deltaY: 0,
+      startX: state.startX,
+      startY: state.startY,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      distanceX: event.clientX - state.startX,
+      distanceY: event.clientY - state.startY,
+      button: state.currentButton,
+      altKey: event.altKey,
+      shiftKey: event.shiftKey,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      event,
+    });
+    state.gestureAction = undefined;
+  };
 
-    // On a MacOs trackpad, the pinch gesture sets the ctrlKey to true.
-    // In that situation, we want to use the custom scaling, not the browser default zoom.
-    // Hence in this situation we avoid to return immediately.
-    if (altKey || (ctrlKey && !isMacOS())) {
-      return;
+  const resetSingleReference = () => {
+    const state = stateRef.current;
+    const pointer = Object.values(state.pointers)[0];
+    if (!pointer) return;
+    Object.assign(state, {
+      mainPointer: pointer.pointerId,
+      startX: pointer.clientX,
+      startY: pointer.clientY,
+      prevX: pointer.clientX,
+      prevY: pointer.clientY,
+      gestureAction: undefined,
+    });
+  };
+
+  const beginPair = (event) => {
+    const state = stateRef.current;
+    const touches = Object.values(state.pointers).filter(
+      (pointer) => pointer.pointerType === "touch"
+    );
+    if (state.activePair.length || touches.length < 2) return;
+    // Lock the first two touches. Extra fingers are captured and cleaned up,
+    // but never change the midpoint used by this gesture.
+    const [first, second] = touches;
+    const center = centerOf(first, second);
+    queueDragEnd(event);
+    clearTimeout(state.longTapTimeout);
+    Object.assign(state, {
+      activePair: [first.pointerId, second.pointerId],
+      prevX: center.clientX,
+      prevY: center.clientY,
+      prevDistance: distance(
+        [first.clientX, first.clientY],
+        [second.clientX, second.clientY]
+      ),
+      multiMode: undefined,
+      multiMoveEvent: undefined,
+      multiMoveTimeout: undefined,
+      gestureAction: "pan",
+      panSource: "touch",
+      hadMultiTouch: true,
+      noTap: true,
+    });
+  };
+
+  const flushMultiMove = () => {
+    const state = stateRef.current;
+    state.multiMoveTimeout = undefined;
+    const [firstId, secondId] = state.activePair;
+    const event = state.multiMoveEvent;
+    const first = state.pointers[firstId];
+    const second = state.pointers[secondId];
+    if (!event || !first || !second) return;
+
+    const center = centerOf(first, second);
+    const currentDistance = distance(
+      [first.clientX, first.clientY],
+      [second.clientX, second.clientY]
+    );
+    const deltaX = center.clientX - state.prevX;
+    const deltaY = center.clientY - state.prevY;
+    const panDistance = Math.hypot(deltaX, deltaY);
+    const zoomDistance = Math.abs(currentDistance - state.prevDistance);
+
+    // Pointer moves for the two fingers are dispatched separately. Group them
+    // before deciding the gesture so a regular two-finger pan does not briefly
+    // look like a pinch while only the first move has arrived. The leading
+    // gesture may switch later, but only when the other movement is clearly
+    // larger, which prevents jitter from making it oscillate.
+    if (!state.multiMode) {
+      state.multiMode = panDistance >= zoomDistance ? "pan" : "pinch";
+    } else if (
+      state.multiMode === "pan" &&
+      zoomDistance > panDistance * GESTURE_SWITCH_RATIO
+    ) {
+      state.multiMode = "pinch";
+    } else if (
+      state.multiMode === "pinch" &&
+      panDistance > zoomDistance * GESTURE_SWITCH_RATIO
+    ) {
+      state.multiMode = "pan";
     }
 
-    // On a trackpad, the pinch and pan events are differentiated by the crtlKey value.
-    // On a pinch gesture, the ctrlKey is set to true, so we want to have a scaling effect.
-    // If we are only moving the fingers in the same direction, a pan is needed.
-    // Ref: https://medium.com/@auchenberg/detecting-multi-touch-trackpad-gestures-in-javascript-a2505babb10e
-    if (isMacOS() && !ctrlKey) {
+    clearTimeout(state.longTapTimeout);
+    if (state.multiMode === "pan") {
+      state.didPan = true;
       promiseQueue.add(onPan, {
-        deltaX: -2 * deltaX,
-        deltaY: -2 * deltaY,
-        button: 1,
+        deltaX,
+        deltaY,
+        button: state.currentButton,
+        altKey: event.altKey,
+        shiftKey: event.shiftKey,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        target: state.target,
+        source: "touch",
+        isMultiTouch: true,
+        event,
+      });
+    } else if (onZoom && currentDistance !== state.prevDistance) {
+      state.didZoom = true;
+      promiseQueue.add(onZoom, {
+        scale: (state.prevDistance - currentDistance) * 3,
+        clientX: center.clientX,
+        clientY: center.clientY,
+        source: "touch",
+        event,
+      });
+    }
+    Object.assign(state, {
+      prevX: center.clientX,
+      prevY: center.clientY,
+      prevDistance: currentDistance,
+      moving: true,
+      multiMoveEvent: undefined,
+    });
+  };
+
+  const onWheel = React.useCallback(
+    (event) => {
+      const {
+        deltaX,
+        deltaY,
+        clientX,
+        clientY,
+        deltaMode,
         ctrlKey,
         metaKey,
         target,
-        event,
-      });
-    } else {
-      // Quit if onZoom is not set
-      if (onZoom === undefined || !deltaY) return;
-
-      let scale = deltaY;
-
-      switch (deltaMode) {
-        case 1: // Pixel
-          scale *= LINE_HEIGHT;
-          break;
-        case 2:
-          scale *= PAGE_HEIGHT;
-          break;
-        default:
-      }
-
-      if (isMacOS()) {
-        scale *= 2;
-      }
-
-      promiseQueue.add(onZoom, { scale, clientX, clientY, event });
-    }
-  };
-
-  const onPointerDown = (event) => {
-    const {
-      target,
-      button,
-      clientX,
-      clientY,
-      pointerId,
-      altKey,
-      ctrlKey,
-      metaKey,
-      isPrimary,
-    } = event;
-
-    // Add pointer to map
-    stateRef.current.pointers[pointerId] = { clientX, clientY };
-
-    if (isPrimary) {
-      // Clean mainPoint on primary pointer
-      stateRef.current.mainPointer = undefined;
-    }
-
-    if (stateRef.current.mainPointer !== undefined) {
-      if (stateRef.current.mainPointer !== pointerId) {
-        // This is not the main pointer
-        try {
-          const { clientX: clientX2, clientY: clientY2 } = otherPointer(
-            stateRef.current.pointers,
-            pointerId
-          );
-          const newClientX = (clientX2 + clientX) / 2;
-          const newClientY = (clientY2 + clientY) / 2;
-
-          const distance = computeDistance(
-            [clientX2, clientY2],
-            [clientX, clientY]
-          );
-
-          // We update previous position as the new position is the center between both fingers
-          Object.assign(stateRef.current, {
-            pressed: true,
-            moving: false,
-            gestureStart: false,
-            startX: clientX,
-            startY: clientY,
-            prevX: newClientX,
-            prevY: newClientY,
-            startDistance: distance,
-            prevDistance: distance,
-          });
-        } catch (e) {
-           
-          console.log("Error while getting other pointer. Ignoring", e);
-           
-          stateRef.current.mainPointer === undefined;
-        }
-      }
-
-      return;
-    }
-
-    // We set the mainpointer
-    stateRef.current.mainPointer = pointerId;
-
-    // And prepare move
-    Object.assign(stateRef.current, {
-      pressed: true,
-      moving: false,
-      gestureStart: false,
-      startX: clientX,
-      startY: clientY,
-      prevX: clientX,
-      prevY: clientY,
-      currentButton: button,
-      pointerDownEvent: event,
-      startDistance: 0,
-      prevDistance: 0,
-      target,
-      timeStart: Date.now(),
-      longTapTimeout: setTimeout(async () => {
-        stateRef.current.noTap = true;
-        promiseQueue.add(onLongTap, {
-          clientX,
-          clientY,
-          altKey,
+      } = event;
+      const trackpadNavigation = navigationMode === "trackpad" && !ctrlKey;
+      const shouldZoom =
+        navigationMode === "wheel" ||
+        (navigationMode === "trackpad" && ctrlKey);
+      if (trackpadNavigation) {
+        promiseQueue.add(onPan, {
+          deltaX: -2 * deltaX,
+          deltaY: -2 * deltaY,
+          button: 1,
+          source: "wheel",
           ctrlKey,
           metaKey,
           target,
           event,
         });
-      }, 750),
-    });
+        event.preventDefault();
+        return;
+      }
+      if (!shouldZoom || onZoom === undefined || !deltaY) return;
+      let scale = deltaY;
+      if (deltaMode === 1) scale *= LINE_HEIGHT;
+      if (deltaMode === 2) scale *= PAGE_HEIGHT;
+      promiseQueue.add(onZoom, {
+        scale: scale * zoomMultiplier,
+        clientX,
+        clientY,
+        source: "wheel",
+        event,
+      });
+      event.preventDefault();
+    },
+    [navigationMode, onPan, onZoom, zoomMultiplier]
+  );
 
+  React.useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper || !navigationMode) return undefined;
+    wrapper.addEventListener("wheel", onWheel, { passive: false });
+    return () => wrapper.removeEventListener("wheel", onWheel);
+  }, [navigationMode, onWheel]);
+
+  const onPointerDown = (event) => {
+    const state = stateRef.current;
+    const { pointerId, pointerType, clientX, clientY, target } = event;
+    // Safari/WebViews have historically omitted pointerType on some touch
+    // PointerEvents. A real mouse always reports "mouse"; treat an omitted
+    // type as touch so it cannot disable pinch navigation.
+    state.pointers[pointerId] = {
+      pointerId,
+      pointerType: pointerType || "touch",
+      clientX,
+      clientY,
+    };
     try {
-      // Nested handlers capture the same target so events continue to bubble
-      // through item, pan and selection handlers.
       target.setPointerCapture(pointerId);
-    } catch (e) {
-       
-      console.log("Fail to capture pointer", e);
+    } catch {
+      /* synthetic events may not capture */
     }
+    if (Object.keys(state.pointers).length === 1) {
+      Object.assign(state, {
+        pressed: true,
+        moving: false,
+        gestureAction: undefined,
+        hadMultiTouch: false,
+        noTap: false,
+        mainPointer: pointerId,
+        startX: clientX,
+        startY: clientY,
+        prevX: clientX,
+        prevY: clientY,
+        currentButton: event.button,
+        pointerDownEvent: event,
+        target,
+        timeStart: Date.now(),
+        activePair: [],
+        longTapTimeout: setTimeout(() => {
+          state.noTap = true;
+          promiseQueue.add(onLongTap, {
+            clientX,
+            clientY,
+            altKey: event.altKey,
+            ctrlKey: event.ctrlKey,
+            metaKey: event.metaKey,
+            target,
+            event,
+          });
+        }, 750),
+      });
+    }
+    beginPair(event);
   };
 
   const onPointerMove = (event) => {
-    if (stateRef.current.pressed) {
-      const {
-        pointerId,
-        clientX: eventClientX,
-        clientY: eventClientY,
-        altKey,
-        shiftKey,
-        ctrlKey,
-        metaKey,
-        buttons,
-      } = event;
-
-      // Update pointer coordinates in the map
-      stateRef.current.pointers[pointerId] = {
-        clientX: eventClientX,
-        clientY: eventClientY,
-      };
-
-      stateRef.current.moving = true;
-
-      // Do we have two pointers ?
-      const twoPointers = Object.keys(stateRef.current.pointers).length === 2;
-
-      let clientX;
-      let clientY;
-      let distanceBetweenTwoPointers = 0;
-
-      if (twoPointers) {
-        // Find other pointerId
-        const { clientX: clientX2, clientY: clientY2 } = otherPointer(
-          stateRef.current.pointers,
-          pointerId
-        );
-
-        // Update client X with the center of each touch
-        clientX = (clientX2 + eventClientX) / 2;
-        clientY = (clientY2 + eventClientY) / 2;
-        distanceBetweenTwoPointers = computeDistance(
-          [clientX2, clientY2],
-          [eventClientX, eventClientY]
-        );
-      } else {
-        clientX = eventClientX;
-        clientY = eventClientY;
+    const state = stateRef.current;
+    if (!state.pressed || !state.pointers[event.pointerId]) return;
+    state.pointers[event.pointerId] = {
+      ...state.pointers[event.pointerId],
+      clientX: event.clientX,
+      clientY: event.clientY,
+    };
+    const [firstId, secondId] = state.activePair;
+    if (state.activePair.length === 2) {
+      if (event.pointerId !== firstId && event.pointerId !== secondId) return;
+      state.multiMoveEvent = event;
+      if (!state.multiMoveTimeout) {
+        state.multiMoveTimeout = setTimeout(flushMultiMove, 0);
       }
-
-      // We drag if
-      // On non touch device
-      //   - Only button is pressed (1)
-      //   - any special key is no pressed
-      // or on touch devices
-      //   - We use only one finger
-      let altAction = shiftKey || altKey || ctrlKey || metaKey || buttons !== 1;
-      if (mainAction !== "drag") {
-        altAction = !altAction;
-      }
-
-      const shouldDrag = !altAction;
-      const shouldPan = altAction;
-
-      if (shouldDrag) {
-        // Send drag start on first move
-        if (!stateRef.current.gestureStart) {
-          wrapperRef.current.style.cursor = "move";
-          stateRef.current.gestureStart = true;
-          // Clear tap timeout
-          clearTimeout(stateRef.current.longTapTimeout);
-
-          promiseQueue.add(onDragStart, {
-            deltaX: 0,
-            deltaY: 0,
-            startX: stateRef.current.startX,
-            startY: stateRef.current.startY,
-            clientX: stateRef.current.startX,
-            clientY: stateRef.current.startY,
-            distanceX: 0,
-            distanceY: 0,
-            button: stateRef.current.currentButton,
-            altKey,
-            shiftKey,
-            ctrlKey,
-            metaKey,
-            target: stateRef.current.target,
-            event: stateRef.current.pointerDownEvent,
-          });
-        }
-
-        const deltaX = clientX - stateRef.current.prevX;
-        const deltaY = clientY - stateRef.current.prevY;
-        const distanceX = clientX - stateRef.current.startX;
-        const distanceY = clientY - stateRef.current.startY;
-
-        // Drag event
-        promiseQueue.add(onDrag, {
-          deltaX,
-          deltaY,
-          startX: stateRef.current.startX,
-          startY: stateRef.current.startY,
-          clientX,
-          clientY,
-          distanceX,
-          distanceY,
-          button: stateRef.current.currentButton,
-          altKey,
-          shiftKey,
-          ctrlKey,
-          metaKey,
-          target: stateRef.current.target,
-          event,
-        });
-      }
-
-      if (shouldPan) {
-        if (!stateRef.current.gestureStart) {
-          wrapperRef.current.style.cursor = "move";
-          stateRef.current.gestureStart = true;
-          // Clear tap timeout on first move
-          clearTimeout(stateRef.current.longTapTimeout);
-        }
-
-        // Create closure
-        const deltaX = clientX - stateRef.current.prevX;
-        const deltaY = clientY - stateRef.current.prevY;
-        const { target } = stateRef.current;
-
-        // Pan event
-        promiseQueue.add(onPan, {
-          deltaX,
-          deltaY,
-          button: stateRef.current.currentButton,
-          altKey,
-          shiftKey,
-          ctrlKey,
-          metaKey,
-          target,
-          event,
-        });
-
-        if (
-          distanceBetweenTwoPointers !== stateRef.current.prevDistance &&
-          onZoom
-        ) {
-          const scale =
-            stateRef.current.prevDistance - distanceBetweenTwoPointers;
-
-          if (Math.abs(scale) > 0) {
-            promiseQueue.add(onZoom, {
-              scale: scale * 3,
-              clientX,
-              clientY,
-              event,
-            });
-            stateRef.current.prevDistance = distanceBetweenTwoPointers;
-          }
-        }
-      }
-
-      stateRef.current.prevX = clientX;
-      stateRef.current.prevY = clientY;
+      return;
     }
+    if (event.pointerId !== state.mainPointer) return;
+    const { clientX, clientY } = event;
+    const currentMainAction = getMainAction(
+      mainAction,
+      state.pointers[event.pointerId].pointerType,
+      navigationMode
+    );
+    let altAction =
+      event.shiftKey ||
+      event.altKey ||
+      event.ctrlKey ||
+      event.metaKey ||
+      event.buttons !== 1;
+    if (currentMainAction !== "drag") altAction = !altAction;
+    const shouldDrag = !altAction;
+    const isTouch = state.pointers[event.pointerId].pointerType === "touch";
+    if (
+      shouldDrag &&
+      isTouch &&
+      !state.gestureAction &&
+      Math.hypot(clientX - state.startX, clientY - state.startY) <
+        TOUCH_DRAG_THRESHOLD
+    )
+      return;
+    if (!state.gestureAction) {
+      state.gestureAction = shouldDrag ? "drag" : "pan";
+      if (!shouldDrag) state.panSource = isTouch ? "touch" : undefined;
+      clearTimeout(state.longTapTimeout);
+      if (wrapperRef.current) wrapperRef.current.style.cursor = "move";
+      if (shouldDrag)
+        promiseQueue.add(onDragStart, {
+          deltaX: 0,
+          deltaY: 0,
+          startX: state.startX,
+          startY: state.startY,
+          clientX: state.startX,
+          clientY: state.startY,
+          distanceX: 0,
+          distanceY: 0,
+          button: state.currentButton,
+          altKey: event.altKey,
+          shiftKey: event.shiftKey,
+          ctrlKey: event.ctrlKey,
+          metaKey: event.metaKey,
+          target: state.target,
+          event: state.pointerDownEvent,
+        });
+    }
+    const payload = {
+      deltaX: clientX - state.prevX,
+      deltaY: clientY - state.prevY,
+      startX: state.startX,
+      startY: state.startY,
+      clientX,
+      clientY,
+      distanceX: clientX - state.startX,
+      distanceY: clientY - state.startY,
+      button: state.currentButton,
+      altKey: event.altKey,
+      shiftKey: event.shiftKey,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      target: state.target,
+      event,
+    };
+    promiseQueue.add(
+      shouldDrag ? onDrag : onPan,
+      shouldDrag
+        ? payload
+        : {
+            ...payload,
+            source: isTouch ? "touch" : undefined,
+            isMultiTouch: false,
+          }
+    );
+    if (!shouldDrag) state.didPan = true;
+    Object.assign(state, { prevX: clientX, prevY: clientY, moving: true });
   };
 
   const onPointerUp = (event) => {
-    const {
-      clientX,
-      clientY,
-      altKey,
-      shiftKey,
-      ctrlKey,
-      metaKey,
-      target,
-      pointerId,
-    } = event;
-
-    if (!stateRef.current.pointers[pointerId]) {
-      // Pointer already gone previously with another event
-      // ignoring it
-      return;
+    const state = stateRef.current;
+    if (!state.pointers[event.pointerId]) return;
+    if (state.multiMoveTimeout) {
+      clearTimeout(state.multiMoveTimeout);
+      flushMultiMove();
     }
-
-    // Remove pointer from map
-    delete stateRef.current.pointers[pointerId];
-
-    // If this is not the main pointer we quit here
-    if (stateRef.current.mainPointer !== pointerId) {
-      const { clientX: clientX2, clientY: clientY2 } =
-        stateRef.current.pointers[stateRef.current.mainPointer];
-      Object.assign(stateRef.current, {
-        prevX: clientX2,
-        prevY: clientY2,
-        prevDistance: 0,
-        startDistance: 0,
-      });
-      return;
+    if (event.type === "pointercancel") state.noTap = true;
+    try {
+      event.target.releasePointerCapture(event.pointerId);
+    } catch {
+      /* capture can already be released */
     }
-
-    // It was the main pointer so we need to replace it with another if any
-    while (Object.keys(stateRef.current.pointers).length > 0) {
-      // If was main pointer but we have another one, this one become main
-      stateRef.current.mainPointer = Number(
-        Object.keys(stateRef.current.pointers)[0]
+    const wasPairMember = state.activePair.includes(event.pointerId);
+    delete state.pointers[event.pointerId];
+    if (wasPairMember) {
+      state.activePair = [];
+      const touches = Object.values(state.pointers).filter(
+        (pointer) => pointer.pointerType === "touch"
       );
-
-      try {
-        stateRef.current.target.setPointerCapture(stateRef.current.mainPointer);
-
-        const { clientX: clientX2, clientY: clientY2 } =
-          stateRef.current.pointers[stateRef.current.mainPointer];
-        Object.assign(stateRef.current, {
-          prevX: clientX2,
-          prevY: clientY2,
-          prevDistance: 0,
-          startDistance: 0,
-        });
-
-        return;
-      } catch (error) {
-         
-        console.log("Fails to set pointer capture", error);
-        stateRef.current.mainPointer = undefined;
-        delete stateRef.current.pointers[
-          Object.keys(stateRef.current.pointers)[0]
-        ];
-      }
+      if (touches.length >= 2) beginPair(event);
+      else resetSingleReference();
     }
-
-    // From here we have removed the last pointer.
-
-    stateRef.current.mainPointer = undefined;
-    stateRef.current.pressed = false;
-
-    // Clear longTap
-    clearTimeout(stateRef.current.longTapTimeout);
-
-    if (stateRef.current.moving) {
-      // If we were moving, send drag end event
-      stateRef.current.moving = false;
-      promiseQueue.add(onDragEnd, {
-        deltaX: clientX - stateRef.current.prevX,
-        deltaY: clientY - stateRef.current.prevY,
-        startX: stateRef.current.startX,
-        startY: stateRef.current.startY,
-        clientX,
-        clientY,
-        distanceX: clientX - stateRef.current.startX,
-        distanceY: clientY - stateRef.current.startY,
-        button: stateRef.current.currentButton,
-        altKey,
-        shiftKey,
-        ctrlKey,
-        metaKey,
+    if (Object.keys(state.pointers).length) return;
+    clearTimeout(state.longTapTimeout);
+    state.pressed = false;
+    state.mainPointer = undefined;
+    state.activePair = [];
+    if (state.gestureAction === "drag") queueDragEnd(event);
+    if (state.didPan) {
+      promiseQueue.add(onPanEnd, {
+        source: state.panSource,
+        isMultiTouch: state.hadMultiTouch,
         event,
       });
-      wrapperRef.current.style.cursor = "auto";
-    } else {
-      const now = Date.now();
-
-      if (stateRef.current.noTap) {
-        stateRef.current.noTap = false;
-      }
-      // Send tap event only if time less than 300ms
-      else if (stateRef.current.timeStart - now < 300) {
-        promiseQueue.add(onTap, {
-          clientX,
-          clientY,
-          altKey,
-          shiftKey,
-          ctrlKey,
-          metaKey,
-          target,
-          event,
-        });
-      }
     }
-  };
-
-  const onDoubleTapHandler = (event) => {
-    const { clientX, clientY, altKey, shiftKey, ctrlKey, metaKey, target } =
-      event;
-    promiseQueue.add(onDoubleTap, {
-      clientX,
-      clientY,
-      altKey,
-      shiftKey,
-      ctrlKey,
-      metaKey,
-      target,
-      event,
+    if (state.didZoom) {
+      promiseQueue.add(onZoomEnd, { source: "touch", event });
+    }
+    if (wrapperRef.current) wrapperRef.current.style.cursor = "auto";
+    if (
+      !state.moving &&
+      !state.hadMultiTouch &&
+      !state.noTap &&
+      Date.now() - state.timeStart < 300
+    ) {
+      promiseQueue.add(onTap, {
+        clientX: event.clientX,
+        clientY: event.clientY,
+        altKey: event.altKey,
+        shiftKey: event.shiftKey,
+        ctrlKey: event.ctrlKey,
+        metaKey: event.metaKey,
+        target: event.target,
+        event,
+      });
+    }
+    Object.assign(state, {
+      moving: false,
+      gestureAction: undefined,
+      didPan: false,
+      panSource: undefined,
+      didZoom: false,
     });
   };
 
-  // Items can contain images, which are draggable by the browser by default.
-  // The board has its own pointer-based drag handling, so prevent the native
-  // drag operation from starting when it bubbles up from an item.
-  const onNativeDragStart = (event) => {
-    event.preventDefault();
-  };
+  const onDoubleTapHandler = (event) =>
+    promiseQueue.add(onDoubleTap, {
+      clientX: event.clientX,
+      clientY: event.clientY,
+      altKey: event.altKey,
+      shiftKey: event.shiftKey,
+      ctrlKey: event.ctrlKey,
+      metaKey: event.metaKey,
+      target: event.target,
+      event,
+    });
 
   return (
     <div
-      onWheel={onWheel}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onDoubleClick={onDoubleTapHandler}
-      onDragStart={onNativeDragStart}
+      onDragStart={(event) => event.preventDefault()}
       style={{
         touchAction: "none",
         ...(fill ? { position: "absolute", inset: 0 } : {}),

@@ -47,101 +47,108 @@ export default {
 
 const defaultInitialItems = [
   {
-    type: "cylinder",
-    x: 0,
-    y: 0,
-    id: "test00cyl",
-    color: "#345",
-    actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
-  },
-  {
-    type: "cube",
-    x: 100,
-    y: 100,
-    id: "test00",
-    color: "#023456",
-    actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
-  },
-  {
-    type: "cube",
-    x: -100,
-    y: -100,
-    id: "test01",
-    color: "#727456",
-    actions: [{ name: "rotate", args: { angle: 20 } }, "rotate45", "remove"],
-  },
-  { type: "round", x: 100, y: -100, id: "test", color: "#923456" },
-  { type: "token", x: -100, y: 100, id: "test2", color: "#0077AA" },
-  {
-    type: "rect",
-    x: -300,
-    y: 300,
-    id: "test3",
-    color: "#0077AA",
-    width: 300,
-    height: 300,
-  },
-  {
     type: "zone",
-    x: -300,
-    y: -300,
-    id: "test4",
-    color: "#7700AA",
-    width: 300,
-    height: 300,
-    layer: 2,
+    x: -380,
+    y: -250,
+    id: "play-area",
+    color: "#6366f1",
+    width: 760,
+    height: 520,
+    text: "PLAY AREA",
+    textColor: "#312e81",
+    fontSize: 20,
+    layer: -2,
   },
   {
-    type: "round",
-    x: 200,
-    y: -200,
-    id: "test-grid",
-    color: "#3327AA",
-    width: 100,
-    height: 100,
-    grid: { type: "hexH", size: 50, offset: { x: 10, y: 10 } },
+    type: "screen",
+    x: -310,
+    y: -170,
+    id: "shared-screen",
+    color: "#f59e0b",
+    width: 220,
+    height: 140,
+    text: "Shared screen",
   },
-  {
-    type: "round",
-    x: 220,
-    y: -220,
-    id: "test-grid2",
-    color: "#aa2722",
-    width: 100,
-    height: 100,
-    grid: { type: "hexH", size: 50 },
-  },
-
   {
     type: "rect",
-    x: 300,
-    y: 300,
-    id: "test30",
-    color: "#AA770055",
-    width: 300,
-    height: 300,
-    linkedItems: ["test010", "test011", "test012"],
+    x: 110,
+    y: -160,
+    id: "linked-group",
+    color: "#14b8a633",
+    width: 190,
+    height: 250,
+    text: "Move the group",
+    textColor: "#115e59",
+    fontSize: 16,
+    linkedItems: ["group-cube", "group-token", "group-cylinder"],
+    layer: -1,
+  },
+  {
+    type: "cube",
+    x: 145,
+    y: -115,
+    id: "group-cube",
+    color: "#4f46e5",
+    size: 68,
+    actions: ["rotate45", { name: "rotate", args: { angle: 10 } }, "remove"],
+  },
+  {
+    type: "token",
+    x: 225,
+    y: -60,
+    id: "group-token",
+    color: "#f43f5e",
+    size: 64,
+    text: "2",
+    textColor: "#fff",
+  },
+  {
+    type: "cylinder",
+    x: 150,
+    y: 15,
+    id: "group-cylinder",
+    color: "#0ea5e9",
+    size: 64,
+  },
+  {
+    type: "round",
+    x: -50,
+    y: 70,
+    id: "hex-grid-token",
+    color: "#8b5cf6",
+    size: 92,
+    text: "Hex",
+    textColor: "#fff",
+    fontSize: 15,
+    grid: {
+      type: "hexH",
+      size: 38,
+      offset: { x: 8, y: 8 },
+      color: "#7c3aed",
+      opacity: 0.75,
+    },
+  },
+  {
+    type: "round",
+    x: -130,
+    y: 150,
+    id: "square-grid-token",
+    color: "#10b981",
+    size: 78,
+    text: "Grid",
+    textColor: "#fff",
+    fontSize: 14,
+    grid: { type: "grid", size: 24, color: "#047857", opacity: 0.75 },
   },
   {
     type: "cube",
     x: 310,
-    y: 340,
-    id: "test010",
-    color: "#721456",
-  },
-  {
-    type: "cube",
-    x: 310,
-    y: 370,
-    id: "test011",
-    color: "#727416",
-  },
-  {
-    type: "cube",
-    x: 310,
-    y: 400,
-    id: "test012",
-    color: "#127456",
+    y: 140,
+    id: "free-cube",
+    color: "#ec4899",
+    size: 82,
+    rotation: -18,
+    actions: [{ name: "rotate", args: { angle: 20 } }, "rotate45", "remove"],
   },
 ];
 
@@ -156,12 +163,11 @@ const AddItems = () => {
   };
 
   return (
-    <>
-      <h2>Add item</h2>
+    <section className="control-section">
+      <h2>Add an item</h2>
       <select
         value={selectedType}
         onChange={(event) => setSelectedType(event.target.value)}
-        style={{ width: "100%" }}
       >
         {itemTypes.map((key) => (
           <option key={key} value={key}>
@@ -169,10 +175,10 @@ const AddItems = () => {
           </option>
         ))}
       </select>
-      <button style={{ width: "100%" }} onClick={addItem}>
-        Add item
+      <button className="primary-action" onClick={addItem}>
+        Add to board
       </button>
-    </>
+    </section>
   );
 };
 
@@ -185,33 +191,30 @@ const BoardGridForm = () => {
         ...current,
         grid: values.grid,
       })),
-    [setBoardConfig],
+    [setBoardConfig]
   );
 
   return (
-    <Form
-      initialValues={{
-        grid: boardConfig.grid || {
-          type: "none",
-          size: 50,
-        },
-      }}
-      onSubmit={save}
-      render={() => (
-        <>
-          <AutoSave save={save} />
-          <GridFields
-            initialValues={{
-              grid: boardConfig.grid || {
-                type: "none",
-                size: 50,
-              },
-            }}
-            title={false}
-          />
-        </>
-      )}
-    />
+    <section className="control-section compact-fields">
+      <h2>Grid</h2>
+      <Form
+        initialValues={{
+          grid: boardConfig.grid || { type: "none", size: 50 },
+        }}
+        onSubmit={save}
+        render={() => (
+          <>
+            <AutoSave save={save} />
+            <GridFields
+              initialValues={{
+                grid: boardConfig.grid || { type: "none", size: 50 },
+              }}
+              title={false}
+            />
+          </>
+        )}
+      />
+    </section>
   );
 };
 
@@ -232,9 +235,9 @@ const UserList = () => {
   }, [updateCurrentUser]);
 
   return (
-    <>
-      <h2>Users</h2>
-      <ul>
+    <section className="control-section users-list">
+      <h2>Connected users</h2>
+      <ul aria-live="polite">
         {localUsers.map((user) => (
           <li key={user.id}>
             {currentUser.id === user.id ? "You: " : ""}
@@ -242,75 +245,151 @@ const UserList = () => {
           </li>
         ))}
       </ul>
-    </>
+    </section>
   );
 };
 
-const Overlay = ({
-  children,
-  hideMenu,
-  moveFirst,
-  setMoveFirst,
-}) => {
+const Overlay = ({ children, hideMenu, interaction, setInteraction }) => {
   const { rotateBoard: rotate, zoomToExtent } = useDim();
   const itemExtent = useMainStore((state) => state.config.itemExtent);
+  const [controlsOpen, setControlsOpen] = React.useState(true);
+  const controlsId = React.useId();
   return (
-    <div
-      style={{
-        position: "absolute",
-        inset: 0,
-        backgroundColor: "#eee",
-      }}
-    >
+    <div className="demo-board-shell">
       {children}
-      <div
-        className="demo-controls"
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          bottom: 0,
-          backgroundColor: "#999999",
-          padding: "0.5em",
-          display: "flex",
-          flexDirection: "column",
-          gap: "10px",
-          zIndex: 215,
-          width: "min(260px, 35%)",
-          overflowY: "auto",
-          overscrollBehavior: "contain",
-        }}
+      <aside
+        className={`demo-controls ${controlsOpen ? "is-open" : "is-closed"}`}
+        aria-label="Board controls"
       >
-        <AddItems />
-        <BoardGridForm />
-        <div style={{ margin: "10px 0" }}>
-          <button onClick={() => zoomToExtent(itemExtent)}>
-            Center on items
+        <div className="controls-heading">
+          <div>
+            <p className="eyebrow">Live controls</p>
+            <p>Configure the board and add content.</p>
+          </div>
+          <button
+            className="controls-toggle"
+            type="button"
+            aria-expanded={controlsOpen}
+            aria-controls={controlsId}
+            onClick={() => setControlsOpen((open) => !open)}
+          >
+            {controlsOpen ? "Hide controls" : "Show controls"}
+            <span aria-hidden="true">{controlsOpen ? "↓" : "↑"}</span>
           </button>
         </div>
-        <div style={{ margin: "10px 0" }}>
-          <button onClick={() => rotate((prev) => prev + 12.5)}>
-            Rotate clockwise
-          </button>
-          <button onClick={() => rotate((prev) => prev - 12.5)}>
-            Rotate counter clockwise
-          </button>
-        </div>
-        <div style={{ margin: "10px 0" }}>
+        <div id={controlsId} className="controls-content">
+          <AddItems />
+          <BoardGridForm />
+          <section className="control-section">
+            <h2>Viewport</h2>
+            <button onClick={() => zoomToExtent(itemExtent)}>
+              Center on items
+            </button>
+          </section>
+          <section className="control-section interaction-controls">
+            <h2>Interaction</h2>
+          <label>
+            Navigation mode
+            <select
+              value={interaction.navigationMode}
+              onChange={(event) =>
+                setInteraction((previous) => ({
+                  ...previous,
+                  navigationMode: event.target.value,
+                }))
+              }
+            >
+              <option value="auto">Auto</option>
+              <option value="wheel">Wheel</option>
+              <option value="trackpad">Trackpad</option>
+            </select>
+          </label>
+          <label>
+            Primary action
+            <select
+              value={interaction.primaryAction ?? "auto"}
+              onChange={(event) =>
+                setInteraction((previous) => {
+                  if (event.target.value === "auto") {
+                    const nextInteraction = { ...previous };
+                    delete nextInteraction.primaryAction;
+                    return nextInteraction;
+                  }
+                  return { ...previous, primaryAction: event.target.value };
+                })
+              }
+            >
+              <option value="auto">Auto</option>
+              <option value="pan">Pan</option>
+              <option value="select">Select</option>
+            </select>
+          </label>
+          <label>
+            Zoom multiplier
+            <input
+              type="number"
+              min="0.1"
+              step="0.1"
+              placeholder="Mode default"
+              value={interaction.zoomMultiplier ?? ""}
+              onChange={(event) =>
+                setInteraction((previous) => {
+                  if (event.target.value === "") {
+                    const nextInteraction = { ...previous };
+                    delete nextInteraction.zoomMultiplier;
+                    return nextInteraction;
+                  }
+
+                  return {
+                    ...previous,
+                    zoomMultiplier: Number(event.target.value),
+                  };
+                })
+              }
+            />
+          </label>
           <label>
             <input
               type="checkbox"
-              checked={moveFirst}
-              onChange={() => {
-                setMoveFirst((prev) => !prev);
-              }}
+              checked={interaction.inertia ?? true}
+              onChange={(event) =>
+                setInteraction((previous) => ({
+                  ...previous,
+                  inertia: event.target.checked,
+                }))
+              }
             />{" "}
-            Move first ?
+            Enable inertia
           </label>
+          <label>
+            Inertia amount
+            <input
+              type="number"
+              min="0.1"
+              step="0.1"
+              disabled={interaction.inertia === false}
+              value={interaction.inertiaAmount ?? 1}
+              onChange={(event) =>
+                setInteraction((previous) => ({
+                  ...previous,
+                  inertiaAmount: Number(event.target.value),
+                }))
+              }
+            />
+          </label>
+          </section>
+          <section className="control-section board-actions">
+            <h2>Orientation</h2>
+            <button onClick={() => rotate((prev) => prev + 12.5)}>
+              Rotate clockwise ↻
+            </button>
+            <button onClick={() => rotate((prev) => prev - 12.5)}>
+              Rotate counter-clockwise ↺
+            </button>
+          </section>
+          <UserList />
         </div>
-
-        <UserList />
-      </div>
+      </aside>
       <SelectedItemsPane hideMenu={hideMenu} ItemFormComponent={ItemForm} />
       <div id={`portal-container-uid`} />
     </div>
@@ -318,8 +397,8 @@ const Overlay = ({
 };
 
 const OneViewContent = ({
-  moveFirst,
-  setMoveFirst,
+  interaction,
+  setInteraction,
   showResizeHandle,
   hideMenu,
   room,
@@ -338,15 +417,13 @@ const OneViewContent = ({
     >
       <Overlay
         hideMenu={hideMenu}
-        moveFirst={moveFirst}
-        setMoveFirst={setMoveFirst}
+        interaction={interaction}
+        setInteraction={setInteraction}
       >
         <Board
-          moveFirst={moveFirst}
+          interaction={interaction}
           showResizeHandle={showResizeHandle}
-          style={{
-            backgroundColor: "#EEc",
-          }}
+          style={playgroundStyle}
           itemTemplates={itemMap}
         >
           {children}
@@ -359,14 +436,7 @@ const OneViewContent = ({
 
 export const OneView = (props) => (
   <WithSocketIO>
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        border: "1px solid black",
-      }}
-    >
+    <div className="demo-view">
       <OneViewContent {...props} />
     </div>
   </WithSocketIO>
@@ -385,18 +455,15 @@ export const OneViewPerf = (props) => {
   return <OneView {...props} initialItems={initialItems} />;
 };
 
-const style = {
-  backgroundColor: "#555",
-  backgroundImage: `linear-gradient(white 2px, transparent 2px),
-linear-gradient(90deg, white 2px, transparent 2px),
-linear-gradient(rgba(255,255,255,.3) 1px, transparent 1px),
-linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
-  backgroundSize: "100px 100px, 100px 100px, 20px 20px, 20px 20px",
-  backgroundPosition: "-2px -2px, -2px -2px, -1px -1px, -1px -1px",
+const playgroundStyle = {
+  backgroundColor: "#e9f4f2",
+  backgroundImage: 'url("/board-texture.svg")',
+  backgroundSize: "240px 240px",
+  backgroundPosition: "0 0",
 };
 const OneViewWithRoomContent = ({
-  moveFirst,
-  setMoveFirst,
+  interaction,
+  setInteraction,
   showResizeHandle,
   hideMenu,
   room,
@@ -418,13 +485,13 @@ const OneViewWithRoomContent = ({
       >
         <Overlay
           hideMenu={hideMenu}
-          moveFirst={moveFirst}
-          setMoveFirst={setMoveFirst}
+          interaction={interaction}
+          setInteraction={setInteraction}
         >
           <Board
-            moveFirst={moveFirst}
+            interaction={interaction}
             itemTemplates={itemMap}
-            style={style}
+            style={playgroundStyle}
             showResizeHandle={showResizeHandle}
           >
             <BoardGridOverlay />
@@ -437,14 +504,7 @@ const OneViewWithRoomContent = ({
 
 export const OneViewWithRoom = (props) => (
   <WithSocketIO>
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        border: "1px solid black",
-      }}
-    >
+    <div className="demo-view">
       <OneViewWithRoomContent {...props} />
     </div>
   </WithSocketIO>
@@ -452,39 +512,14 @@ export const OneViewWithRoom = (props) => (
 
 export const TwoView = (props) => {
   return (
-    <div
-      className="demo-two-views"
-      style={{
-        width: "100%",
-        height: "100%",
-        display: "flex",
-      }}
-    >
+    <div className="demo-two-views">
       <WithSocketIO>
-        <div
-          style={{
-            position: "relative",
-            height: "100%",
-            minWidth: 0,
-            minHeight: 0,
-            flex: 1,
-            border: "1px solid grey",
-          }}
-        >
+        <div className="demo-view">
           <OneViewContent {...props} />
         </div>
       </WithSocketIO>
       <WithSocketIO>
-        <div
-          style={{
-            position: "relative",
-            height: "100%",
-            minWidth: 0,
-            minHeight: 0,
-            flex: 1,
-            border: "1px solid grey",
-          }}
-        >
+        <div className="demo-view">
           <OneViewContent {...props} />
         </div>
       </WithSocketIO>
@@ -494,14 +529,7 @@ export const TwoView = (props) => {
 
 export const OneViewWithCustomBoardElements = (props) => (
   <WithSocketIO>
-    <div
-      style={{
-        width: "100%",
-        height: "100%",
-        position: "relative",
-        display: "flex",
-      }}
-    >
+    <div className="demo-view">
       <OneViewContent {...props}>
         <div
           style={{

@@ -2,11 +2,12 @@ import React, { memo } from "react";
 import styled, { css } from "styled-components";
 
 const StyledShape = styled.div`
-  ${({ width, height, color }) => css`
+  ${({ width, height, color, textColor }) => css`
     width: ${width}px;
-    height: ${height}px;*
-    box-shadow: rgba(60, 64, 67, 0.3) 0px 1px 2px 0px,
-      rgba(60, 64, 67, 0.15) 0px 1px 3px 1px;
+    height: ${height}px;
+    border: 1px solid rgb(255 255 255 / 60%);
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgb(15 23 42 / 14%);
     background-color: ${color};
 
     display: flex;
@@ -14,6 +15,10 @@ const StyledShape = styled.div`
     align-items: center;
     & span {
       z-index: 0;
+      color: ${textColor};
+      font-weight: 700;
+      text-align: center;
+      padding: 12px;
     }
   `}
 `;
@@ -30,7 +35,7 @@ const Rect = ({
     {text && (
       <span
         style={{
-          textColor,
+            color: textColor,
           fontSize: `${fontSize}px`,
         }}
       >
