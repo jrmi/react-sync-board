@@ -56,6 +56,18 @@ describe("Gesture touch navigation", () => {
     await waitFor(() => expect(trackpadDrag).toHaveBeenCalled());
   });
 
+  it("treats the board select action as a drag action", async () => {
+    const onDrag = vi.fn();
+    const onPan = vi.fn();
+    const surface = renderGesture({ mainAction: "select", onDrag, onPan });
+
+    pointer("pointerDown", surface, 1, 0, 0, { pointerType: "mouse" });
+    pointer("pointerMove", surface, 1, 10, 0, { pointerType: "mouse" });
+
+    await waitFor(() => expect(onDrag).toHaveBeenCalled());
+    expect(onPan).not.toHaveBeenCalled();
+  });
+
   it("recognizes one-finger pinch movement from the distance change", async () => {
     const onPan = vi.fn();
     const onZoom = vi.fn();

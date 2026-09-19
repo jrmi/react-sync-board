@@ -1,6 +1,6 @@
 {
   "name": "react-sync-board",
-  "version": "1.5.0",
+  "version": "1.5.2",
   "description": "React-sync-board is a board for react",
   "type": "module",
   "files": [
@@ -24,6 +24,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "build:website": "tsc && BUILD_WEBSITE='true' vite build",
+    "prepack": "npm run build",
     "watch": "tsc && vite build --watch",
     "preview": "vite preview",
     "lint": "eslint src",

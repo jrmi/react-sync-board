@@ -20,6 +20,7 @@ const TOUCH_DRAG_THRESHOLD = 5;
 const GESTURE_SWITCH_RATIO = 1.5;
 const empty = () => {};
 const getMainAction = (mainAction, pointerType, navigationMode) => {
+  if (mainAction === "select") return "drag";
   if (mainAction !== "auto") return mainAction;
   return pointerType === "touch" || navigationMode === "trackpad"
     ? "drag"
