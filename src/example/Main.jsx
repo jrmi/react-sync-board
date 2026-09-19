@@ -185,7 +185,7 @@ const BoardGridForm = () => {
         ...current,
         grid: values.grid,
       })),
-    [setBoardConfig],
+    [setBoardConfig]
   );
 
   return (
@@ -251,6 +251,8 @@ const Overlay = ({
   hideMenu,
   moveFirst,
   setMoveFirst,
+  interaction,
+  setInteraction,
 }) => {
   const { rotateBoard: rotate, zoomToExtent } = useDim();
   const itemExtent = useMainStore((state) => state.config.itemExtent);
@@ -289,6 +291,65 @@ const Overlay = ({
           </button>
         </div>
         <div style={{ margin: "10px 0" }}>
+          <label>
+            Navigation mode{" "}
+            <select
+              value={interaction.navigationMode}
+              onChange={(event) =>
+                setInteraction((previous) => ({
+                  ...previous,
+                  navigationMode: event.target.value,
+                }))
+              }
+            >
+              <option value="auto">Auto</option>
+              <option value="wheel">Wheel</option>
+              <option value="trackpad">Trackpad</option>
+            </select>
+          </label>
+          <label>
+            Primary action{" "}
+            <select
+              value={
+                interaction.primaryAction || (moveFirst ? "pan" : "select")
+              }
+              onChange={(event) =>
+                setInteraction((previous) => ({
+                  ...previous,
+                  primaryAction: event.target.value,
+                }))
+              }
+            >
+              <option value="pan">Pan</option>
+              <option value="select">Select</option>
+            </select>
+          </label>
+          <label>
+            Zoom multiplier{" "}
+            <input
+              type="number"
+              min="0.1"
+              step="0.1"
+              placeholder="Mode default"
+              value={interaction.zoomMultiplier ?? ""}
+              onChange={(event) =>
+                setInteraction((previous) => {
+                  if (event.target.value === "") {
+                    const nextInteraction = { ...previous };
+                    delete nextInteraction.zoomMultiplier;
+                    return nextInteraction;
+                  }
+
+                  return {
+                    ...previous,
+                    zoomMultiplier: Number(event.target.value),
+                  };
+                })
+              }
+            />
+          </label>
+        </div>
+        <div style={{ margin: "10px 0" }}>
           <button onClick={() => rotate((prev) => prev + 12.5)}>
             Rotate clockwise
           </button>
@@ -305,7 +366,7 @@ const Overlay = ({
                 setMoveFirst((prev) => !prev);
               }}
             />{" "}
-            Move first ?
+            Legacy move first?
           </label>
         </div>
 
@@ -320,6 +381,8 @@ const Overlay = ({
 const OneViewContent = ({
   moveFirst,
   setMoveFirst,
+  interaction,
+  setInteraction,
   showResizeHandle,
   hideMenu,
   room,
@@ -340,9 +403,12 @@ const OneViewContent = ({
         hideMenu={hideMenu}
         moveFirst={moveFirst}
         setMoveFirst={setMoveFirst}
+        interaction={interaction}
+        setInteraction={setInteraction}
       >
         <Board
           moveFirst={moveFirst}
+          interaction={interaction}
           showResizeHandle={showResizeHandle}
           style={{
             backgroundColor: "#EEc",
@@ -397,6 +463,8 @@ linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
 const OneViewWithRoomContent = ({
   moveFirst,
   setMoveFirst,
+  interaction,
+  setInteraction,
   showResizeHandle,
   hideMenu,
   room,
@@ -420,9 +488,12 @@ const OneViewWithRoomContent = ({
           hideMenu={hideMenu}
           moveFirst={moveFirst}
           setMoveFirst={setMoveFirst}
+          interaction={interaction}
+          setInteraction={setInteraction}
         >
           <Board
             moveFirst={moveFirst}
+            interaction={interaction}
             itemTemplates={itemMap}
             style={style}
             showResizeHandle={showResizeHandle}

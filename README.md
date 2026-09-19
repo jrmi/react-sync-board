@@ -31,6 +31,38 @@ See the examples in `src/stories` to know how to use it.
 
 (Documentation in progress)
 
+### Mouse and trackpad interaction
+
+`Board` accepts an optional local `interaction` prop. It is not synchronized
+between collaborators:
+
+```jsx
+<Board
+  interaction={{
+    navigationMode: "trackpad",
+    primaryAction: "select",
+    zoomMultiplier: 2.5,
+  }}
+/>
+```
+
+`navigationMode` may be `"auto"` (the default), `"wheel"`, or `"trackpad"`.
+`auto` resolves through a platform heuristic: it uses `trackpad` on macOS and
+`wheel` elsewhere. `wheel` always zooms with the wheel. `trackpad` pans with
+horizontal or vertical scroll and zooms for a pinch or `Ctrl` + wheel, including
+on Linux. Trackpad zoom uses the same sensitivity on every platform.
+
+`zoomMultiplier` is optional and must be a positive number. It defaults to `1`
+in `wheel` mode and `2` in `trackpad` mode; provide it to tune zoom sensitivity
+for an individual board.
+
+`primaryAction` is `"pan"` or `"select"`. It replaces the legacy `moveFirst`
+prop: `moveFirst={true}` maps to `"pan"` and `moveFirst={false}` maps to
+`"select"`. When both are provided, `interaction.primaryAction` takes priority.
+`moveFirst` remains supported during this transition. Browsers do not expose a
+reliable way to detect trackpad hardware, so use `navigationMode="trackpad"`
+explicitly when that interaction is wanted outside macOS.
+
 ### Infinite background
 
 The background uses virtual tiles: only the visible tiles and a one-tile margin

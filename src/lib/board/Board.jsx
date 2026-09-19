@@ -14,6 +14,7 @@ import { useResizeObserver } from "@react-hookz/web";
 import { css } from "goober";
 import CursorPane from "./Cursors/CursorPane";
 import WorldBackground from "./WorldBackground";
+import { getDefaultNavigationMode } from "./interaction";
 
 const NullWrapper = ({ children }) => children;
 const emptyTemplates = {};
@@ -26,6 +27,7 @@ const defaultStyle = {
 
 const Board = ({
   moveFirst = true,
+  interaction,
   style,
   wrapperStyle,
   itemTemplates = emptyTemplates,
@@ -41,14 +43,12 @@ const Board = ({
     state.config.uid,
     state.updateConfiguration,
   ]);
-  const [translateX, translateY, scale, rotate] = useMainStore(
-    (state) => [
-      state.boardState.translateX,
-      state.boardState.translateY,
-      state.boardState.scale,
-      state.boardState.rotate,
-    ]
-  );
+  const [translateX, translateY, scale, rotate] = useMainStore((state) => [
+    state.boardState.translateX,
+    state.boardState.translateY,
+    state.boardState.scale,
+    state.boardState.rotate,
+  ]);
   const { updateItemExtent } = useDim();
 
   const boardStyle = {
@@ -62,22 +62,29 @@ const Board = ({
     pointerEvents: "none",
   };
 
-
-  React.useEffect(() => {
-    // Chrome-related issue.
-    // Making the wheel event non-passive, which allows to use preventDefault() to prevent
-    // the browser original zoom  and therefore allowing our custom one.
-    // More detail at https://github.com/facebook/react/issues/14856
-    const cancelWheel = (event) => {
-      if (boardWrapperRef.current?.contains(event.target)) event.preventDefault();
-    };
-
-    document.body.addEventListener("wheel", cancelWheel, { passive: false });
-
-    return () => {
-      document.body.removeEventListener("wheel", cancelWheel);
-    };
-  }, []);
+  const primaryAction =
+    interaction?.primaryAction === "pan" ||
+    interaction?.primaryAction === "select"
+      ? interaction.primaryAction
+      : moveFirst
+        ? "pan"
+        : "select";
+  const requestedNavigationMode = ["auto", "wheel", "trackpad"].includes(
+    interaction?.navigationMode
+  )
+    ? interaction.navigationMode
+    : "auto";
+  const navigationMode =
+    requestedNavigationMode === "auto"
+      ? getDefaultNavigationMode()
+      : requestedNavigationMode;
+  const zoomMultiplier =
+    Number.isFinite(interaction?.zoomMultiplier) &&
+    interaction.zoomMultiplier > 0
+      ? interaction.zoomMultiplier
+      : navigationMode === "trackpad"
+        ? 2
+        : 1;
 
   React.useEffect(() => {
     updateConfiguration({
@@ -129,9 +136,13 @@ const Board = ({
     >
       <WorldBackground style={style} tileSizeOverride={backgroundTileSize} />
       <CursorPane>
-        <Selector moveFirst={moveFirst}>
-          <PanZoom moveFirst={moveFirst}>
-            <ActionPane moveFirst={moveFirst}>
+        <Selector moveFirst={primaryAction === "pan"}>
+          <PanZoom
+            moveFirst={primaryAction === "pan"}
+            navigationMode={navigationMode}
+            zoomMultiplier={zoomMultiplier}
+          >
+            <ActionPane moveFirst={primaryAction === "pan"}>
               <Wrapper>
                 <div
                   onContextMenu={(e) => {

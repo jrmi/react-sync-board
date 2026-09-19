@@ -11,7 +11,8 @@ Run with Playwright available (or point `PLAYWRIGHT_MODULE` at an installed
 Playwright module). `CHROMIUM_EXECUTABLE` optionally selects an existing browser:
 
 ```sh
-node tests/browser/grid.cjs
+node tests/browser/grid.js
+npm run test:browser:interaction
 ```
 
 The fixture uses real Board, Gesture, item measurements, placement interactions,
@@ -25,3 +26,7 @@ The initial square-grid regression failed before the fix: dragging a 44×34
 border-box item to (140, 130) snapped to (130, 135), because `clientWidth` excluded
 the selected border. The correct top-left position is (128, 133), with visible
 center (150, 150). Place interactions now observe that same position.
+
+`interaction.js` covers wheel zooming, explicit trackpad X/Y panning,
+`Ctrl` + wheel zooming, selective native-event prevention, and the precedence
+of `interaction.primaryAction` over legacy `moveFirst`.

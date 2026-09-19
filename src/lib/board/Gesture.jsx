@@ -1,10 +1,5 @@
 import React from "react";
 
-export const isMacOS = () => {
-  const userAgent = navigator.userAgent.toLowerCase();
-  return /mac os ?x 10/.test(userAgent);
-};
-
 // From https://stackoverflow.com/questions/20110224/what-is-the-height-of-a-line-in-a-wheel-event-deltamode-dom-delta-line
 const getScrollLineHeight = () => {
   const iframe = document.createElement("iframe");
@@ -47,7 +42,7 @@ const empty = () => {};
 
 const stopPropagation = (fn) => (arg) => {
   const { event } = arg;
-  if (!event.isPropagationStopped()) {
+  if (!event.isPropagationStopped || !event.isPropagationStopped()) {
     return fn(arg);
   }
   return null;
@@ -59,7 +54,6 @@ const protect =
     try {
       await fn(...args);
     } catch (e) {
-       
       console.error(e);
     }
   };
@@ -90,6 +84,8 @@ const Gesture = ({
   onDoubleTap = empty,
   onZoom,
   mainAction = "drag",
+  navigationMode,
+  zoomMultiplier = 1,
   fill = false,
 }) => {
   const wrapperRef = React.useRef(null);
@@ -99,63 +95,73 @@ const Gesture = ({
     mainPointer: undefined,
   });
 
-  const onWheel = (event) => {
-    const {
-      deltaX,
-      deltaY,
-      clientX,
-      clientY,
-      deltaMode,
-      ctrlKey,
-      altKey,
-      metaKey,
-      target,
-    } = event;
-
-    // On a MacOs trackpad, the pinch gesture sets the ctrlKey to true.
-    // In that situation, we want to use the custom scaling, not the browser default zoom.
-    // Hence in this situation we avoid to return immediately.
-    if (altKey || (ctrlKey && !isMacOS())) {
-      return;
-    }
-
-    // On a trackpad, the pinch and pan events are differentiated by the crtlKey value.
-    // On a pinch gesture, the ctrlKey is set to true, so we want to have a scaling effect.
-    // If we are only moving the fingers in the same direction, a pan is needed.
-    // Ref: https://medium.com/@auchenberg/detecting-multi-touch-trackpad-gestures-in-javascript-a2505babb10e
-    if (isMacOS() && !ctrlKey) {
-      promiseQueue.add(onPan, {
-        deltaX: -2 * deltaX,
-        deltaY: -2 * deltaY,
-        button: 1,
+  const onWheel = React.useCallback(
+    (event) => {
+      const {
+        deltaX,
+        deltaY,
+        clientX,
+        clientY,
+        deltaMode,
         ctrlKey,
         metaKey,
         target,
-        event,
-      });
-    } else {
-      // Quit if onZoom is not set
-      if (onZoom === undefined || !deltaY) return;
+      } = event;
 
-      let scale = deltaY;
+      const isTrackpadNavigation = navigationMode === "trackpad" && !ctrlKey;
+      const shouldZoom =
+        navigationMode === "wheel" ||
+        (navigationMode === "trackpad" && ctrlKey);
 
-      switch (deltaMode) {
-        case 1: // Pixel
-          scale *= LINE_HEIGHT;
-          break;
-        case 2:
-          scale *= PAGE_HEIGHT;
-          break;
-        default:
+      if (isTrackpadNavigation) {
+        promiseQueue.add(onPan, {
+          deltaX: -2 * deltaX,
+          deltaY: -2 * deltaY,
+          button: 1,
+          source: "wheel",
+          ctrlKey,
+          metaKey,
+          target,
+          event,
+        });
+        event.preventDefault();
+        return true;
+      } else {
+        // Quit if onZoom is not set or this is horizontal-only wheel input.
+        if (!shouldZoom || onZoom === undefined || !deltaY) return false;
+
+        let scale = deltaY;
+
+        switch (deltaMode) {
+          case 1: // Pixel
+            scale *= LINE_HEIGHT;
+            break;
+          case 2:
+            scale *= PAGE_HEIGHT;
+            break;
+          default:
+        }
+
+        scale *= zoomMultiplier;
+
+        promiseQueue.add(onZoom, { scale, clientX, clientY, event });
+        event.preventDefault();
+        return true;
       }
+    },
+    [navigationMode, onPan, onZoom, zoomMultiplier]
+  );
 
-      if (isMacOS()) {
-        scale *= 2;
-      }
+  React.useEffect(() => {
+    const wrapper = wrapperRef.current;
+    if (!wrapper || !navigationMode) return undefined;
 
-      promiseQueue.add(onZoom, { scale, clientX, clientY, event });
-    }
-  };
+    // React may register wheel listeners as passive. Attach directly to this
+    // gesture area so only a wheel event the board actually handles is
+    // prevented from triggering the browser's native scroll or zoom.
+    wrapper.addEventListener("wheel", onWheel, { passive: false });
+    return () => wrapper.removeEventListener("wheel", onWheel);
+  }, [navigationMode, onWheel]);
 
   const onPointerDown = (event) => {
     const {
@@ -207,9 +213,8 @@ const Gesture = ({
             prevDistance: distance,
           });
         } catch (e) {
-           
           console.log("Error while getting other pointer. Ignoring", e);
-           
+
           stateRef.current.mainPointer === undefined;
         }
       }
@@ -254,7 +259,6 @@ const Gesture = ({
       // through item, pan and selection handlers.
       target.setPointerCapture(pointerId);
     } catch (e) {
-       
       console.log("Fail to capture pointer", e);
     }
   };
@@ -477,7 +481,6 @@ const Gesture = ({
 
         return;
       } catch (error) {
-         
         console.log("Fails to set pointer capture", error);
         stateRef.current.mainPointer = undefined;
         delete stateRef.current.pointers[
@@ -560,7 +563,6 @@ const Gesture = ({
 
   return (
     <div
-      onWheel={onWheel}
       onPointerDown={onPointerDown}
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}

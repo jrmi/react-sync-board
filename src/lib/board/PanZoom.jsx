@@ -8,19 +8,20 @@ import usePositionNavigator from "./usePositionNavigator";
 import useMainStore from "./store/main";
 import { hasClass, insideClass } from "@/utils";
 
-const PanZoom = ({ children, moveFirst = false }) => {
+const PanZoom = ({
+  children,
+  moveFirst = false,
+  navigationMode = "auto",
+  zoomMultiplier = 1,
+}) => {
   const wrappedRef = React.useRef(null);
-  const [
-    itemExtentGlobal,
-    getConfiguration,
-    updateBoardState,
-    getSelection,
-  ] = useMainStore((state) => [
-    state.config.itemExtent,
-    state.getConfiguration,
-    state.updateBoardState,
-    state.getSelection,
-  ]);
+  const [itemExtentGlobal, getConfiguration, updateBoardState, getSelection] =
+    useMainStore((state) => [
+      state.config.itemExtent,
+      state.getConfiguration,
+      state.updateBoardState,
+      state.getSelection,
+    ]);
   const { zoomToCenter, zoomToExtent, moveBoard } = useDim();
 
   const [centered, setCentered] = React.useState(false);
@@ -59,9 +60,9 @@ const PanZoom = ({ children, moveFirst = false }) => {
     updateBoardState({ zooming: true });
   };
 
-  const onPan = ({ deltaX, deltaY, target }) => {
+  const onPan = ({ deltaX, deltaY, target, source }) => {
     const item = insideClass(target, "item");
-    if (item && hasClass(item, "selected")) {
+    if (source !== "wheel" && item && hasClass(item, "selected")) {
       return;
     }
 
@@ -157,6 +158,8 @@ const PanZoom = ({ children, moveFirst = false }) => {
       onPan={onPan}
       onZoom={onZoom}
       mainAction={moveFirst ? "pan" : "drag"}
+      navigationMode={navigationMode}
+      zoomMultiplier={zoomMultiplier}
     >
       <div
         style={{
