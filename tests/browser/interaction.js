@@ -32,6 +32,22 @@ const wheel = (page, init, target = ".board") =>
     element.dispatchEvent(event);
     return event.defaultPrevented;
   }, init);
+const touchPointer = (page, type, init, target = ".board") =>
+  page.locator(target).evaluate(
+    (element, eventInit) => {
+      element.dispatchEvent(
+        new PointerEvent(eventInit.type, {
+          bubbles: true,
+          cancelable: true,
+          pointerType: "touch",
+          button: 0,
+          buttons: eventInit.type === "pointerup" ? 0 : 1,
+          ...eventInit,
+        })
+      );
+    },
+    { type, ...init }
+  );
 
 (async () => {
   const browser = await chromium.launch({
@@ -141,6 +157,94 @@ const wheel = (page, init, target = ".board") =>
       () => interactionTest.main.boardState.translateX !== 300
     );
     console.log("PASS interaction.primaryAction takes priority over moveFirst");
+
+    // Two touch points always navigate, even when one-finger dragging selects.
+    await setInteraction(page, {
+      navigationMode: "wheel",
+      primaryAction: "select",
+    });
+    await page.evaluate(() =>
+      interactionTest.main.updateBoardState({
+        translateX: 300,
+        translateY: 200,
+      })
+    );
+    await touchPointer(page, "pointerdown", {
+      pointerId: 1,
+      clientX: 400,
+      clientY: 300,
+    });
+    await touchPointer(page, "pointerdown", {
+      pointerId: 2,
+      clientX: 420,
+      clientY: 300,
+    });
+    await touchPointer(page, "pointermove", {
+      pointerId: 1,
+      clientX: 420,
+      clientY: 300,
+    });
+    await page.waitForFunction(
+      () => interactionTest.main.boardState.translateX !== 300
+    );
+    await touchPointer(page, "pointerup", {
+      pointerId: 1,
+      clientX: 420,
+      clientY: 300,
+    });
+    await touchPointer(page, "pointerup", {
+      pointerId: 2,
+      clientX: 420,
+      clientY: 300,
+    });
+    console.log("PASS two-finger touch pans while primaryAction is select");
+
+    // The same gesture on a selected item must pan the board, not move it.
+    await page.evaluate(() => {
+      gridTest.setItemList([{ id: "selected", type: "token", x: 0, y: 0 }]);
+      interactionTest.main.setSelection(["selected"]);
+      interactionTest.main.updateBoardState({
+        translateX: 300,
+        translateY: 200,
+      });
+    });
+    const selectedItem = '.item.selected[data-id="selected"]';
+    await page.locator(selectedItem).waitFor();
+    await touchPointer(
+      page,
+      "pointerdown",
+      { pointerId: 3, clientX: 400, clientY: 300 },
+      selectedItem
+    );
+    await touchPointer(
+      page,
+      "pointerdown",
+      { pointerId: 4, clientX: 420, clientY: 300 },
+      selectedItem
+    );
+    await touchPointer(
+      page,
+      "pointermove",
+      { pointerId: 3, clientX: 420, clientY: 300 },
+      selectedItem
+    );
+    await page.waitForFunction(
+      () => interactionTest.main.boardState.translateX !== 300
+    );
+    assert.equal(await page.evaluate(() => gridTest.getItemList()[0].x), 0);
+    await touchPointer(
+      page,
+      "pointerup",
+      { pointerId: 3, clientX: 420, clientY: 300 },
+      selectedItem
+    );
+    await touchPointer(
+      page,
+      "pointerup",
+      { pointerId: 4, clientX: 420, clientY: 300 },
+      selectedItem
+    );
+    console.log("PASS two-finger touch over a selected item does not move it");
   } finally {
     await browser.close();
   }

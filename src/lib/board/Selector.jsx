@@ -45,7 +45,7 @@ const findSelected = (itemMap, wrapper, ignoreLocked = false) => {
     .map((elem) => getIdFromElem(elem));
 };
 
-const Selector = ({ children, moveFirst }) => {
+const Selector = ({ children, mainAction, navigationMode }) => {
   const [
     getSelection,
     clearSelection,
@@ -196,7 +196,8 @@ const Selector = ({ children, moveFirst }) => {
       onDragEnd={onDragEnd}
       onTap={onTap}
       onLongTap={onLongTap}
-      mainAction={moveFirst ? "pan" : "drag"}
+      mainAction={mainAction}
+      navigationMode={navigationMode}
     >
       <div ref={wrapperRef} style={{ position: "absolute", inset: 0 }}>
         {selector.moving && (

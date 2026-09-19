@@ -61,7 +61,9 @@ prop: `moveFirst={true}` maps to `"pan"` and `moveFirst={false}` maps to
 `"select"`. When both are provided, `interaction.primaryAction` takes priority.
 `moveFirst` remains supported during this transition. Browsers do not expose a
 reliable way to detect trackpad hardware, so use `navigationMode="trackpad"`
-explicitly when that interaction is wanted outside macOS.
+explicitly when that interaction is wanted outside macOS. Without either
+setting, a mouse drag pans, while a touchscreen drag selects; two fingers still
+pan and pinch. Trackpad mode also uses selection as its primary action.
 
 ### Infinite background
 

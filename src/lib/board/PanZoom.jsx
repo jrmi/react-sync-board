@@ -10,7 +10,7 @@ import { hasClass, insideClass } from "@/utils";
 
 const PanZoom = ({
   children,
-  moveFirst = false,
+  mainAction = "auto",
   navigationMode = "auto",
   zoomMultiplier = 1,
 }) => {
@@ -60,9 +60,14 @@ const PanZoom = ({
     updateBoardState({ zooming: true });
   };
 
-  const onPan = ({ deltaX, deltaY, target, source }) => {
+  const onPan = ({ deltaX, deltaY, target, source, isMultiTouch }) => {
     const item = insideClass(target, "item");
-    if (source !== "wheel" && item && hasClass(item, "selected")) {
+    if (
+      source !== "wheel" &&
+      !(source === "touch" && isMultiTouch) &&
+      item &&
+      hasClass(item, "selected")
+    ) {
       return;
     }
 
@@ -157,7 +162,7 @@ const PanZoom = ({
       fill
       onPan={onPan}
       onZoom={onZoom}
-      mainAction={moveFirst ? "pan" : "drag"}
+      mainAction={mainAction}
       navigationMode={navigationMode}
       zoomMultiplier={zoomMultiplier}
     >

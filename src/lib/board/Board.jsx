@@ -26,7 +26,7 @@ const defaultStyle = {
 };
 
 const Board = ({
-  moveFirst = true,
+  moveFirst,
   interaction,
   style,
   wrapperStyle,
@@ -66,9 +66,11 @@ const Board = ({
     interaction?.primaryAction === "pan" ||
     interaction?.primaryAction === "select"
       ? interaction.primaryAction
-      : moveFirst
-        ? "pan"
-        : "select";
+      : typeof moveFirst === "boolean"
+        ? moveFirst
+          ? "pan"
+          : "select"
+        : "auto";
   const requestedNavigationMode = ["auto", "wheel", "trackpad"].includes(
     interaction?.navigationMode
   )
@@ -136,13 +138,13 @@ const Board = ({
     >
       <WorldBackground style={style} tileSizeOverride={backgroundTileSize} />
       <CursorPane>
-        <Selector moveFirst={primaryAction === "pan"}>
+        <Selector mainAction={primaryAction} navigationMode={navigationMode}>
           <PanZoom
-            moveFirst={primaryAction === "pan"}
+            mainAction={primaryAction}
             navigationMode={navigationMode}
             zoomMultiplier={zoomMultiplier}
           >
-            <ActionPane moveFirst={primaryAction === "pan"}>
+            <ActionPane>
               <Wrapper>
                 <div
                   onContextMenu={(e) => {
