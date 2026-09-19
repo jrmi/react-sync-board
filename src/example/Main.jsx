@@ -246,14 +246,7 @@ const UserList = () => {
   );
 };
 
-const Overlay = ({
-  children,
-  hideMenu,
-  moveFirst,
-  setMoveFirst,
-  interaction,
-  setInteraction,
-}) => {
+const Overlay = ({ children, hideMenu, interaction, setInteraction }) => {
   const { rotateBoard: rotate, zoomToExtent } = useDim();
   const itemExtent = useMainStore((state) => state.config.itemExtent);
   return (
@@ -310,16 +303,19 @@ const Overlay = ({
           <label>
             Primary action{" "}
             <select
-              value={
-                interaction.primaryAction || (moveFirst ? "pan" : "select")
-              }
+              value={interaction.primaryAction ?? "auto"}
               onChange={(event) =>
-                setInteraction((previous) => ({
-                  ...previous,
-                  primaryAction: event.target.value,
-                }))
+                setInteraction((previous) => {
+                  if (event.target.value === "auto") {
+                    const nextInteraction = { ...previous };
+                    delete nextInteraction.primaryAction;
+                    return nextInteraction;
+                  }
+                  return { ...previous, primaryAction: event.target.value };
+                })
               }
             >
+              <option value="auto">Auto</option>
               <option value="pan">Pan</option>
               <option value="select">Select</option>
             </select>
@@ -348,6 +344,35 @@ const Overlay = ({
               }
             />
           </label>
+          <label>
+            <input
+              type="checkbox"
+              checked={interaction.inertia ?? true}
+              onChange={(event) =>
+                setInteraction((previous) => ({
+                  ...previous,
+                  inertia: event.target.checked,
+                }))
+              }
+            />{" "}
+            Enable inertia
+          </label>
+          <label>
+            Inertia amount{" "}
+            <input
+              type="number"
+              min="0.1"
+              step="0.1"
+              disabled={interaction.inertia === false}
+              value={interaction.inertiaAmount ?? 1}
+              onChange={(event) =>
+                setInteraction((previous) => ({
+                  ...previous,
+                  inertiaAmount: Number(event.target.value),
+                }))
+              }
+            />
+          </label>
         </div>
         <div style={{ margin: "10px 0" }}>
           <button onClick={() => rotate((prev) => prev + 12.5)}>
@@ -357,19 +382,6 @@ const Overlay = ({
             Rotate counter clockwise
           </button>
         </div>
-        <div style={{ margin: "10px 0" }}>
-          <label>
-            <input
-              type="checkbox"
-              checked={moveFirst}
-              onChange={() => {
-                setMoveFirst((prev) => !prev);
-              }}
-            />{" "}
-            Legacy move first?
-          </label>
-        </div>
-
         <UserList />
       </div>
       <SelectedItemsPane hideMenu={hideMenu} ItemFormComponent={ItemForm} />
@@ -379,8 +391,6 @@ const Overlay = ({
 };
 
 const OneViewContent = ({
-  moveFirst,
-  setMoveFirst,
   interaction,
   setInteraction,
   showResizeHandle,
@@ -401,13 +411,10 @@ const OneViewContent = ({
     >
       <Overlay
         hideMenu={hideMenu}
-        moveFirst={moveFirst}
-        setMoveFirst={setMoveFirst}
         interaction={interaction}
         setInteraction={setInteraction}
       >
         <Board
-          moveFirst={moveFirst}
           interaction={interaction}
           showResizeHandle={showResizeHandle}
           style={{
@@ -461,8 +468,6 @@ linear-gradient(90deg, rgba(255,255,255,.3) 1px, transparent 1px)`,
   backgroundPosition: "-2px -2px, -2px -2px, -1px -1px, -1px -1px",
 };
 const OneViewWithRoomContent = ({
-  moveFirst,
-  setMoveFirst,
   interaction,
   setInteraction,
   showResizeHandle,
@@ -486,13 +491,10 @@ const OneViewWithRoomContent = ({
       >
         <Overlay
           hideMenu={hideMenu}
-          moveFirst={moveFirst}
-          setMoveFirst={setMoveFirst}
           interaction={interaction}
           setInteraction={setInteraction}
         >
           <Board
-            moveFirst={moveFirst}
             interaction={interaction}
             itemTemplates={itemMap}
             style={style}

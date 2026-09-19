@@ -64,6 +64,8 @@ const Gesture = ({
   onDragStart = empty,
   onDragEnd = empty,
   onPan = empty,
+  onPanEnd = empty,
+  onZoomEnd = empty,
   onTap = empty,
   onLongTap = empty,
   onDoubleTap = empty,
@@ -136,6 +138,7 @@ const Gesture = ({
       multiMoveEvent: undefined,
       multiMoveTimeout: undefined,
       gestureAction: "pan",
+      panSource: "touch",
       hadMultiTouch: true,
       noTap: true,
     });
@@ -181,6 +184,7 @@ const Gesture = ({
 
     clearTimeout(state.longTapTimeout);
     if (state.multiMode === "pan") {
+      state.didPan = true;
       promiseQueue.add(onPan, {
         deltaX,
         deltaY,
@@ -195,10 +199,12 @@ const Gesture = ({
         event,
       });
     } else if (onZoom && currentDistance !== state.prevDistance) {
+      state.didZoom = true;
       promiseQueue.add(onZoom, {
         scale: (state.prevDistance - currentDistance) * 3,
         clientX: center.clientX,
         clientY: center.clientY,
+        source: "touch",
         event,
       });
     }
@@ -249,6 +255,7 @@ const Gesture = ({
         scale: scale * zoomMultiplier,
         clientX,
         clientY,
+        source: "wheel",
         event,
       });
       event.preventDefault();
@@ -357,6 +364,7 @@ const Gesture = ({
       return;
     if (!state.gestureAction) {
       state.gestureAction = shouldDrag ? "drag" : "pan";
+      if (!shouldDrag) state.panSource = isTouch ? "touch" : undefined;
       clearTimeout(state.longTapTimeout);
       if (wrapperRef.current) wrapperRef.current.style.cursor = "move";
       if (shouldDrag)
@@ -405,6 +413,7 @@ const Gesture = ({
             isMultiTouch: false,
           }
     );
+    if (!shouldDrag) state.didPan = true;
     Object.assign(state, { prevX: clientX, prevY: clientY, moving: true });
   };
 
@@ -437,6 +446,16 @@ const Gesture = ({
     state.mainPointer = undefined;
     state.activePair = [];
     if (state.gestureAction === "drag") queueDragEnd(event);
+    if (state.didPan) {
+      promiseQueue.add(onPanEnd, {
+        source: state.panSource,
+        isMultiTouch: state.hadMultiTouch,
+        event,
+      });
+    }
+    if (state.didZoom) {
+      promiseQueue.add(onZoomEnd, { source: "touch", event });
+    }
     if (wrapperRef.current) wrapperRef.current.style.cursor = "auto";
     if (
       !state.moving &&
@@ -455,7 +474,13 @@ const Gesture = ({
         event,
       });
     }
-    Object.assign(state, { moving: false, gestureAction: undefined });
+    Object.assign(state, {
+      moving: false,
+      gestureAction: undefined,
+      didPan: false,
+      panSource: undefined,
+      didZoom: false,
+    });
   };
 
   const onDoubleTapHandler = (event) =>

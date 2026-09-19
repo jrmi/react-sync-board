@@ -56,6 +56,15 @@ on Linux. Trackpad zoom uses the same sensitivity on every platform.
 in `wheel` mode and `2` in `trackpad` mode; provide it to tune zoom sensitivity
 for an individual board.
 
+`inertia` controls momentum after a pan or zoom and defaults to `true`.
+Set `inertiaAmount` to a positive number to tune its range (`1` is the default,
+values below `1` shorten it, and values above `1` extend it):
+
+```jsx
+<Board interaction={{ inertia: false }} />
+<Board interaction={{ inertia: true, inertiaAmount: 1.5 }} />
+```
+
 `primaryAction` is `"pan"` or `"select"`. It replaces the legacy `moveFirst`
 prop: `moveFirst={true}` maps to `"pan"` and `moveFirst={false}` maps to
 `"select"`. When both are provided, `interaction.primaryAction` takes priority.

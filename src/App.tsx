@@ -27,7 +27,6 @@ function App() {
   const [room] = useState("test_room");
   const [session] = useState("test_session");
   const [view, setView] = useState("one");
-  const [moveFirst, setMoveFirst] = useState(true);
   const [interaction, setInteraction] = useState({
     navigationMode: "auto",
   });
@@ -38,8 +37,6 @@ function App() {
       <main className="demo-content">
         {view === "one" && (
           <OneView
-            moveFirst={moveFirst}
-            setMoveFirst={setMoveFirst}
             interaction={interaction}
             setInteraction={setInteraction}
             showResizeHandle={true}
@@ -50,8 +47,6 @@ function App() {
         )}
         {view === "style" && (
           <OneViewWithRoom
-            moveFirst={moveFirst}
-            setMoveFirst={setMoveFirst}
             interaction={interaction}
             setInteraction={setInteraction}
             showResizeHandle={false}
@@ -62,8 +57,6 @@ function App() {
         )}
         {view === "custom" && (
           <OneViewWithCustomBoardElements
-            moveFirst={moveFirst}
-            setMoveFirst={setMoveFirst}
             interaction={interaction}
             setInteraction={setInteraction}
             showResizeHandle={false}
@@ -74,8 +67,6 @@ function App() {
         )}
         {view === "two" && (
           <TwoView
-            moveFirst={moveFirst}
-            setMoveFirst={setMoveFirst}
             interaction={interaction}
             setInteraction={setInteraction}
             showResizeHandle={false}
@@ -86,8 +77,6 @@ function App() {
         )}
         {view === "perf" && (
           <OneViewPerf
-            moveFirst={moveFirst}
-            setMoveFirst={setMoveFirst}
             interaction={interaction}
             setInteraction={setInteraction}
             showResizeHandle={false}

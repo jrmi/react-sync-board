@@ -87,6 +87,12 @@ const Board = ({
       : navigationMode === "trackpad"
         ? 2
         : 1;
+  const inertia =
+    typeof interaction?.inertia === "boolean" ? interaction.inertia : true;
+  const inertiaAmount =
+    Number.isFinite(interaction?.inertiaAmount) && interaction.inertiaAmount > 0
+      ? interaction.inertiaAmount
+      : 1;
 
   React.useEffect(() => {
     updateConfiguration({
@@ -143,6 +149,8 @@ const Board = ({
             mainAction={primaryAction}
             navigationMode={navigationMode}
             zoomMultiplier={zoomMultiplier}
+            inertia={inertia}
+            inertiaAmount={inertiaAmount}
           >
             <ActionPane>
               <Wrapper>
