@@ -151,7 +151,10 @@ export function visibleTiles(width, height, camera, tileSizeOverride) {
         (_, columnIndex) => {
           const column = firstColumn + columnIndex;
           return {
-            key: `${size}:${column}:${row}`,
+            // Size changes at zoom thresholds. Keep an identity based on the
+            // grid coordinate so React can update shared tiles rather than
+            // unmounting and recreating the entire background.
+            key: `${column}:${row}`,
             left: column * size,
             top: row * size,
           };

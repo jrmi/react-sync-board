@@ -60,6 +60,19 @@ describe("virtual background tiles", () => {
     expect(after.some((key) => !before.includes(key))).toBe(true);
   });
 
+  it("retains shared tile identities when automatic sizing changes on zoom", () => {
+    const camera = { translateX: 0, translateY: 0, scale: 1, rotate: 0 };
+    const before = visibleTiles(1364, 632, camera);
+    const after = visibleTiles(1364, 632, { ...camera, scale: 0.49 });
+
+    expect(before.size).not.toBe(after.size);
+    expect(
+      after.tiles.some((tile) =>
+        before.tiles.some(({ key }) => key === tile.key)
+      )
+    ).toBe(true);
+  });
+
   it("keeps patterns continuous across tile edges even when their periods do not divide tile size", () => {
     for (const left of [-1e9, -512, 0, 512, 1e9]) {
       const offset = repeatOffset(-2, left, 37);
