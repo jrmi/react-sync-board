@@ -164,7 +164,7 @@ const Selector = ({ children, mainAction, navigationMode }) => {
   const onTap = (event) => {
     const { ctrlKey, metaKey } = event;
 
-    const foundElement = findElementUnderPointer(event);
+    const foundElement = findElementUnderPointer(event, { skipLocked: true });
 
     if (!foundElement) {
       clearSelection();

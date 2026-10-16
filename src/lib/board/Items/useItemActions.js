@@ -334,10 +334,50 @@ const useItemActions = () => {
     [getStoreItems],
   );
 
+  // Top-most unlocked (and, with selectedOnly, selected) item of this board
+  // drawn at the given screen point. elementsFromPoint follows each item's
+  // real (possibly rotated) shape, and passthrough parts of an item don't
+  // count as a hit on it.
+  const findUnlockedItemAtPoint = React.useCallback(
+    (clientX, clientY, { selectedOnly = false } = {}) => {
+      if (
+        typeof document.elementsFromPoint !== "function" ||
+        clientX === undefined ||
+        clientY === undefined
+      ) {
+        return null;
+      }
+      const { uid } = getConfiguration();
+      const seen = new Set();
+      for (const hit of document.elementsFromPoint(clientX, clientY)) {
+        const itemElement = insideClass(hit, "item");
+        if (
+          !itemElement ||
+          !itemElement.id?.startsWith(`${uid}__`) ||
+          seen.has(itemElement)
+        ) {
+          continue;
+        }
+        // The item's own wrapper follows its children in the hit list, so
+        // mark the item as seen even when this hit is a passthrough part.
+        seen.add(itemElement);
+        if (
+          !hasClass(hit, "passthrough") &&
+          !hasClass(itemElement, "locked") &&
+          (!selectedOnly || hasClass(itemElement, "selected"))
+        ) {
+          return itemElement;
+        }
+      }
+      return null;
+    },
+    [getConfiguration],
+  );
+
   const findElementUnderPointer = React.useCallback(
     (
       { target, clientX, clientY },
-      { returnLocked = false, passLocked = false } = {},
+      { returnLocked = false, passLocked = false, skipLocked = false } = {},
     ) => {
       // Allow text selection instead of moving
       if (["INPUT", "TEXTAREA"].includes(target.tagName)) return null;
@@ -354,6 +394,17 @@ const useItemActions = () => {
           hasClass(foundElement, "locked") &&
           !hasClass(target, "passthrough")
         ) {
+          if (skipLocked) {
+            return findUnlockedItemAtPoint(clientX, clientY);
+          }
+          // A selected item under a locked one (e.g. picked with a short
+          // click) can still be dragged from there.
+          const selectedBelow = findUnlockedItemAtPoint(clientX, clientY, {
+            selectedOnly: true,
+          });
+          if (selectedBelow) {
+            return selectedBelow;
+          }
           return returnLocked ? foundElement : null;
         }
 
@@ -389,7 +440,7 @@ const useItemActions = () => {
       }
       return foundElement;
     },
-    [getConfiguration, getItemIds],
+    [findUnlockedItemAtPoint, getConfiguration, getItemIds],
   );
 
   return {
