@@ -13,6 +13,7 @@ Playwright module). `CHROMIUM_EXECUTABLE` optionally selects an existing browser
 ```sh
 node tests/browser/grid.js
 npm run test:browser:interaction
+npm run test:browser:locked-items
 ```
 
 The fixture uses real Board, Gesture, item measurements, placement interactions,
@@ -30,3 +31,6 @@ center (150, 150). Place interactions now observe that same position.
 `interaction.js` covers wheel zooming, explicit trackpad X/Y panning,
 `Ctrl` + wheel zooming, selective native-event prevention, and the precedence
 of `interaction.primaryAction` over legacy `moveFirst`.
+
+`locked-items.js` covers short-click and drag pass-through from a locked item
+to the nearest unlocked item, locked-only long presses, and visual stack order.

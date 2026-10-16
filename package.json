@@ -1,6 +1,6 @@
 {
   "name": "react-sync-board",
-  "version": "1.5.2",
+  "version": "1.5.3",
   "description": "React-sync-board is a board for react",
   "type": "module",
   "files": [
@@ -33,6 +33,7 @@
     "format:check": "prettier --check \"src/**/*.{js,jsx,ts,tsx,json,css}\"",
     "test": "vitest run",
     "test:browser:interaction": "node tests/browser/interaction.js",
+    "test:browser:locked-items": "node tests/browser/locked-items.js",
     "version": "git changelog -n -t $npm_package_version && git add CHANGELOG.md"
   },
   "peerDependencies": {

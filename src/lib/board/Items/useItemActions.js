@@ -344,6 +344,50 @@ const useItemActions = () => {
 
       const foundElement = insideClass(target, "item");
 
+      const getItemElementsAtPointer = () => {
+        const itemIds = new Set(getItemIds());
+        const elementsAtPoint = document.elementsFromPoint?.(clientX, clientY);
+
+        if (elementsAtPoint) {
+          const seen = new Set();
+          return elementsAtPoint.reduce((elements, element) => {
+            const itemElement = insideClass(element, "item");
+            if (
+              itemElement &&
+              itemIds.has(itemElement.dataset.id) &&
+              !seen.has(itemElement)
+            ) {
+              seen.add(itemElement);
+              elements.push(itemElement);
+            }
+            return elements;
+          }, []);
+        }
+
+        // `elementsFromPoint` is unavailable in a few non-browser consumers.
+        // Preserve the previous geometry-based passthrough behavior there.
+        const { uid } = getConfiguration();
+        return getItemIds().reduce((elements, itemId) => {
+          const element = getItemElem(uid, itemId);
+          const itemRect = element.getBoundingClientRect();
+          if (isPointInsideRect({ x: clientX, y: clientY }, itemRect)) {
+            elements.unshift(element);
+          }
+          return elements;
+        }, []);
+      };
+
+      const getEligibleElementBelow = () => {
+        const elements = getItemElementsAtPointer();
+        return (
+          elements.find(
+            (element) =>
+              element !== foundElement &&
+              (passLocked || !hasClass(element, "locked")),
+          ) || null
+        );
+      };
+
       if (foundElement) {
         if (hasClass(foundElement, "selected")) {
           return foundElement;
@@ -354,37 +398,12 @@ const useItemActions = () => {
           hasClass(foundElement, "locked") &&
           !hasClass(target, "passthrough")
         ) {
-          return returnLocked ? foundElement : null;
+          return returnLocked ? foundElement : getEligibleElementBelow();
         }
 
         // Is it a passthrough  element?
         if (hasClass(target, "passthrough")) {
-          // Get current value
-          const itemList = getItemIds();
-          const { uid } = getConfiguration();
-
-          // Found element under the cursor
-          const elements = itemList.reduce((prev, itemId) => {
-            const elem = getItemElem(uid, itemId);
-            const itemRect = elem.getBoundingClientRect();
-            if (isPointInsideRect({ x: clientX, y: clientY }, itemRect)) {
-              prev.unshift(elem);
-            }
-            return prev;
-          }, []);
-
-          // Figure out if one can be returned
-          for (let i = 0; i < elements.length; i += 1) {
-            const elem = elements[i];
-            if (
-              elem !== foundElement &&
-              (passLocked || !hasClass(elem, "locked"))
-            ) {
-              return elem;
-            }
-          }
-          // Here there is no available elements
-          return null;
+          return getEligibleElementBelow();
         }
       }
       return foundElement;
