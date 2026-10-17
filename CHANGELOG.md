@@ -1,4 +1,13 @@
 
+1.5.7 / 2026-10-17
+==================
+
+  * Reduce zoom subscription, layout, and rendering costs (#22)
+  * Fix lint warnings
+  * Export selection setter hook (#21)
+  * Release 1.5.5
+  * Reuse background tiles across zoom levels
+
 1.5.5 / 2026-10-16
 ==================
 
