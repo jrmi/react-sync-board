@@ -1,4 +1,3 @@
-import React from "react";
 import { darken } from "color2k";
 import styled, { css } from "styled-components";
 

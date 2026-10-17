@@ -1,4 +1,3 @@
-import React from "react";
 import Cursor from "./Cursor";
 import { useSyncedUsers } from "@/users/store";
 import useDim from "@/board/useDim";

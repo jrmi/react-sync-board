@@ -1,4 +1,3 @@
-import React from "react";
 import { darken } from "color2k";
 
 const Cube = ({ size = 50, color = "#b3b3b3" }) => {

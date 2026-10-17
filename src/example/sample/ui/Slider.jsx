@@ -1,4 +1,3 @@
-import React from "react";
 import RCSlider from "rc-slider";
 import styled from "@emotion/styled";
 

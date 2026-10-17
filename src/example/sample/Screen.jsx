@@ -1,4 +1,4 @@
-import React, { memo, useCallback } from "react";
+import { memo, useCallback } from "react";
 import styled, { css } from "styled-components";
 import { useUsers } from "@/users";
 

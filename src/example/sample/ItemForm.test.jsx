@@ -1,5 +1,4 @@
 /** @vitest-environment jsdom */
-import React from "react";
 import { fireEvent, render, cleanup } from "@testing-library/react";
 import { Form } from "react-final-form";
 import { afterEach, describe, expect, it } from "vitest";

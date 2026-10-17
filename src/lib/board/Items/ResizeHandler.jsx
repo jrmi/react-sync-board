@@ -1,4 +1,3 @@
-import React from "react";
 import Gesture from "../Gesture";
 import useMainStore from "../store/main";
 

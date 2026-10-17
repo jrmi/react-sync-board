@@ -1,5 +1,3 @@
-import React from "react";
-import useTranslation from "../../useTranslation";
 import { Field } from "react-final-form";
 
 import Label from "../ui/Label";
@@ -7,7 +5,6 @@ import Label from "../ui/Label";
 import ColorPicker from "../ui/ColorPicker";
 
 const Form = ({ initialValues }) => {
-  const { t } = useTranslation();
   return (
     <>
       <Label>
