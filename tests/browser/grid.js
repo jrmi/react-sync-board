@@ -118,14 +118,27 @@ function expectedPosition(position, grid) {
       if (grid?.show) {
         const overlay = page.locator('[data-grid-item="token"]');
         await overlay.waitFor();
-        const origin = await overlay.evaluate((el) => ({
-          x:
-            Number.parseFloat(el.style.left) +
-            Number(el.querySelector("pattern").getAttribute("x")),
-          y:
-            Number.parseFloat(el.style.top) +
-            Number(el.querySelector("pattern").getAttribute("y")),
-        }));
+        const origin = await overlay.evaluate((el) => {
+          const transform = new DOMMatrix(getComputedStyle(el).transform);
+          const pattern = el.querySelector("pattern");
+          // Square patterns start half a cell before their snap centers.
+          const halfCell =
+            el.dataset.gridType === "grid"
+              ? Number(pattern.getAttribute("width")) / 2
+              : 0;
+          return {
+            x:
+              Number.parseFloat(el.style.left) +
+              transform.e +
+              halfCell +
+              Number(pattern.getAttribute("x")),
+            y:
+              Number.parseFloat(el.style.top) +
+              transform.f +
+              halfCell +
+              Number(pattern.getAttribute("y")),
+          };
+        });
         near(origin.x, Number(grid.offset?.x || 0));
         near(origin.y, Number(grid.offset?.y || 0));
       }

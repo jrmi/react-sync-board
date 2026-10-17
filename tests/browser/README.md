@@ -14,6 +14,7 @@ Playwright module). `CHROMIUM_EXECUTABLE` optionally selects an existing browser
 node tests/browser/grid.js
 npm run test:browser:interaction
 npm run test:browser:locked-items
+node tests/browser/zoom-selection.js
 ```
 
 The fixture uses real Board, Gesture, item measurements, placement interactions,
@@ -34,3 +35,7 @@ of `interaction.primaryAction` over legacy `moveFirst`.
 
 `locked-items.js` covers short-click and drag pass-through from a locked item
 to the nearest unlocked item, locked-only long presses, and visual stack order.
+
+`zoom-selection.js` checks empty, single, and multiple selections through zoom,
+pan, rotation, and clearing. It compares the public selection box with actual
+DOM bounds and verifies that zoom and pan do not measure selected items.

@@ -25,6 +25,33 @@ const defaultStyle = {
   inset: 0,
 };
 
+const BoardPane = ({ children }) => {
+  const [translateX, translateY, scale, rotate] = useMainStore((state) => [
+    state.boardState.translateX,
+    state.boardState.translateY,
+    state.boardState.scale,
+    state.boardState.rotate,
+  ]);
+  return (
+    <div
+      onContextMenu={(event) => event.preventDefault()}
+      style={{
+        userSelect: "none",
+        position: "absolute",
+        inset: 0,
+        width: "100%",
+        height: "100%",
+        transformOrigin: "0 0",
+        transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scale})`,
+        pointerEvents: "none",
+      }}
+      className={`board-pane${scale < 0.5 ? " board-pane__far" : ""}`}
+    >
+      {children}
+    </div>
+  );
+};
+
 const Board = ({
   moveFirst,
   interaction,
@@ -43,24 +70,7 @@ const Board = ({
     state.config.uid,
     state.updateConfiguration,
   ]);
-  const [translateX, translateY, scale, rotate] = useMainStore((state) => [
-    state.boardState.translateX,
-    state.boardState.translateY,
-    state.boardState.scale,
-    state.boardState.rotate,
-  ]);
   const { updateItemExtent } = useDim();
-
-  const boardStyle = {
-    userSelect: "none",
-    position: "absolute",
-    inset: 0,
-    width: "100%",
-    height: "100%",
-    transformOrigin: "0 0",
-    transform: `translate(${translateX}px, ${translateY}px) rotate(${rotate}deg) scale(${scale})`,
-    pointerEvents: "none",
-  };
 
   const primaryAction =
     interaction?.primaryAction === "pan" ||
@@ -154,16 +164,10 @@ const Board = ({
           >
             <ActionPane>
               <Wrapper>
-                <div
-                  onContextMenu={(e) => {
-                    e.preventDefault();
-                  }}
-                  style={boardStyle}
-                  className={`board-pane${scale < 0.5 ? " board-pane__far" : ""}`}
-                >
+                <BoardPane>
                   <ItemList />
                   <div style={{ pointerEvents: "auto" }}>{children}</div>
-                </div>
+                </BoardPane>
               </Wrapper>
             </ActionPane>
           </PanZoom>

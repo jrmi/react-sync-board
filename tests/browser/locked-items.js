@@ -61,7 +61,7 @@ const selection = (page) =>
     await page.mouse.move(point.x + 25, point.y + 10, { steps: 3 });
     await page.mouse.up();
     await page.waitForFunction((x) => gridTest.getItems(["hull"])[0].x !== x, before);
-    assert.equal(await selection(page)[0], "hull");
+    assert.equal((await selection(page))[0], "hull");
     console.log("PASS dragging from a locked turret moves its hull");
 
     await setItems([

@@ -74,6 +74,11 @@ explicitly when that interaction is wanted outside macOS. Without either
 setting, a mouse drag pans, while a touchscreen drag selects; two fingers still
 pan and pinch. Trackpad mode also uses selection as its primary action.
 
+Components that only need part of the camera/interaction state can pass a
+selector to `useBoardState`, for example
+`useBoardState((state) => state.movingItems)`. This avoids rendering on unrelated
+camera updates. Calling `useBoardState()` still returns the complete state.
+
 ### Infinite background
 
 The background uses virtual tiles: only the visible tiles and a one-tile margin
