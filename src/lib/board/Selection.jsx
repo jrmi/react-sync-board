@@ -26,18 +26,20 @@ const BoundingBox = () => {
     selectionBox,
     setSelectionBox,
     getConfiguration,
-    { translateX, translateY, scale },
+    translateX,
+    translateY,
+    scale,
+    rotate,
   ] = useMainStore((state) => [
     state.selection,
     state.getSelection,
     state.selectionBox,
     state.setSelectionBox,
     state.getConfiguration,
-    {
-      translateX: state.boardState.translateX,
-      translateY: state.boardState.translateY,
-      scale: state.boardState.scale,
-    },
+    state.boardState.translateX,
+    state.boardState.translateY,
+    state.boardState.scale,
+    state.boardState.rotate,
   ]);
 
   const [items] = useSyncedStore((state) => [state.items]);
@@ -83,6 +85,7 @@ const BoundingBox = () => {
     translateX,
     translateY,
     scale,
+    rotate,
     updateBox,
     updateBoxDelay,
   ]);

@@ -1,12 +1,12 @@
 import React, { useContext } from "react";
 import { createStore } from "zustand";
 import { useStoreWithEqualityFn } from "zustand/traditional";
-import { shallow } from "zustand/shallow";
 import { getRandomColor } from "@/utils";
 import { nanoid } from "nanoid";
 
 import useWire from "@/hooks/useWire";
 import { syncMiddleware } from "@/utils";
+import { storeEquality } from "@/storeEquality";
 
 const Context = React.createContext();
 
@@ -212,5 +212,5 @@ export const SyncedUsersProvider = ({ storeName, children }) => {
 
 export const useSyncedUsers = (selector) => {
   const store = useContext(Context);
-  return useStoreWithEqualityFn(store, selector, shallow);
+  return useStoreWithEqualityFn(store, selector, storeEquality);
 };
