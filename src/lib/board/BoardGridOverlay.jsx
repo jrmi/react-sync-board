@@ -100,7 +100,7 @@ const BoardGridOverlay = ({ preview = false, enabled = true }) => {
   const items = useItems();
   const selected = useSelectedItems();
   const [board] = useBoardConfig();
-  const { movingItems } = useBoardState();
+  const movingItems = useBoardState((state) => state.movingItems);
   const uid = useMainStore((state) => state.config.uid);
   const moving = movingItems || items.some((item) => item.moving);
   if (!enabled || (!preview && !moving)) return null;

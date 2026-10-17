@@ -26,6 +26,8 @@ const BoundingBox = () => {
     selectionBox,
     setSelectionBox,
     getConfiguration,
+    getBoardState,
+    wrapperRect,
     translateX,
     translateY,
     scale,
@@ -36,6 +38,8 @@ const BoundingBox = () => {
     state.selectionBox,
     state.setSelectionBox,
     state.getConfiguration,
+    state.getBoardState,
+    state.config.boardWrapperRect,
     state.boardState.translateX,
     state.boardState.translateY,
     state.boardState.scale,
@@ -43,6 +47,30 @@ const BoundingBox = () => {
   ]);
 
   const [items] = useSyncedStore((state) => [state.items]);
+  const measuredBox = React.useRef(null);
+
+  // Keep the public screen-space box, but derive camera-only changes without
+  // reading layout. Rotation invalidates the measurement because it changes
+  // the axis-aligned bounds of each item.
+  const projectBox = React.useCallback(() => {
+    const measured = measuredBox.current;
+    if (!measured) {
+      setSelectionBox(null);
+      return;
+    }
+    const camera = getBoardState();
+    const ratio = camera.scale / measured.camera.scale;
+    setSelectionBox({
+      left:
+        (measured.box.left - measured.camera.translateX) * ratio +
+        camera.translateX,
+      top:
+        (measured.box.top - measured.camera.translateY) * ratio +
+        camera.translateY,
+      width: measured.box.width * ratio,
+      height: measured.box.height * ratio,
+    });
+  }, [getBoardState, setSelectionBox]);
 
   // Update selection bounding box
   const updateBox = React.useCallback(() => {
@@ -50,6 +78,7 @@ const BoundingBox = () => {
     const { boardWrapperRect, uid } = getConfiguration();
 
     if (currentSelectedItems.length === 0) {
+      measuredBox.current = null;
       setSelectionBox(null);
       return;
     }
@@ -57,6 +86,7 @@ const BoundingBox = () => {
     const boundingBox = getItemsBoundingBox(currentSelectedItems, uid);
 
     if (!boundingBox) {
+      measuredBox.current = null;
       setSelectionBox(null);
       return;
     }
@@ -69,8 +99,15 @@ const BoundingBox = () => {
       height,
       width,
     };
-    setSelectionBox(newBB);
-  }, [getConfiguration, getSelection, setSelectionBox]);
+    measuredBox.current = { box: newBB, camera: getBoardState() };
+    projectBox();
+  }, [
+    getConfiguration,
+    getSelection,
+    getBoardState,
+    projectBox,
+    setSelectionBox,
+  ]);
 
   // Debounced version of update box
   const updateBoxDelay = useDebouncedCallback(updateBox, [updateBox], 300);
@@ -79,16 +116,11 @@ const BoundingBox = () => {
     // Update selected elements bounding box
     updateBox();
     updateBoxDelay(); // Delay to update after board item animation like tap/untap.
-  }, [
-    selection,
-    items,
-    translateX,
-    translateY,
-    scale,
-    rotate,
-    updateBox,
-    updateBoxDelay,
-  ]);
+  }, [selection, items, rotate, wrapperRect, updateBox, updateBoxDelay]);
+
+  React.useEffect(() => {
+    projectBox();
+  }, [translateX, translateY, scale, projectBox]);
 
   if (!selectionBox || selection.length < 2) return null;
 

@@ -123,6 +123,7 @@ const selection = (set, get) => ({
       }
       const reversed = [...state.selection];
       reversed.reverse();
+      if (equalArrayValues(state.selection, reversed)) return state;
       return { selection: reversed };
     }),
   selectionBox: null,
